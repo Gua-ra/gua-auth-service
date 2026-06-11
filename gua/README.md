@@ -15,15 +15,16 @@ Minimal hook sites added to upstream files:
 | Upstream file | Change |
 |---|---|
 | `crates/config/src/sections/mod.rs` | `mod gua;`, `GUAConfig` re-export, `gua` field on `RootConfig` + `AppConfig` |
-| `crates/data-model/src/site_config.rs` | `trusted_clients_skip_consent: Vec<Ulid>` field + `ulid` import |
-| `crates/cli/src/util.rs` | `gua_config` param + populate `trusted_clients_skip_consent` |
+| `crates/data-model/src/site_config.rs` | `trusted_clients_skip_consent: Vec<Ulid>` + `skip_consent_for_all_clients: bool` fields + `ulid` import |
+| `crates/cli/src/util.rs` | `gua_config` param + populate both consent-skip fields |
 | `crates/cli/src/commands/server.rs` | Pass `&config.gua` |
 | `crates/cli/src/commands/worker.rs` | Pass `&config.gua` |
 | `crates/cli/src/commands/templates.rs` | Extract + pass `gua_config` |
 | `crates/handlers/src/lib.rs` | `mod gua;` declaration |
 | `crates/handlers/src/oauth2/authorization/mod.rs` | `pub(crate) mod callback` |
 | `crates/handlers/src/oauth2/authorization/consent.rs` | `State<SiteConfig>` + `Keystore` params; hook site calling `crate::gua::*` |
-| `crates/handlers/src/test_utils.rs` | `trusted_clients_skip_consent: Vec::new()` in test helper |
+| `crates/handlers/src/test_utils.rs` | consent-skip fields in test helper |
+| `frontend/src/components/UserGreeting/UserGreeting.tsx` | Account "Your account" greeting renders the localpart (`alice`) instead of the full mxid (`@alice:dev.local`); display-only |
 
 ---
 
@@ -35,13 +36,22 @@ The upstream consent screen ("Continue to {client}?") is shown for every OIDC au
 
 The patch adds a `gua.skip_consent_client_ids` config key. For any client listed there, the consent GET handler auto-fulfills the authorization grant and redirects straight to the client callback — skipping the consent UI entirely. The OPA policy is still evaluated; only the consent *screen* is skipped.
 
+For deployments where clients are registered dynamically (e.g. the iOS app via Dynamic Client Registration, which gets a fresh client ID per install and so can't be pinned in a static list), `gua.skip_consent_for_all_clients: true` skips consent for **every** client.
+
 **Configuration** (`mas.conf.yaml`):
 
 ```yaml
 gua:
+  # Skip consent for specific first-party client IDs:
   skip_consent_client_ids:
     - 01JXTEST000000000000BCDE01   # gua-ios (OIDC client, first-party)
+  # ...or skip consent for all clients (use when clients are registered dynamically):
+  skip_consent_for_all_clients: true
 ```
+
+### Account UI: localpart-only identity
+
+The account management SPA's "Your account" greeting (`frontend/src/components/UserGreeting/UserGreeting.tsx`) renders only the localpart (e.g. `alice`) instead of the full Matrix ID (`@alice:dev.local`), matching Gua's frictionless design. This is display-only — the mxid is unchanged and still used for avatars and the read-only username field.
 
 ---
 
