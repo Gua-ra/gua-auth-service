@@ -8,6 +8,7 @@ use std::num::NonZeroU64;
 
 use chrono::Duration;
 use serde::Serialize;
+use ulid::Ulid;
 use url::Url;
 
 /// Which Captcha service is being used
@@ -122,4 +123,9 @@ pub struct SiteConfig {
     /// `verification_uri_complete` and whether `/link` accepts a `code`
     /// query parameter to auto-fill the user code.
     pub device_code_user_code_auto_fill_enabled: bool,
+
+    /// Gua fork: client IDs for which the consent screen is skipped and the
+    /// authorization grant is fulfilled automatically. Populated from clients
+    /// that set `skip_consent: true` in their configuration.
+    pub trusted_clients_skip_consent: Vec<Ulid>,
 }

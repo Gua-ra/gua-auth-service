@@ -17,6 +17,7 @@ mod clients;
 mod database;
 mod email;
 mod experimental;
+mod gua;
 mod http;
 mod matrix;
 mod oauth;
@@ -36,6 +37,7 @@ pub use self::{
     database::{DatabaseConfig, PgSslMode},
     email::{EmailConfig, EmailSmtpMode, EmailTransportKind},
     experimental::{ExperimentalConfig, SessionLimitConfig as ExperimentalSessionLimitConfig},
+    gua::GUAConfig,
     http::{
         BindConfig as HttpBindConfig, HttpConfig, ListenerConfig as HttpListenerConfig,
         Resource as HttpResource, TlsConfig as HttpTlsConfig, UnixOrTcp,
@@ -135,6 +137,10 @@ pub struct RootConfig {
     /// Experimental configuration options
     #[serde(default, skip_serializing_if = "ExperimentalConfig::is_default")]
     pub experimental: ExperimentalConfig,
+
+    /// Gua fork custom configuration
+    #[serde(default, skip_serializing_if = "GUAConfig::is_default")]
+    pub gua: GUAConfig,
 }
 
 impl ConfigurationSection for RootConfig {
@@ -159,6 +165,7 @@ impl ConfigurationSection for RootConfig {
         self.account.validate(figment)?;
         self.oauth.validate(figment)?;
         self.experimental.validate(figment)?;
+        self.gua.validate(figment)?;
 
         Ok(())
     }
@@ -192,6 +199,7 @@ impl RootConfig {
             account: AccountConfig::default(),
             oauth: OAuthConfig::default(),
             experimental: ExperimentalConfig::default(),
+            gua: GUAConfig::default(),
         })
     }
 
@@ -216,6 +224,7 @@ impl RootConfig {
             account: AccountConfig::default(),
             oauth: OAuthConfig::default(),
             experimental: ExperimentalConfig::default(),
+            gua: GUAConfig::default(),
         }
     }
 }
@@ -263,6 +272,9 @@ pub struct AppConfig {
 
     #[serde(default)]
     pub experimental: ExperimentalConfig,
+
+    #[serde(default, skip_serializing_if = "GUAConfig::is_default")]
+    pub gua: GUAConfig,
 }
 
 impl ConfigurationSection for AppConfig {
@@ -284,6 +296,7 @@ impl ConfigurationSection for AppConfig {
         self.account.validate(figment)?;
         self.oauth.validate(figment)?;
         self.experimental.validate(figment)?;
+        self.gua.validate(figment)?;
 
         Ok(())
     }

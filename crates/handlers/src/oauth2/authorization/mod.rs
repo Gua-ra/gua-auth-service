@@ -30,7 +30,7 @@ use thiserror::Error;
 use self::callback::CallbackDestination;
 use crate::{BoundActivityTracker, PreferredLanguage, impl_from_error_for_route};
 
-mod callback;
+pub(crate) mod callback;
 pub(crate) mod consent;
 
 #[derive(Debug, Error)]

@@ -8,9 +8,9 @@ use std::{sync::Arc, time::Duration};
 
 use anyhow::Context;
 use mas_config::{
-    AccountConfig, BrandingConfig, CaptchaConfig, DatabaseConfig, EmailConfig, EmailSmtpMode,
-    EmailTransportKind, ExperimentalConfig, HomeserverKind, MatrixConfig, OAuthConfig,
-    PasswordsConfig, PolicyConfig, TemplatesConfig,
+    AccountConfig, BrandingConfig, CaptchaConfig, DatabaseConfig, EmailConfig,
+    EmailSmtpMode, EmailTransportKind, ExperimentalConfig, GUAConfig, HomeserverKind, MatrixConfig,
+    OAuthConfig, PasswordsConfig, PolicyConfig, TemplatesConfig,
 };
 use mas_context::LogContext;
 use mas_data_model::{SessionExpirationConfig, SessionLimitConfig, SiteConfig};
@@ -207,6 +207,7 @@ pub fn site_config_from_config(
     account_config: &AccountConfig,
     captcha_config: &CaptchaConfig,
     oauth_config: &OAuthConfig,
+    gua_config: &GUAConfig,
 ) -> Result<SiteConfig, anyhow::Error> {
     let captcha = captcha_config_from_config(captcha_config)?;
     let session_expiration = experimental_config
@@ -254,6 +255,7 @@ pub fn site_config_from_config(
         device_code_grant_enabled: oauth_config.device_code_grant_enabled,
         device_code_user_code_auto_fill_enabled: oauth_config
             .device_code_user_code_auto_fill_enabled,
+        trusted_clients_skip_consent: gua_config.skip_consent_client_ids.clone(),
     })
 }
 

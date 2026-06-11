@@ -152,6 +152,7 @@ pub fn test_site_config() -> SiteConfig {
         session_limit: None,
         device_code_grant_enabled: true,
         device_code_user_code_auto_fill_enabled: true,
+        trusted_clients_skip_consent: Vec::new(),
     }
 }
 

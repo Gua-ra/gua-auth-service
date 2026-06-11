@@ -155,7 +155,8 @@ impl Options {
             &config.account,
             &config.captcha,
             &config.oauth,
-        )?;
+            &config.gua,
+        )?;;
 
         // Load and compile the templates
         let templates = templates_from_config(

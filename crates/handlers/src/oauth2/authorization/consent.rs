@@ -17,7 +17,7 @@ use mas_axum_utils::{
     cookies::CookieJar,
     csrf::{CsrfExt, ProtectedForm},
 };
-use mas_data_model::{AuthorizationGrantStage, BoxClock, BoxRng, MatrixUser};
+use mas_data_model::{AuthorizationGrantStage, BoxClock, BoxRng, MatrixUser, SiteConfig};
 use mas_keystore::Keystore;
 use mas_matrix::HomeserverConnection;
 use mas_policy::Policy;
@@ -89,7 +89,9 @@ pub(crate) async fn get(
     clock: BoxClock,
     PreferredLanguage(locale): PreferredLanguage,
     State(templates): State<Templates>,
+    State(key_store): State<Keystore>,
     State(url_builder): State<UrlBuilder>,
+    State(site_config): State<SiteConfig>,
     State(homeserver): State<Arc<dyn HomeserverConnection>>,
     mut policy: Policy,
     mut repo: BoxRepository,
@@ -142,9 +144,6 @@ pub(crate) async fn get(
 
     let session_counts = count_user_sessions_for_limiting(&mut repo, &session.user).await?;
 
-    // We can close the repository early, we don't need it at this point
-    repo.save().await?;
-
     let res = policy
         .evaluate_authorization_grant(mas_policy::AuthorizationGrantInput {
             user: Some(&session.user),
@@ -159,6 +158,9 @@ pub(crate) async fn get(
         })
         .await?;
     if !res.valid() {
+        // We can close the repository early, we don't need it at this point
+        repo.save().await?;
+
         let ctx = PolicyViolationContext::for_authorization_grant(grant, client, res.violations)
             .with_session(session)
             .with_csrf(csrf_token.form_value())
@@ -168,6 +170,33 @@ pub(crate) async fn get(
 
         return Ok((cookie_jar, Html(content)).into_response());
     }
+
+    // Gua fork: for fully-trusted first-party clients (configured with
+    // `gua.skip_consent_client_ids`), skip the consent screen and fulfill the
+    // authorization grant automatically. Policy evaluation above is still
+    // enforced. See crates/handlers/src/gua/mod.rs for the implementation.
+    if crate::gua::should_skip_consent(grant.client_id, &site_config.trusted_clients_skip_consent)
+    {
+        let response = crate::gua::auto_fulfill_consent(
+            &mut rng,
+            &clock,
+            repo,
+            &url_builder,
+            &key_store,
+            &templates,
+            &locale,
+            &client,
+            &session,
+            grant,
+            &activity_tracker,
+        )
+        .await
+        .map_err(RouteError::Internal)?;
+        return Ok((cookie_jar, response).into_response());
+    }
+
+    // We can close the repository early, we don't need it at this point
+    repo.save().await?;
 
     // Fetch informations about the user. This is purely cosmetic, so we let it
     // fail and put a 1s timeout to it in case we fail to query it

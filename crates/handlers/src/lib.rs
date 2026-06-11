@@ -54,6 +54,8 @@ use self::{graphql::ExtraRouterParameters, passwords::PasswordManager};
 mod admin;
 mod compat;
 mod graphql;
+// GUA FORK: custom handler extensions (new file, no upstream equivalent)
+mod gua;
 mod health;
 mod oauth2;
 pub mod passwords;
