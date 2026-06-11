@@ -104,6 +104,12 @@ const UserGreeting: React.FC<Props> = ({ user, siteConfig }) => {
   const [open, setOpen] = useState(false);
   const { t } = useTranslation();
 
+  // GUA FORK: Show only the localpart (e.g. "alice") instead of the full Matrix
+  // ID ("@alice:dev.local"). The homeserver suffix is noise for our users and
+  // clashes with Gua's frictionless design. Display-only — the underlying mxid
+  // is unchanged and still used for avatars and the (read-only) edit dialog.
+  const localpart = data.matrix.mxid.replace(/^@/, "").split(":")[0];
+
   const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
 
@@ -128,12 +134,12 @@ const UserGreeting: React.FC<Props> = ({ user, siteConfig }) => {
               {data.matrix.displayName}
             </Text>
             <Text size="md" className={styles.mxid}>
-              {data.matrix.mxid}
+              {localpart}
             </Text>
           </>
         ) : (
           <Text size="lg" weight="semibold">
-            {data.matrix.mxid}
+            {localpart}
           </Text>
         )}
       </div>
