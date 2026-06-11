@@ -153,6 +153,7 @@ pub fn test_site_config() -> SiteConfig {
         device_code_grant_enabled: true,
         device_code_user_code_auto_fill_enabled: true,
         trusted_clients_skip_consent: Vec::new(),
+        skip_consent_for_all_clients: false,
     }
 }
 

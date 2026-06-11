@@ -256,6 +256,7 @@ pub fn site_config_from_config(
         device_code_user_code_auto_fill_enabled: oauth_config
             .device_code_user_code_auto_fill_enabled,
         trusted_clients_skip_consent: gua_config.skip_consent_client_ids.clone(),
+        skip_consent_for_all_clients: gua_config.skip_consent_for_all_clients,
     })
 }
 

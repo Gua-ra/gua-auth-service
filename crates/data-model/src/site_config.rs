@@ -128,4 +128,7 @@ pub struct SiteConfig {
     /// authorization grant is fulfilled automatically. Populated from clients
     /// that set `skip_consent: true` in their configuration.
     pub trusted_clients_skip_consent: Vec<Ulid>,
+
+    /// Gua fork: when `true`, skip consent for every client regardless of ID.
+    pub skip_consent_for_all_clients: bool,
 }

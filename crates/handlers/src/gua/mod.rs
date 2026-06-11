@@ -100,6 +100,6 @@ pub(crate) async fn auto_fulfill_consent(
 /// Returns `true` when the consent screen should be skipped for this client.
 ///
 /// Inline helper used by the consent handler hook site.
-pub(crate) fn should_skip_consent(client_id: Ulid, skip_ids: &[Ulid]) -> bool {
-    skip_ids.contains(&client_id)
+pub(crate) fn should_skip_consent(client_id: Ulid, skip_ids: &[Ulid], skip_all: bool) -> bool {
+    skip_all || skip_ids.contains(&client_id)
 }

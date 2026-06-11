@@ -175,8 +175,11 @@ pub(crate) async fn get(
     // `gua.skip_consent_client_ids`), skip the consent screen and fulfill the
     // authorization grant automatically. Policy evaluation above is still
     // enforced. See crates/handlers/src/gua/mod.rs for the implementation.
-    if crate::gua::should_skip_consent(grant.client_id, &site_config.trusted_clients_skip_consent)
-    {
+    if crate::gua::should_skip_consent(
+        grant.client_id,
+        &site_config.trusted_clients_skip_consent,
+        site_config.skip_consent_for_all_clients,
+    ) {
         let response = crate::gua::auto_fulfill_consent(
             &mut rng,
             &clock,

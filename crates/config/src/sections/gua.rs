@@ -39,6 +39,16 @@ pub struct GUAConfig {
     #[schemars(with = "Vec<String>")]
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub skip_consent_client_ids: Vec<Ulid>,
+
+    /// When `true`, skip the consent screen for **all** clients.
+    ///
+    /// Suitable for closed, fully first-party deployments (like Gua) where
+    /// every registered client is operator-controlled. The OPA policy is still
+    /// evaluated — this only suppresses the interactive consent UI.
+    ///
+    /// Takes precedence over `skip_consent_client_ids`.
+    #[serde(default)]
+    pub skip_consent_for_all_clients: bool,
 }
 
 impl GUAConfig {
