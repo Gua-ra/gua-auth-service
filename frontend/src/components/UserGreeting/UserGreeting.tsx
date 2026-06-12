@@ -202,7 +202,7 @@ const UserGreeting: React.FC<Props> = ({ user, siteConfig }) => {
                   <Form.Label>
                     {t("frontend.account.edit_profile.username_label")}
                   </Form.Label>
-                  <Form.TextControl value={data.matrix.mxid} readOnly />
+                  <Form.TextControl value={localpart} readOnly />
                 </Form.Field>
               </div>
 
