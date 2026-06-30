@@ -80,7 +80,10 @@ jobs:
       - name: Run test suite
         run: cargo nextest run --workspace
         env:
+          # SQLX_OFFLINE is compile-time only; #[sqlx::test] needs a live DB at runtime.
+          # Points at the `postgres` service above (mapped to localhost:5432), same as ci.yaml.
           SQLX_OFFLINE: "1"
+          DATABASE_URL: postgresql://postgres:postgres@localhost/postgres
 
       - name: Set up Buildx
         uses: docker/setup-buildx-action@v3
