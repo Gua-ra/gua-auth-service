@@ -178,6 +178,14 @@ pub struct Login {
     post_auth_action: Option<PostAuthAction>,
 
     login_hint: Option<String>,
+
+    /// Force a fresh authentication even if a browser session already exists.
+    ///
+    /// Used to honour an OIDC `prompt=login` (or `max_age=0`) request: when set,
+    /// the login page must not reuse the current session and instead start a
+    /// brand-new authentication flow.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    force_login: bool,
 }
 
 impl Route for Login {
@@ -198,6 +206,7 @@ impl Login {
         Self {
             post_auth_action: Some(action),
             login_hint: None,
+            force_login: false,
         }
     }
 
@@ -206,6 +215,7 @@ impl Login {
         Self {
             post_auth_action: Some(PostAuthAction::continue_grant(id)),
             login_hint: None,
+            force_login: false,
         }
     }
 
@@ -214,6 +224,7 @@ impl Login {
         Self {
             post_auth_action: Some(PostAuthAction::continue_device_code_grant(id)),
             login_hint: None,
+            force_login: false,
         }
     }
 
@@ -222,6 +233,7 @@ impl Login {
         Self {
             post_auth_action: Some(PostAuthAction::continue_compat_sso_login(id)),
             login_hint: None,
+            force_login: false,
         }
     }
 
@@ -230,12 +242,24 @@ impl Login {
         Self {
             post_auth_action: Some(PostAuthAction::link_upstream(id)),
             login_hint: None,
+            force_login: false,
         }
     }
 
     #[must_use]
     pub fn with_login_hint(mut self, login_hint: String) -> Self {
         self.login_hint = Some(login_hint);
+        self
+    }
+
+    /// Force a fresh authentication, ignoring any existing browser session.
+    ///
+    /// This is what makes an OIDC `prompt=login` request actually
+    /// re-authenticate the user instead of silently reusing the current
+    /// session.
+    #[must_use]
+    pub fn force_login(mut self) -> Self {
+        self.force_login = true;
         self
     }
 
@@ -258,6 +282,7 @@ impl From<Option<PostAuthAction>> for Login {
         Self {
             post_auth_action,
             login_hint: None,
+            force_login: false,
         }
     }
 }
