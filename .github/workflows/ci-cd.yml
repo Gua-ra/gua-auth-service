@@ -3,10 +3,9 @@ name: CI/CD
 # Gua normalized CI/CD pipeline.
 #
 # Builds ghcr.io/gua-ra/gua-auth-service from the repo Dockerfile and deploys it
-# to the Gua k3s cluster. This sits ALONGSIDE the upstream matrix-authentication-service
-# CI (build.yaml, ci.yaml, coverage.yaml, ...) and does not replace it; those keep
-# running the full lint/test/coverage/translations matrix. This file is the single
-# canonical build+deploy pipeline for the Gua fork.
+# to the Gua k3s cluster. Pre-merge PR validation (rustfmt/clippy/cargo-deny/nextest/
+# schema-drift/OPA/frontend) stays in the upstream ci.yaml ("CI"); this file does not
+# replace it. This is the single canonical build+deploy pipeline for the Gua fork.
 #
 #   merge to main           => auto build + auto deploy to DEV
 #   workflow_dispatch (dev) => build the triggering branch + deploy to DEV (QA)
@@ -124,28 +123,36 @@ jobs:
     if: >-
       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
       (github.event_name == 'workflow_dispatch' && inputs.environment == 'dev')
-    runs-on: [self-hosted, dev]
+    # Unique label → routes ONLY to the in-cluster scoped-SA pod runner
+    # (k8s/cicd/gua-auth-deploy-runner.yaml in gua-deploy), never a privileged host runner.
+    runs-on: [self-hosted, gua-auth-incluster]
     environment: dev
     steps:
       - name: Roll out ${{ needs.build.outputs.ref }} to dev
         run: |
           IMG="${{ needs.build.outputs.ref }}"
-          # k8s pulls the immutable sha-tagged image from GHCR via the ghcr-pull secret
-          # (deployment is imagePullPolicy: IfNotPresent + imagePullSecrets) — no docker needed.
-          # Use k3s' bundled kubectl as root so PATH + kubeconfig are always correct on the node.
-          sudo k3s kubectl -n gua set image deployment/gua-matrix-authentication-service matrix-authentication-service="$IMG"
-          sudo k3s kubectl -n gua rollout status deployment/gua-matrix-authentication-service --timeout=180s
+          # Runs on the in-cluster gua-auth-deploy-runner pod (ServiceAccount gua-auth-deployer,
+          # scoped to patch ONLY this deployment), so plain kubectl uses the in-cluster config —
+          # no sudo/k3s on the node. k8s pulls the immutable sha-tagged image from GHCR via the
+          # ghcr-pull secret (imagePullPolicy: IfNotPresent + imagePullSecrets).
+          kubectl -n gua set image deployment/gua-matrix-authentication-service matrix-authentication-service="$IMG"
+          kubectl -n gua rollout status deployment/gua-matrix-authentication-service --timeout=180s
 
-  # MANUAL GATE: only via workflow_dispatch with environment=prod. Pauses until a
-  # maintainer approves the `production` GitHub Environment (required reviewer: Sarah).
+  # MANUAL GATE: only via workflow_dispatch with environment=prod.
+  # NOT YET FUNCTIONAL — prod is scaffold until two things exist: (1) the `production`
+  # GitHub Environment has a *required reviewer* added (Settings → Environments → production;
+  # today it has only a branch policy, so it would NOT pause for approval), and (2) a
+  # prod-labelled in-cluster scoped runner exists. Until both are set up, a prod dispatch
+  # queues with no runner. Do not rely on this path yet.
   deploy-prod:
     needs: build
     if: github.event_name == 'workflow_dispatch' && inputs.environment == 'prod'
-    runs-on: [self-hosted, prod]
+    runs-on: [self-hosted, gua-auth-incluster-prod]
     environment: production
     steps:
       - name: Roll out ${{ needs.build.outputs.ref }} to prod
         run: |
           IMG="${{ needs.build.outputs.ref }}"
-          sudo k3s kubectl -n gua set image deployment/gua-matrix-authentication-service matrix-authentication-service="$IMG"
-          sudo k3s kubectl -n gua rollout status deployment/gua-matrix-authentication-service --timeout=180s
+          # Same in-cluster scoped-SA runner model as dev (a prod runner + cluster are future work).
+          kubectl -n gua set image deployment/gua-matrix-authentication-service matrix-authentication-service="$IMG"
+          kubectl -n gua rollout status deployment/gua-matrix-authentication-service --timeout=180s
