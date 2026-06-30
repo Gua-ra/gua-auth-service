@@ -3,10 +3,9 @@ name: CI/CD
 # Gua normalized CI/CD pipeline.
 #
 # Builds ghcr.io/gua-ra/gua-auth-service from the repo Dockerfile and deploys it
-# to the Gua k3s cluster. This sits ALONGSIDE the upstream matrix-authentication-service
-# CI (build.yaml, ci.yaml, coverage.yaml, ...) and does not replace it; those keep
-# running the full lint/test/coverage/translations matrix. This file is the single
-# canonical build+deploy pipeline for the Gua fork.
+# to the Gua k3s cluster. Pre-merge PR validation (rustfmt/clippy/cargo-deny/nextest/
+# schema-drift/OPA/frontend) stays in the upstream ci.yaml ("CI"); this file does not
+# replace it. This is the single canonical build+deploy pipeline for the Gua fork.
 #
 #   merge to main           => auto build + auto deploy to DEV
 #   workflow_dispatch (dev) => build the triggering branch + deploy to DEV (QA)
