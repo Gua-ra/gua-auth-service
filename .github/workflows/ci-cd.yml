@@ -1,0 +1,151 @@
+name: CI/CD
+
+# Gua normalized CI/CD pipeline.
+#
+# Builds ghcr.io/gua-ra/gua-auth-service from the repo Dockerfile and deploys it
+# to the Gua k3s cluster. This sits ALONGSIDE the upstream matrix-authentication-service
+# CI (build.yaml, ci.yaml, coverage.yaml, ...) and does not replace it; those keep
+# running the full lint/test/coverage/translations matrix. This file is the single
+# canonical build+deploy pipeline for the Gua fork.
+#
+#   merge to main           => auto build + auto deploy to DEV
+#   workflow_dispatch (dev) => build the triggering branch + deploy to DEV (QA)
+#   workflow_dispatch (prod)=> build the triggering branch + deploy to PROD
+#                              (gated by the `production` GitHub Environment reviewer)
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment to deploy"
+        type: choice
+        options: [dev, prod]
+        default: dev
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/gua-ra/gua-auth-service
+
+jobs:
+  # Rust build + test gate. Mirrors the upstream MAS test invocation (nextest, with
+  # the frontend and OPA policies built first) so we never ship an image that fails
+  # the suite. Adapts ONLY the build/test step to this repo's language; the
+  # trigger + job skeleton below is identical to the other Gua services.
+  build:
+    name: Test and build image
+    runs-on: ubuntu-latest
+    outputs:
+      ref: ${{ steps.ref.outputs.ref }}
+
+    services:
+      postgres:
+        image: docker.io/library/postgres:15.3
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - "5432:5432"
+
+    steps:
+      # Checkout the TRIGGERING ref (main on push, the chosen branch on dispatch).
+      - name: Checkout the code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        run: rustup toolchain install stable --profile minimal
+
+      - name: Install nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest
+
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.9
+
+      # Build the web frontend (pnpm --filter mas-frontend) and the OPA policies
+      # (make test in policies/) that the test suite and the image both need.
+      - uses: ./.github/actions/build-frontend
+      - uses: ./.github/actions/build-policies
+
+      - name: Run test suite
+        run: cargo nextest run --workspace
+        env:
+          SQLX_OFFLINE: "1"
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Immutable, fully-qualified image ref consumed by the deploy jobs.
+      - id: ref
+        run: echo "ref=${IMAGE}:sha-${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Image tags
+        uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=sha,format=long
+            type=raw,value=dev,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # AUTOMATIC on merge to main; also manually dispatchable (environment=dev) to roll
+  # any branch onto dev for QA.
+  deploy-dev:
+    needs: build
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && inputs.environment == 'dev')
+    runs-on: [self-hosted, dev]
+    environment: dev
+    steps:
+      - name: Roll out ${{ needs.build.outputs.ref }} to dev
+        run: |
+          IMG="${{ needs.build.outputs.ref }}"
+          # k8s pulls the immutable sha-tagged image from GHCR via the ghcr-pull secret
+          # (deployment is imagePullPolicy: IfNotPresent + imagePullSecrets) — no docker needed.
+          # Use k3s' bundled kubectl as root so PATH + kubeconfig are always correct on the node.
+          sudo k3s kubectl -n gua set image deployment/gua-matrix-authentication-service matrix-authentication-service="$IMG"
+          sudo k3s kubectl -n gua rollout status deployment/gua-matrix-authentication-service --timeout=180s
+
+  # MANUAL GATE: only via workflow_dispatch with environment=prod. Pauses until a
+  # maintainer approves the `production` GitHub Environment (required reviewer: Sarah).
+  deploy-prod:
+    needs: build
+    if: github.event_name == 'workflow_dispatch' && inputs.environment == 'prod'
+    runs-on: [self-hosted, prod]
+    environment: production
+    steps:
+      - name: Roll out ${{ needs.build.outputs.ref }} to prod
+        run: |
+          IMG="${{ needs.build.outputs.ref }}"
+          sudo k3s kubectl -n gua set image deployment/gua-matrix-authentication-service matrix-authentication-service="$IMG"
+          sudo k3s kubectl -n gua rollout status deployment/gua-matrix-authentication-service --timeout=180s
