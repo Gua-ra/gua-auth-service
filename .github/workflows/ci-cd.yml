@@ -112,8 +112,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          # emolga (and prod) are amd64-only, so build a single arch: ~2x faster and
-          # drops the flaky arm64-via-QEMU emulation that stalled the multi-arch build.
           platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
