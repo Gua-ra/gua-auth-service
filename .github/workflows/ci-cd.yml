@@ -144,7 +144,8 @@ jobs:
           # wired up, ensure it here so the pipeline is self-sufficient. Idempotent — a no-op once set.
           kubectl -n gua patch deployment/gua-matrix-authentication-service --type=merge \
             -p '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"ghcr-pull"}]}}}}'
-          kubectl -n gua set image deployment/gua-matrix-authentication-service matrix-authentication-service="$IMG"
+          kubectl -n gua set image deployment/gua-matrix-authentication-service \
+            matrix-authentication-service="$IMG" database-migrate="$IMG"
           kubectl -n gua rollout status deployment/gua-matrix-authentication-service --timeout=180s
 
   # MANUAL GATE: only via workflow_dispatch with environment=prod.
@@ -163,5 +164,6 @@ jobs:
         run: |
           IMG="${{ needs.build.outputs.ref }}"
           # Same in-cluster scoped-SA runner model as dev (a prod runner + cluster are future work).
-          kubectl -n gua set image deployment/gua-matrix-authentication-service matrix-authentication-service="$IMG"
+          kubectl -n gua set image deployment/gua-matrix-authentication-service \
+            matrix-authentication-service="$IMG" database-migrate="$IMG"
           kubectl -n gua rollout status deployment/gua-matrix-authentication-service --timeout=180s
