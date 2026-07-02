@@ -35,7 +35,7 @@ use rand::Rng;
 use serde::{Deserialize, Serialize};
 use zeroize::Zeroizing;
 
-use super::shared::{LoginHint, OptionalPostAuthAction, QueryLoginHint};
+use super::shared::{LoginHint, OptionalPostAuthAction, QueryForceLogin, QueryLoginHint};
 use crate::{
     BoundActivityTracker, Limiter, METER, PreferredLanguage, RequesterFingerprint, SiteConfig,
     passwords::{PasswordManager, PasswordVerificationResult},
@@ -74,6 +74,7 @@ pub(crate) async fn get(
     activity_tracker: BoundActivityTracker,
     Query(query): Query<OptionalPostAuthAction>,
     Query(query_login_hint): Query<QueryLoginHint>,
+    Query(query_force_login): Query<QueryForceLogin>,
     cookie_jar: CookieJar,
 ) -> Result<Response, InternalError> {
     let (cookie_jar, maybe_session) = match load_session_or_fallback(
@@ -89,7 +90,14 @@ pub(crate) async fn get(
         SessionOrFallback::Fallback { response } => return Ok(response),
     };
 
-    if let Some(session) = maybe_session {
+    // When the client demanded a fresh authentication (OIDC `prompt=login`), we
+    // must NOT reuse the existing browser session. Skipping this short-circuit
+    // lets the flow fall through to a brand-new authentication below (for Gua,
+    // that means re-running the upstream phone+OTP), so a different phone ends up
+    // on a different account instead of resuming the old session.
+    if !query_force_login.force_login
+        && let Some(session) = maybe_session
+    {
         activity_tracker
             .record_browser_session(&clock, &session)
             .await;
