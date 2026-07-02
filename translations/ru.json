@@ -79,6 +79,7 @@
       "make_sure_you_trust": "Убедитесь, что вы доверяете <span>%(client_name)s</span>.",
       "scope_list_preface": "Продолжая, вы разрешаете <span>%(client_name)s</span>:",
       "this_will_allow": "Это позволит <span>%(client_name)s</span>:",
+      "this_will_setup": "Это подключит %(client_name)s к вашей учётной записи Gua.",
       "use_another_account": "Использовать другую учётную запись",
       "you_may_be_sharing": "Возможно, вы делитесь конфиденциальной информацией с этим сайтом или приложением."
     },

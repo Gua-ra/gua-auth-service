@@ -79,6 +79,7 @@
       "make_sure_you_trust": "Palun kontrolli, et <span>%(client_name)s</span> on sinu jaoks usaldusväärne teenus.",
       "scope_list_preface": "Jätkates lubad sa <span>%(client_name)s</span> kliendil:",
       "this_will_allow": "Sellega <span>%(client_name)s</span> saab õigused:",
+      "this_will_setup": "See ühendab kliendi %(client_name)s sinu Gua kontoga.",
       "use_another_account": "Kasuta teist kontot",
       "you_may_be_sharing": "Sa tõenäoliselt jagad privaatset teavet selle veebisaidi või rakendusega."
     },
