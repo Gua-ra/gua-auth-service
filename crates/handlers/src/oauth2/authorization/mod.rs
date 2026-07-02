@@ -362,8 +362,8 @@ mod tests {
 
     use crate::test_utils::{CookieHelper, RequestBuilderExt, ResponseExt, TestState, setup};
 
-    /// Register an OAuth2 client that supports the authorization code grant and
-    /// return its `client_id`.
+    /// Register an `OAuth2` client that supports the authorization code grant
+    /// and return its `client_id`.
     async fn register_client(state: &TestState) -> String {
         let request =
             Request::post(mas_router::OAuth2RegistrationEndpoint::PATH).json(serde_json::json!({

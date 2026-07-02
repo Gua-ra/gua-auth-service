@@ -172,6 +172,9 @@ impl SimpleRoute for Healthcheck {
 }
 
 /// `GET|POST /login`
+// `login_hint` is a standard OIDC parameter and `force_login` is part of the
+// login URL contract, so the field names can't change.
+#[expect(clippy::struct_field_names)]
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct Login {
     #[serde(flatten)]
