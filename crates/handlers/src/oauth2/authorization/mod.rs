@@ -461,11 +461,12 @@ mod tests {
         );
     }
 
-    /// With an existing browser session and `prompt=create`, the authorize handler
-    /// must ALSO force re-authentication (not silently reuse the session): after a
-    /// client-side sign-out MAS's browser session lingers (no RP-initiated logout to
-    /// clear it), so a different phone number entered for a NEW account would otherwise
-    /// resume the OLD account — the sign-out bug.
+    /// With an existing browser session and `prompt=create`, the authorize
+    /// handler must ALSO force re-authentication (not silently reuse the
+    /// session): after a client-side sign-out MAS's browser session lingers
+    /// (no RP-initiated logout to clear it), so a different phone number
+    /// entered for a NEW account would otherwise resume the OLD account —
+    /// the sign-out bug.
     #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
     async fn test_prompt_create_with_session_forces_reauth(pool: PgPool) {
         setup();

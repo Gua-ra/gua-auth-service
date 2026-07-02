@@ -181,9 +181,9 @@ pub struct Login {
 
     /// Force a fresh authentication even if a browser session already exists.
     ///
-    /// Used to honour an OIDC `prompt=login` (or `max_age=0`) request: when set,
-    /// the login page must not reuse the current session and instead start a
-    /// brand-new authentication flow.
+    /// Used to honour an OIDC `prompt=login` (or `max_age=0`) request: when
+    /// set, the login page must not reuse the current session and instead
+    /// start a brand-new authentication flow.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     force_login: bool,
 }
