@@ -289,14 +289,20 @@ pub(crate) async fn get(
                     url_builder.redirect(&url).into_response()
                 }
 
-                Some(_user_session) if prompt.contains(&Prompt::Login) => {
-                    // The client demanded a fresh authentication (`prompt=login`). Even
-                    // though a browser session exists, RFC/OIDC says we must
-                    // re-authenticate the user. Route back through login with the
-                    // `force_login` flag set so the login page does NOT reuse the
-                    // existing session and instead starts a brand-new authentication
-                    // flow (for Gua, re-running the upstream phone+OTP). Carry the
-                    // login_hint so the new flow can be pre-filled, mirroring the
+                Some(_user_session)
+                    if prompt.contains(&Prompt::Login) || prompt.contains(&Prompt::Create) =>
+                {
+                    // The client demanded a fresh authentication (`prompt=login`) OR a new
+                    // account (`prompt=create`). Even though a browser session exists, we
+                    // must NOT silently reuse it: OIDC says honor `prompt=login`, and for
+                    // `prompt=create` reusing the session is exactly the sign-out bug (the
+                    // app signs out locally but MAS's session lingers — MAS has no
+                    // RP-initiated logout to clear it — so a different phone number would
+                    // resume the OLD account). Route back through login with `force_login`
+                    // so the login page does NOT reuse the existing session and instead
+                    // starts a brand-new authentication (for Gua, re-running the upstream
+                    // phone+OTP, which creates-or-matches the account by the number entered).
+                    // Carry the login_hint so the new flow can be pre-filled, mirroring the
                     // `None =>` arm.
                     repo.save().await?;
 
@@ -312,7 +318,9 @@ pub(crate) async fn get(
                 }
 
                 Some(user_session) => {
-                    // TODO: better support for prompt=create when we have a session
+                    // A browser session exists and the client did not demand a fresh auth
+                    // (no prompt=login/create — those are handled above). Reuse the session
+                    // and go straight to consent.
                     repo.save().await?;
 
                     activity_tracker
@@ -450,6 +458,36 @@ mod tests {
         assert!(
             !location.starts_with("/consent"),
             "must not reuse the session via consent, got {location}"
+        );
+    }
+
+    /// With an existing browser session and `prompt=create`, the authorize handler
+    /// must ALSO force re-authentication (not silently reuse the session): after a
+    /// client-side sign-out MAS's browser session lingers (no RP-initiated logout to
+    /// clear it), so a different phone number entered for a NEW account would otherwise
+    /// resume the OLD account — the sign-out bug.
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_prompt_create_with_session_forces_reauth(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+
+        let client_id = register_client(&state).await;
+        let cookies = logged_in_cookies(&state).await;
+
+        let query = authorize_query(&client_id, Some("create"));
+        let request = Request::get(format!("https://example.com/authorize?{query}")).empty();
+        let request = cookies.with_cookies(request);
+        let response = state.request(request).await;
+
+        response.assert_status(StatusCode::SEE_OTHER);
+        let location = location(&response);
+        assert!(
+            location.contains("force_login=true"),
+            "expected force_login=true for prompt=create with a session, got {location}"
+        );
+        assert!(
+            !location.starts_with("/consent"),
+            "must not reuse the session via consent for prompt=create, got {location}"
         );
     }
 
