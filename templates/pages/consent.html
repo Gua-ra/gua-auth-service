@@ -12,8 +12,6 @@ Please see LICENSE files in the repository root for full details.
 
 {% block content %}
   {% set client_display_name = client.client_name or client.client_id %}
-  {# The URI we can display to distinguish this client #}
-  {% set client_display_uri = ((client.client_uri or "") | simplify_url) or "<no client_uri provided>" %}
 
   <header class="page-heading">
     <div class="flex justify-center">
@@ -30,8 +28,8 @@ Please see LICENSE files in the repository root for full details.
       <h1 class="title">
         {{ _('mas.consent.continue_to', client_name=client_display_name) }}
       </h1>
-      <p class="text [&>span]:whitespace-nowrap [&>span]:text-[var(--cpd-color-text-link-external)]">
-        {{ _("mas.consent.this_will_setup", client_name=client_display_name, client_uri=client_display_uri, server_name=branding.server_name) }}
+      <p class="text">
+        {{ _("mas.consent.this_will_setup", client_name=client_display_name) }}
       </p>
     </div>
   </header>
@@ -61,7 +59,9 @@ Please see LICENSE files in the repository root for full details.
     <div class="avatar-placeholder" data-color="{{ matrix_user.mxid | id_color_hash }}">{{ initial }}</div>
     <div class="flex flex-col">
       <div class="text-primary cpd-text-body-lg-semibold">{{ matrix_user.display_name or current_session.user.username }}</div>
-      <div class="text-secondary cpd-text-body-md-regular">{{ matrix_user.mxid }}</div>
+      {% if matrix_user.display_name %}
+      <div class="text-secondary cpd-text-body-md-regular">{{ current_session.user.username }}</div>
+      {% endif %}
     </div>
   </section>
 

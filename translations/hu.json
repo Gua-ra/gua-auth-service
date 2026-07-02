@@ -79,7 +79,7 @@
       "make_sure_you_trust": "Győződjön meg arról, hogy megbízik a(z) <span>%(client_name)s</span> kliensben.",
       "scope_list_preface": "A folytatással engedélyezi ezeket a(z) <span>%(client_name)s</span> számára:",
       "this_will_allow": "Ez lehetővé teszi, hogy a(z) <span>%(client_name)s</span> a következőket tegye:",
-      "this_will_setup": "Ez beállítja a(z) %(client_name)s klienst (<span>%(client_uri)s</span>) a(z) <span>%(server_name)s</span> fiókjával.",
+      "this_will_setup": "Ez összekapcsolja a(z) %(client_name)s klienst a Gua-fiókjával.",
       "use_another_account": "Másik fiók használata",
       "you_may_be_sharing": "Bizalmas információkat oszthat meg ezzel az oldallal vagy alkalmazással."
     },

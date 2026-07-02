@@ -79,7 +79,7 @@
       "make_sure_you_trust": "请确保你信任 <span>%(client_name)s</span> 。",
       "scope_list_preface": "一旦继续你将允许 <span>%(client_name)s</span>：",
       "this_will_allow": "这将允许 <span>%(client_name)s</span> ：",
-      "this_will_setup": "这将使用你位于 <span>%(server_name)s</span> 上的账户设置 %(client_name)s（<span>%(client_uri)s</span>）。",
+      "this_will_setup": "这会将 %(client_name)s 连接到你的 Gua 账户。",
       "use_another_account": "使用另一账户",
       "you_may_be_sharing": "你可能正在与本网站或 app 分享敏感信息。"
     },

@@ -79,7 +79,7 @@
       "make_sure_you_trust": "Varmista, että luotat <span>%(client_name)s</span> -sovellukseen.",
       "scope_list_preface": "Jatkamalla annat <span>%(client_name)s</span> -sovellukselle luvan:",
       "this_will_allow": "Tämä antaa <span>%(client_name)s</span> -sovellukselle luvan:",
-      "this_will_setup": "Tämä yhdistää %(client_name)s (<span>%(client_uri)s</span>) sovelluksen <span>%(server_name)s</span> tiliisi.",
+      "this_will_setup": "Tämä yhdistää %(client_name)s -sovelluksen Gua-tiliisi.",
       "use_another_account": "Käytä toista tiliä",
       "you_may_be_sharing": "Saatat jakaa arkaluonteisia tietoja tämän sivuston tai sovelluksen kanssa."
     },
