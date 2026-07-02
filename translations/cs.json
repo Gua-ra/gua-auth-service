@@ -79,7 +79,6 @@
       "make_sure_you_trust": "Ujistěte se, že důvěřujete aplikaci <span>%(client_name)s</span>.",
       "scope_list_preface": "Pokračováním dáváte souhlas aplikaci <span>%(client_name)s</span> k:",
       "this_will_allow": "To <span> %(client_name)s </span> umožní:",
-      "this_will_setup": "Tím se nastaví %(client_name)s (<span>%(client_uri)s</span>) s vaším účtem <span>%(server_name)s</span>.",
       "use_another_account": "Použít jiný účet",
       "you_may_be_sharing": "Je možné, že s tímto webem nebo aplikací sdílíte citlivé informace."
     },

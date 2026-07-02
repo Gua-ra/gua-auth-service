@@ -189,15 +189,15 @@
     "consent": {
       "continue_to": "Continue to <span>%(client_name)s</span>?",
       "@continue_to": {
-        "context": "pages/consent.html:31:11-72, pages/sso.html:25:11-64"
+        "context": "pages/consent.html:29:11-72, pages/sso.html:25:11-64"
       },
       "scope_list_preface": "By continuing, you allow <span>%(client_name)s</span> to:",
       "@scope_list_preface": {
-        "context": "pages/consent.html:43:13-81, pages/device_consent.html:140:15-83"
+        "context": "pages/consent.html:41:13-81, pages/device_consent.html:140:15-83"
       },
-      "this_will_setup": "This will set up %(client_name)s (<span>%(client_uri)s</span>) with your <span>%(server_name)s</span> account.",
+      "this_will_setup": "This will connect %(client_name)s to your Gua account.",
       "@this_will_setup": {
-        "context": "pages/consent.html:34:11-141"
+        "context": "pages/consent.html:32:11-76"
       },
       "use_another_account": "Use another account",
       "@use_another_account": {

@@ -79,7 +79,6 @@
       "make_sure_you_trust": "Stelle sicher, dass du <span>%(client_name)s</span> vertraust.",
       "scope_list_preface": "Wenn du fortfährst, gestattest du <span>%(client_name)s</span> folgendes:",
       "this_will_allow": "Dies wird <span>%(client_name)s</span> ermöglichen:",
-      "this_will_setup": "Dadurch wird %(client_name)s (<span>%(client_uri)s</span>) mit deinem %(server_name)s<span></span> Konto eingerichtet.",
       "use_another_account": "Anderes Konto verwenden",
       "you_may_be_sharing": "Du gibst vielleicht sensible Infos an diese Website oder App weiter."
     },
