@@ -1,0 +1,347 @@
+{
+  "action": {
+    "back": "Atrás",
+    "cancel": "Cancelar",
+    "clear": "Borrar",
+    "close": "Cerrar",
+    "collapse": "Contraer",
+    "confirm": "Confirmar",
+    "continue": "Continuar",
+    "edit": "Editar",
+    "expand": "Expandir",
+    "save": "Guardar",
+    "save_and_continue": "Guardar y continuar",
+    "sign_out": "Cerrar sesión",
+    "start_over": "Volver a empezar"
+  },
+  "branding": {
+    "privacy_policy": {
+      "alt": "Enlace a la política de privacidad del servicio",
+      "link": "Política de privacidad"
+    },
+    "terms_and_conditions": {
+      "alt": "Enlace a los términos y condiciones del servicio",
+      "link": "Términos y condiciones"
+    }
+  },
+  "common": {
+    "e2ee": "Cifrado de extremo a extremo",
+    "loading": "Cargando…",
+    "next": "Siguiente",
+    "password": "Contraseña",
+    "previous": "Anterior",
+    "saved": "Guardado",
+    "saving": "Guardando…"
+  },
+  "frontend": {
+    "account": {
+      "account_password": "Contraseña de la cuenta",
+      "contact_info": "Información de contacto",
+      "delete_account": {
+        "alert_description": "Esta cuenta se eliminará permanentemente y ya no tendrás acceso a ninguno de tus mensajes.",
+        "alert_title": "Estás a punto de perder todos tus datos",
+        "button": "Eliminar cuenta",
+        "dialog_description": "<text>Confirma que quieres eliminar tu cuenta:</text>\n<profile />\n<list>\n<item>No podrás reactivar tu cuenta</item>\n<item>Ya no podrás iniciar sesión</item>\n<item>Nadie podrá reutilizar tu nombre de usuario (MXID), ni siquiera tú</item>\n<item>Saldrás de todas las salas y mensajes directos en los que estés</item>\n<item>Se te eliminará del servidor de identidad y nadie podrá encontrarte por tu correo o número de teléfono</item>\n</list>\n<text>Tus mensajes antiguos seguirán siendo visibles para las personas que los recibieron. ¿Quieres ocultar los mensajes que enviaste a las personas que se unan a las salas en el futuro?</text>",
+        "dialog_title": "¿Eliminar esta cuenta?",
+        "erase_checkbox_label": "Sí, ocultar todos mis mensajes a quienes se unan después",
+        "incorrect_password": "Contraseña incorrecta, inténtalo de nuevo",
+        "mxid_label": "Confirma tu ID de Matrix ({{ mxid }})",
+        "mxid_mismatch": "Este valor no coincide con tu ID de Matrix",
+        "password_label": "Ingresa tu contraseña para continuar"
+      },
+      "edit_profile": {
+        "display_name_help": "Esto es lo que verán las demás personas dondequiera que hayas iniciado sesión.",
+        "display_name_label": "Nombre para mostrar",
+        "title": "Editar perfil",
+        "username_label": "Nombre de usuario"
+      },
+      "password": {
+        "change": "Cambiar contraseña",
+        "change_disabled": "El administrador desactivó los cambios de contraseña.",
+        "label": "Contraseña"
+      },
+      "sign_out": {
+        "button": "Cerrar sesión de la cuenta",
+        "dialog": "¿Cerrar sesión de esta cuenta?"
+      },
+      "title": "Tu cuenta"
+    },
+    "add_email_form": {
+      "email_denied_error": "El correo ingresado no está permitido por la política del servidor",
+      "email_field_help": "Agrega un correo alternativo que puedas usar para acceder a esta cuenta.",
+      "email_field_label": "Agregar correo",
+      "email_in_use_error": "El correo ingresado ya está en uso",
+      "email_invalid_error": "El correo ingresado no es válido",
+      "incorrect_password_error": "Contraseña incorrecta, inténtalo de nuevo",
+      "password_confirmation": "Confirma la contraseña de tu cuenta para agregar esta dirección de correo"
+    },
+    "browser_session_details": {
+      "current_badge": "Actual"
+    },
+    "browser_sessions_overview": {
+      "body:one": "{{count}} sesión activa",
+      "body:other": "{{count}} sesiones activas",
+      "heading": "Navegadores",
+      "no_active_sessions": {
+        "default": "No tienes la sesión iniciada en ningún navegador web.",
+        "inactive_90_days": "Todas tus sesiones estuvieron activas en los últimos 90 días."
+      },
+      "view_all_button": "Ver todo"
+    },
+    "compat_session_detail": {
+      "client_details_title": "Información del cliente",
+      "name": "Nombre"
+    },
+    "device_type_icon_label": {
+      "mobile": "Móvil",
+      "pc": "Computadora",
+      "tablet": "Tableta",
+      "unknown": "Tipo de dispositivo desconocido"
+    },
+    "email_in_use": {
+      "heading": "La dirección de correo {{email}} ya está en uso."
+    },
+    "end_session_button": {
+      "confirmation_modal_body_text": "Asegúrate de tener siempre acceso a otro dispositivo verificado o a tu clave de recuperación para no perder el historial de tus conversaciones cifradas.",
+      "confirmation_modal_title": "¿Seguro que quieres eliminar este dispositivo?",
+      "text": "Eliminar dispositivo"
+    },
+    "error": {
+      "hideDetails": "Ocultar detalles",
+      "showDetails": "Mostrar detalles",
+      "subtitle": "Ocurrió un error inesperado. Inténtalo de nuevo.",
+      "title": "Algo salió mal"
+    },
+    "errors": {
+      "field_required": "Este campo es obligatorio",
+      "rate_limit_exceeded": "Hiciste demasiadas solicitudes en poco tiempo. Espera unos minutos e inténtalo de nuevo."
+    },
+    "last_active": {
+      "active_date": "Activo {{relativeDate}}",
+      "active_now": "Activo ahora",
+      "inactive_90_days": "Inactivo por más de 90 días"
+    },
+    "nav": {
+      "device_limit_error": "Límite de dispositivos alcanzado",
+      "devices": "Dispositivos",
+      "plan": "Plan",
+      "settings": "Configuración"
+    },
+    "not_found_alert_title": "No encontrado.",
+    "oauth2_client_detail": {
+      "details_title": "Información del cliente",
+      "name": "Nombre",
+      "policy": "Política",
+      "terms": "Términos de servicio"
+    },
+    "oauth2_session_detail": {
+      "client_details_name": "Nombre",
+      "client_title": "Información del cliente"
+    },
+    "pagination_controls": {
+      "total": "Total: {{totalCount}}"
+    },
+    "password_change": {
+      "current_password_label": "Contraseña actual",
+      "failure": {
+        "description": {
+          "account_locked": "Tu cuenta está bloqueada y no se puede recuperar en este momento. Si no lo esperabas, contacta al administrador del servidor.",
+          "expired_recovery_ticket": "El enlace de recuperación expiró. Comienza el proceso de recuperación de la cuenta otra vez desde el principio.",
+          "invalid_new_password": "La nueva contraseña que elegiste no es válida; puede que no cumpla la política de seguridad configurada.",
+          "no_current_password": "No tienes una contraseña actual.",
+          "no_such_recovery_ticket": "El enlace de recuperación no es válido. Si copiaste el enlace del correo de recuperación, verifica que hayas copiado el enlace completo.",
+          "password_changes_disabled": "Los cambios de contraseña están desactivados.",
+          "recovery_ticket_already_used": "El enlace de recuperación ya fue usado. No se puede usar de nuevo.",
+          "unspecified": "Puede ser un problema temporal; inténtalo de nuevo más tarde. Si el problema persiste, contacta al administrador del servidor.",
+          "wrong_password": "La contraseña que ingresaste como contraseña actual es incorrecta. Inténtalo de nuevo."
+        },
+        "title": "No se pudo actualizar la contraseña"
+      },
+      "new_password_again_label": "Ingresa la nueva contraseña otra vez",
+      "new_password_label": "Nueva contraseña",
+      "passwords_match": "¡Las contraseñas coinciden!",
+      "passwords_no_match": "Las contraseñas no coinciden",
+      "subtitle": "Elige una nueva contraseña para tu cuenta.",
+      "success": {
+        "description": "Tu contraseña se actualizó correctamente.",
+        "title": "Contraseña actualizada"
+      },
+      "title": "Cambia tu contraseña"
+    },
+    "password_reset": {
+      "consumed": {
+        "subtitle": "Para crear una nueva contraseña, vuelve a empezar y selecciona “¿Olvidaste tu contraseña?”.",
+        "title": "El enlace para restablecer tu contraseña ya fue usado"
+      },
+      "expired": {
+        "resend_email": "Reenviar correo",
+        "subtitle": "Solicita un nuevo correo que se enviará a: {{email}}",
+        "title": "El enlace para restablecer tu contraseña expiró"
+      },
+      "subtitle": "Elige una nueva contraseña para tu cuenta.",
+      "title": "Restablece tu contraseña"
+    },
+    "password_strength": {
+      "placeholder": "Seguridad de la contraseña",
+      "score": {
+        "0": "Contraseña extremadamente débil",
+        "1": "Contraseña muy débil",
+        "2": "Contraseña débil",
+        "3": "Contraseña segura",
+        "4": "Contraseña muy segura"
+      },
+      "suggestion": {
+        "all_uppercase": "Usa mayúsculas en algunas letras, pero no en todas.",
+        "another_word": "Agrega más palabras que sean menos comunes.",
+        "associated_years": "Evita años asociados contigo.",
+        "capitalization": "Usa mayúsculas en algo más que la primera letra.",
+        "dates": "Evita fechas y años asociados contigo.",
+        "l33t": "Evita sustituciones predecibles de letras, como '@' en lugar de 'a'.",
+        "longer_keyboard_pattern": "Usa patrones de teclado más largos y cambia la dirección de escritura varias veces.",
+        "no_need": "Puedes crear contraseñas seguras sin usar símbolos, números ni letras mayúsculas.",
+        "pwned": "Si usas esta contraseña en otro lugar, deberías cambiarla.",
+        "recent_years": "Evita años recientes.",
+        "repeated": "Evita palabras y caracteres repetidos.",
+        "reverse_words": "Evita palabras comunes escritas al revés.",
+        "sequences": "Evita secuencias comunes de caracteres.",
+        "use_words": "Usa varias palabras, pero evita frases comunes."
+      },
+      "too_weak": "Esta contraseña es demasiado débil",
+      "warning": {
+        "common": "Esta es una contraseña de uso común.",
+        "common_names": "Los nombres y apellidos comunes son fáciles de adivinar.",
+        "dates": "Las fechas son fáciles de adivinar.",
+        "extended_repeat": "Los patrones de caracteres repetidos como \"abcabcabc\" son fáciles de adivinar.",
+        "key_pattern": "Los patrones cortos de teclado son fáciles de adivinar.",
+        "names_by_themselves": "Los nombres o apellidos solos son fáciles de adivinar.",
+        "pwned": "Tu contraseña quedó expuesta en una filtración de datos en Internet.",
+        "recent_years": "Los años recientes son fáciles de adivinar.",
+        "sequences": "Las secuencias comunes de caracteres como \"abc\" son fáciles de adivinar.",
+        "similar_to_common": "Esta es parecida a una contraseña de uso común.",
+        "simple_repeat": "Los caracteres repetidos como \"aaa\" son fáciles de adivinar.",
+        "straight_row": "Las filas seguidas de teclas del teclado son fáciles de adivinar.",
+        "top_hundred": "Esta es una contraseña usada con frecuencia.",
+        "top_ten": "Esta es una contraseña muy usada.",
+        "user_inputs": "No debe haber datos personales ni relacionados con la página.",
+        "word_by_itself": "Las palabras sueltas son fáciles de adivinar."
+      }
+    },
+    "reset_cross_signing": {
+      "cancelled": {
+        "description_1": "Puedes cerrar esta ventana y volver a la aplicación para continuar.",
+        "description_2": "Si cerraste sesión en todas partes y no recuerdas tu código de recuperación, igual necesitarás restablecer tu identidad.",
+        "heading": "Restablecimiento de identidad cancelado."
+      },
+      "description": "Si no tienes la sesión iniciada en ningún otro dispositivo y perdiste tu clave de recuperación, necesitarás restablecer tu identidad para seguir usando la aplicación.",
+      "effect_list": {
+        "neutral_1": "Perderás el historial de mensajes que esté almacenado solo en el servidor",
+        "neutral_2": "Tendrás que verificar de nuevo todos tus dispositivos y contactos",
+        "positive_1": "Se conservarán los datos de tu cuenta, contactos, preferencias y lista de conversaciones"
+      },
+      "failure": {
+        "description": "Puede ser un problema temporal; inténtalo de nuevo más tarde. Si el problema persiste, contacta al administrador del servidor.",
+        "heading": "No se pudo permitir el restablecimiento de la identidad criptográfica"
+      },
+      "finish_reset": "Finalizar restablecimiento",
+      "heading": "Restablece tu identidad en caso de que no puedas confirmarla de otra forma",
+      "start_reset": "Iniciar restablecimiento",
+      "success": {
+        "description": "El restablecimiento de identidad quedó aprobado por los próximos {{minutes}} minutos. Puedes cerrar esta ventana y volver a la aplicación para continuar.",
+        "heading": "Identidad restablecida correctamente. Vuelve a la aplicación para terminar el proceso."
+      },
+      "warning": "Restablece tu identidad solo si no tienes acceso a otro dispositivo con sesión iniciada y perdiste tu clave de recuperación."
+    },
+    "session": {
+      "client_id_label": "ID del cliente",
+      "current": "Actual",
+      "device_id_label": "ID del dispositivo",
+      "finished_label": "Finalizada",
+      "generic_browser_session": "Sesión de navegador",
+      "ip_label": "Dirección IP",
+      "last_active_label": "Última actividad",
+      "name_for_platform": "{{name}} para {{platform}}",
+      "scopes_label": "Ámbitos",
+      "set_device_name": {
+        "help": "Elige un nombre que te ayude a identificar este dispositivo.",
+        "label": "Nombre del dispositivo",
+        "title": "Editar nombre del dispositivo"
+      },
+      "signed_in_label": "Sesión iniciada",
+      "title": "Detalles del dispositivo",
+      "unknown_browser": "Navegador desconocido",
+      "unknown_device": "Dispositivo desconocido",
+      "uri_label": "URI"
+    },
+    "session_detail": {
+      "alert": {
+        "button": "Volver",
+        "text": "Esta sesión no existe o ya no está activa.",
+        "title": "No se encuentra la sesión: {{deviceId}}"
+      }
+    },
+    "user_email": {
+      "delete_button_confirmation_modal": {
+        "action": "Eliminar correo",
+        "body": "¿Eliminar este correo?",
+        "incorrect_password": "Contraseña incorrecta, inténtalo de nuevo",
+        "password_confirmation": "Confirma la contraseña de tu cuenta para eliminar esta dirección de correo"
+      },
+      "delete_button_title": "Quitar dirección de correo",
+      "email": "Correo electrónico"
+    },
+    "user_sessions_overview": {
+      "approaching_session_limit_warning_description:one": "Usaste {{num_sessions}} de {{count}} espacio para dispositivos. Cuando alcances el límite, tendrás que eliminar un dispositivo existente para agregar otro.",
+      "approaching_session_limit_warning_description:other": "Usaste {{num_sessions}} de {{count}} espacios para dispositivos. Cuando alcances el límite, tendrás que eliminar un dispositivo existente para agregar otro.",
+      "approaching_session_limit_warning_header": "Atención: estás cerca del límite de dispositivos",
+      "heading": "Dónde iniciaste sesión",
+      "hit_session_limit_warning_description:one": "Usaste {{num_sessions}} de {{count}} espacio para dispositivos. La próxima vez que intentes iniciar sesión, tendrás que eliminar un dispositivo existente.",
+      "hit_session_limit_warning_description:other": "Usaste {{num_sessions}} de {{count}} espacios para dispositivos. La próxima vez que intentes iniciar sesión, tendrás que eliminar un dispositivo existente.",
+      "hit_session_limit_warning_header": "Alcanzaste el límite de dispositivos",
+      "no_active_sessions": {
+        "default": "No tienes la sesión iniciada en ninguna aplicación.",
+        "inactive_90_days": "Todas tus sesiones estuvieron activas en los últimos 90 días."
+      },
+      "num_sessions_filtered_header": {
+        "header:one": "{{count}} dispositivo coincide con tu filtro ({{unfiltered_session_total}})",
+        "header:other": "{{count}} dispositivos coinciden con tu filtro ({{unfiltered_session_total}})",
+        "unfiltered_session_total:one": "{{count}} en total",
+        "unfiltered_session_total:other": "{{count}} en total"
+      },
+      "num_sessions_header:one": "{{count}} dispositivo",
+      "num_sessions_header:other": "{{count}} dispositivos",
+      "session_limit_info:one": "Usaste {{count}}/{{limit}} espacios para dispositivos",
+      "session_limit_info:other": "Usaste {{count}}/{{limit}} espacios para dispositivos"
+    },
+    "verify_email": {
+      "code_expired_alert": {
+        "description": "El código expiró. Solicita un nuevo código.",
+        "title": "Código expirado"
+      },
+      "code_field_error": "Código no reconocido",
+      "code_field_label": "Código de 6 dígitos",
+      "code_field_wrong_shape": "El código debe tener 6 dígitos",
+      "email_sent_alert": {
+        "description": "Ingresa el nuevo código abajo.",
+        "title": "Nuevo código enviado"
+      },
+      "enter_code_prompt": "Ingresa el código de 6 dígitos enviado a: <email>{{email}}</email>",
+      "heading": "Verifica tu correo electrónico",
+      "invalid_code_alert": {
+        "description": "Revisa el código enviado a tu correo y actualiza los campos de abajo para continuar.",
+        "title": "Ingresaste un código incorrecto"
+      },
+      "resend_code": "Reenviar código"
+    }
+  },
+  "mas": {
+    "scope": {
+      "edit_profile": "Editar tu perfil y datos de contacto",
+      "manage_sessions": "Administrar tus dispositivos y sesiones",
+      "mas_admin": "Administrar usuarios (urn:mas:admin)",
+      "send_messages": "Enviar nuevos mensajes en tu nombre",
+      "synapse_admin": "Administrar el servidor (urn:synapse:admin:*)",
+      "view_messages": "Ver tus mensajes y datos existentes",
+      "view_profile": "Ver la información de tu perfil y datos de contacto"
+    }
+  }
+}

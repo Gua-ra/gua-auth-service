@@ -1,0 +1,282 @@
+{
+  "action": {
+    "back": "Atrás",
+    "cancel": "Cancelar",
+    "continue": "Continuar",
+    "create_account": "Crear cuenta",
+    "sign_in": "Iniciar sesión",
+    "sign_out": "Cerrar sesión",
+    "skip": "Omitir",
+    "start_over": "Volver a empezar"
+  },
+  "app": {
+    "human_name": "Matrix Authentication Service",
+    "name": "matrix-authentication-service",
+    "technical_description": "Documento de descubrimiento de OpenID Connect: <a class=\"cpd-link\" data-kind=\"primary\" href=\"%(discovery_url)s\">%(discovery_url)s</a>"
+  },
+  "branding": {
+    "privacy_policy": {
+      "alt": "Enlace a la política de privacidad del servicio",
+      "link": "Política de privacidad"
+    },
+    "terms_and_conditions": {
+      "alt": "Enlace a los términos y condiciones del servicio",
+      "link": "Términos y condiciones"
+    }
+  },
+  "common": {
+    "display_name": "Nombre para mostrar",
+    "email_address": "Dirección de correo electrónico",
+    "loading": "Cargando…",
+    "mxid": "ID de Matrix",
+    "password": "Contraseña",
+    "password_confirm": "Confirmar contraseña",
+    "username": "Nombre de usuario"
+  },
+  "error": {
+    "unexpected": "Error inesperado"
+  },
+  "mas": {
+    "account": {
+      "deactivated": {
+        "description": "Esta cuenta (<em>%(mxid)s</em>) fue eliminada. Si no lo esperabas, contacta al administrador del servidor.",
+        "heading": "Cuenta eliminada"
+      },
+      "locked": {
+        "description": "Esta cuenta (<em>%(mxid)s</em>) fue bloqueada. Si no lo esperabas, contacta al administrador del servidor.",
+        "heading": "Cuenta bloqueada"
+      },
+      "logged_out": {
+        "description": "Esta sesión fue cerrada. Cierra sesión para poder volver a entrar",
+        "heading": "Sesión cerrada"
+      }
+    },
+    "back_to_homepage": "Volver a la página de inicio",
+    "captcha": {
+      "noscript": "Este formulario está protegido por un CAPTCHA y requiere que JavaScript esté habilitado para poder enviarlo. Habilita JavaScript en tu navegador y recarga esta página."
+    },
+    "change_password": {
+      "change": "Cambiar contraseña",
+      "confirm": "Confirmar contraseña",
+      "current": "Contraseña actual",
+      "heading": "Cambiar mi contraseña",
+      "new": "Nueva contraseña"
+    },
+    "choose_display_name": {
+      "description": "Este es el nombre que verán las demás personas. Puedes cambiarlo en cualquier momento.",
+      "headline": "Elige tu nombre para mostrar"
+    },
+    "consent": {
+      "continue_to": "¿Continuar a <span>%(client_name)s</span>?",
+      "scope_list_preface": "Al continuar, permites que <span>%(client_name)s</span>:",
+      "this_will_setup": "Esto conectará %(client_name)s a tu cuenta de Gua.",
+      "use_another_account": "Usar otra cuenta"
+    },
+    "device_card": {
+      "access_requested": "Acceso solicitado",
+      "generic_device": "Dispositivo",
+      "ip_address": "Dirección IP",
+      "security_code": "Código de seguridad"
+    },
+    "device_code_link": {
+      "description": "Ingresa el código de seguridad que se muestra en tu otro dispositivo",
+      "headline": "Vincular un nuevo dispositivo a tu cuenta",
+      "verification_code": "Código de verificación"
+    },
+    "device_consent": {
+      "confirm_device": "Sí, confirmo que este es mi dispositivo y quiero iniciar sesión en él.",
+      "denied": {
+        "description": "Denegaste el acceso a %(client_name)s. Puedes cerrar esta ventana.",
+        "heading": "Acceso denegado"
+      },
+      "description": "<strong>Otro dispositivo</strong> quiere vincular %(client_name)s (<span>%(client_uri)s</span>) con tu cuenta de <span>%(server_name)s</span>. Asegúrate de reconocer este dispositivo.",
+      "grant_access": "Conceder acceso",
+      "granted": {
+        "description": "Concediste acceso a %(client_name)s. Puedes cerrar esta ventana.",
+        "heading": "Acceso concedido"
+      },
+      "title": "¿Dar acceso a tu cuenta?",
+      "warning": {
+        "description": "¿Estás seguro de que este es tu dispositivo? Los administradores o el soporte técnico nunca te pedirían aceptar esto.",
+        "title": "Estás a punto de conceder acceso a tu cuenta a un dispositivo remoto"
+      }
+    },
+    "device_display_name": {
+      "client_on_device": "%(client_name)s en %(device_name)s",
+      "name_for_platform": "%(name)s para %(platform)s",
+      "unknown_device": "Dispositivo desconocido"
+    },
+    "email_in_use": {
+      "description": "Si olvidaste las credenciales de tu cuenta, puedes recuperarla. También puedes volver a empezar y usar una dirección de correo diferente.",
+      "title": "La dirección de correo <span>%(email)s</span> ya está en uso"
+    },
+    "emails": {
+      "greeting": "Hola %(username)s:",
+      "recovery": {
+        "click_button": "Haz clic en el botón de abajo para crear una nueva contraseña:",
+        "copy_link": "Copia el siguiente enlace y pégalo en un navegador para crear una nueva contraseña:",
+        "create_new_password": "Crear nueva contraseña",
+        "fallback": "¿El botón no te funciona?",
+        "headline": "Solicitaste restablecer la contraseña de tu cuenta de %(server_name)s.",
+        "subject": "Restablece la contraseña de tu cuenta (%(mxid)s)",
+        "you_can_ignore": "Si no pediste una nueva contraseña, puedes ignorar este correo. Tu contraseña actual seguirá funcionando."
+      },
+      "verify": {
+        "body_html": "Tu código de verificación para confirmar esta dirección de correo es: <strong>%(code)s</strong>",
+        "body_text": "Tu código de verificación para confirmar esta dirección de correo es: %(code)s",
+        "subject": "Tu código de verificación de correo es: %(code)s"
+      }
+    },
+    "errors": {
+      "captcha": "La verificación CAPTCHA falló, inténtalo de nuevo",
+      "denied_policy": "Denegado por la política: %(policy)s",
+      "email_banned": "El correo electrónico está prohibido por la política del servidor",
+      "email_domain_banned": "El dominio del correo electrónico está prohibido por la política del servidor",
+      "email_domain_not_allowed": "El dominio del correo electrónico no está permitido por la política del servidor",
+      "email_not_allowed": "El correo electrónico no está permitido por la política del servidor",
+      "field_required": "Este campo es obligatorio",
+      "invalid_credentials": "Credenciales inválidas",
+      "password_mismatch": "Las contraseñas no coinciden",
+      "rate_limit_exceeded": "Hiciste demasiadas solicitudes en poco tiempo. Espera unos minutos e inténtalo de nuevo.",
+      "username_all_numeric": "El nombre de usuario no puede consistir solo en números",
+      "username_banned": "El nombre de usuario está prohibido por la política del servidor",
+      "username_invalid_chars": "El nombre de usuario contiene caracteres inválidos. Usa solo letras minúsculas, números, guiones y guiones bajos.",
+      "username_not_allowed": "El nombre de usuario no está permitido por la política del servidor",
+      "username_taken": "Este nombre de usuario ya está en uso",
+      "username_too_long": "El nombre de usuario es demasiado largo",
+      "username_too_short": "El nombre de usuario es demasiado corto"
+    },
+    "legacy_consent": {
+      "this_will_setup": "Esto configurará <span>%(client_name)s</span> con tu cuenta de <span>%(server_name)s</span>."
+    },
+    "login": {
+      "call_to_register": "¿Aún no tienes una cuenta?",
+      "continue_with_provider": "Continuar con %(provider)s",
+      "description": "Inicia sesión para continuar:",
+      "forgot_password": "¿Olvidaste tu contraseña?",
+      "headline": "Iniciar sesión",
+      "link": {
+        "description": "Vinculando tu cuenta de <span class=\"break-keep text-links\">%(provider)s</span>",
+        "headline": "Inicia sesión para vincular"
+      },
+      "no_login_methods": "No hay métodos de inicio de sesión disponibles.",
+      "username_or_email": "Nombre de usuario o correo electrónico"
+    },
+    "navbar": {
+      "my_account": "Mi cuenta",
+      "register": "Crear una cuenta",
+      "signed_in_as": "Sesión iniciada como <span class=\"font-semibold\">%(username)s</span>."
+    },
+    "not_found": {
+      "description": "La página que buscabas no existe o fue movida",
+      "heading": "Página no encontrada"
+    },
+    "not_you": "¿No eres %(username)s?",
+    "or_separator": "O",
+    "policy_violation": {
+      "description": "Esto puede deberse al cliente que originó la solicitud, al usuario con la sesión iniciada actualmente o a la solicitud misma.",
+      "heading": "La solicitud de autorización fue denegada por la política aplicada por este servicio",
+      "logged_as": "Sesión iniciada como <span class=\"font-semibold\">%(username)s</span>",
+      "too_many_sessions": {
+        "description": "Tu cuenta ya tiene la sesión iniciada en el número máximo de dispositivos. Para continuar, <span class=\"font-semibold\">elimina %(num_devices_to_remove)s de tus dispositivos existentes</span> y vuelve a iniciar sesión.",
+        "heading": "Límite de dispositivos alcanzado",
+        "manage_devices": "Administrar dispositivos"
+      }
+    },
+    "recovery": {
+      "consumed": {
+        "description": "Para crear una nueva contraseña, vuelve a empezar y selecciona “¿Olvidaste tu contraseña?”.",
+        "heading": "El enlace para restablecer tu contraseña ya fue usado"
+      },
+      "disabled": {
+        "description": "Si perdiste tus credenciales, contacta al administrador para recuperar tu cuenta.",
+        "heading": "La recuperación de cuentas está desactivada"
+      },
+      "expired": {
+        "description": "Solicita un nuevo correo que se enviará a: <span>%(email)s</span>.",
+        "heading": "El enlace para restablecer tu contraseña expiró",
+        "resend_email": "Reenviar correo"
+      },
+      "finish": {
+        "confirm": "Ingresa la nueva contraseña otra vez",
+        "description": "Elige una nueva contraseña para tu cuenta.",
+        "heading": "Restablece tu contraseña",
+        "new": "Nueva contraseña",
+        "save_and_continue": "Guardar y continuar"
+      },
+      "progress": {
+        "change_email": "Probar con otro correo",
+        "description": "Enviamos un correo con un enlace para restablecer tu contraseña si existe una cuenta que use <span>%(email)s</span>.",
+        "heading": "Revisa tu correo",
+        "resend_email": "Reenviar correo"
+      },
+      "start": {
+        "description": "Se enviará un correo con un enlace para restablecer tu contraseña.",
+        "heading": "Ingresa tu correo para continuar"
+      }
+    },
+    "register": {
+      "call_to_login": "¿Ya tienes una cuenta?",
+      "continue_with_email": "Continuar con correo electrónico",
+      "continue_with_password": "Continuar con contraseña",
+      "create_account": {
+        "description": "Elige un nombre de usuario para continuar.",
+        "heading": "Crear una cuenta"
+      },
+      "terms_of_service": "Acepto los <a href=\"%s\" data-kind=\"primary\" class=\"cpd-link\">Términos y condiciones</a>"
+    },
+    "registration_token": {
+      "description": "Ingresa un token de registro proporcionado por el administrador del servidor.",
+      "field": "Token de registro",
+      "headline": "Token de registro"
+    },
+    "scope": {
+      "edit_profile": "Editar tu perfil y datos de contacto",
+      "manage_sessions": "Administrar tus dispositivos y sesiones",
+      "mas_admin": "Administrar usuarios (urn:mas:admin)",
+      "send_messages": "Enviar nuevos mensajes en tu nombre",
+      "synapse_admin": "Administrar el servidor (urn:synapse:admin:*)",
+      "view_messages": "Ver tus mensajes y datos existentes",
+      "view_profile": "Ver la información de tu perfil y datos de contacto"
+    },
+    "upstream_oauth2": {
+      "link_mismatch": {
+        "heading": "Esta cuenta externa ya está vinculada a otra cuenta."
+      },
+      "register": {
+        "choose_username": {
+          "description": "Esto no se puede cambiar después.",
+          "heading": "Elige tu nombre de usuario"
+        },
+        "create_account": "Crear una cuenta nueva",
+        "enforced_by_policy": "Impuesto por la política del servidor",
+        "forced_display_name": "Se usará el siguiente nombre para mostrar",
+        "forced_email": "Se usará la siguiente dirección de correo",
+        "forced_localpart": "Se usará el siguiente nombre de usuario",
+        "import_data": {
+          "description": "Confirma la información que se vinculará a tu nueva cuenta de %(server_name)s.",
+          "heading": "Importa tus datos"
+        },
+        "imported_from_upstream": "Importado de tu cuenta externa",
+        "imported_from_upstream_with_name": "Importado de tu cuenta de %(human_name)s",
+        "link_existing": "Vincular a una cuenta existente",
+        "provider_name": "Cuenta de %(human_name)s",
+        "signup_with_upstream": {
+          "heading": "Continúa el registro con tu cuenta de %(human_name)s"
+        },
+        "suggested_display_name": "Importar nombre para mostrar",
+        "suggested_email": "Importar dirección de correo",
+        "use": "Usar"
+      },
+      "suggest_link": {
+        "action": "Vincular",
+        "heading": "Vincular a tu cuenta existente"
+      }
+    },
+    "verify_email": {
+      "6_digit_code": "Código de 6 dígitos",
+      "description": "Ingresa el código de 6 dígitos enviado a: <em>%(email)s</em>",
+      "headline": "Verifica tu correo electrónico"
+    }
+  }
+}

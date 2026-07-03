@@ -125,7 +125,7 @@
       "heading": "O endereço de e-mail {{email}} já está a ser utilizado."
     },
     "end_session_button": {
-      "confirmation_modal_body_text": "Make sure you always have access to another verified device or your recovery key to avoid losing your encrypted chat history.",
+      "confirmation_modal_body_text": "Certifique-se de que tem sempre acesso a outro dispositivo verificado ou à sua chave de recuperação para evitar perder o histórico das suas conversas encriptadas.",
       "confirmation_modal_title": "Tem a certeza de que quer terminar esta sessão?",
       "text": "Remover dispositivo"
     },
@@ -146,7 +146,7 @@
       "inactive_90_days": "Inativo por 90+ dias"
     },
     "nav": {
-      "device_limit_error": "Device limit reached",
+      "device_limit_error": "Limite de dispositivos atingido",
       "devices": "Dispositivos",
       "plan": "Plano",
       "profile": "Perfil",
@@ -359,27 +359,27 @@
     "user_sessions_overview": {
       "active_sessions:one": "{{count}} sessão ativa",
       "active_sessions:other": "{{count}} sessões ativas",
-      "approaching_session_limit_warning_description:one": "You've used {{num_sessions}} of {{count}} device slot. Once you reach your limit, you'll need to remove an existing device to add another.",
-      "approaching_session_limit_warning_description:other": "You've used {{num_sessions}} of {{count}} device slots. Once you reach your limit, you'll need to remove an existing device to add another.",
-      "approaching_session_limit_warning_header": "Heads up, you're close to your device limit",
+      "approaching_session_limit_warning_description:one": "Utilizou {{num_sessions}} de {{count}} espaço para dispositivos. Quando atingir o limite, terá de remover um dispositivo existente para adicionar outro.",
+      "approaching_session_limit_warning_description:other": "Utilizou {{num_sessions}} de {{count}} espaços para dispositivos. Quando atingir o limite, terá de remover um dispositivo existente para adicionar outro.",
+      "approaching_session_limit_warning_header": "Atenção: está perto do limite de dispositivos",
       "heading": "Onde tem sessão iniciada",
-      "hit_session_limit_warning_description:one": "You've used {{num_sessions}} of {{count}} device slot. When you try to sign-in again, you'll need to remove an existing device.",
-      "hit_session_limit_warning_description:other": "You've used {{num_sessions}} of {{count}} device slots. When you try to sign-in again, you'll need to remove an existing device.",
-      "hit_session_limit_warning_header": "You've hit the device limit",
+      "hit_session_limit_warning_description:one": "Utilizou {{num_sessions}} de {{count}} espaço para dispositivos. Quando tentar iniciar sessão novamente, terá de remover um dispositivo existente.",
+      "hit_session_limit_warning_description:other": "Utilizou {{num_sessions}} de {{count}} espaços para dispositivos. Quando tentar iniciar sessão novamente, terá de remover um dispositivo existente.",
+      "hit_session_limit_warning_header": "Atingiu o limite de dispositivos",
       "no_active_sessions": {
         "default": "Não tem sessão iniciada em nenhuma aplicação.",
         "inactive_90_days": "Todas as suas sessões estiveram ativas nos últimos 90 dias."
       },
       "num_sessions_filtered_header": {
-        "header:one": "{{count}} device matches your filter ({{unfiltered_session_total}})",
-        "header:other": "{{count}} devices match your filter ({{unfiltered_session_total}})",
-        "unfiltered_session_total:one": "{{count}} total",
-        "unfiltered_session_total:other": "{{count}} total"
+        "header:one": "{{count}} dispositivo corresponde ao seu filtro ({{unfiltered_session_total}})",
+        "header:other": "{{count}} dispositivos correspondem ao seu filtro ({{unfiltered_session_total}})",
+        "unfiltered_session_total:one": "{{count}} no total",
+        "unfiltered_session_total:other": "{{count}} no total"
       },
-      "num_sessions_header:one": "{{count}} device",
-      "num_sessions_header:other": "{{count}} devices",
-      "session_limit_info:one": "You've used {{count}}/{{limit}} device slots",
-      "session_limit_info:other": "You've used {{count}}/{{limit}} device slots"
+      "num_sessions_header:one": "{{count}} dispositivo",
+      "num_sessions_header:other": "{{count}} dispositivos",
+      "session_limit_info:one": "Utilizou {{count}}/{{limit}} espaços para dispositivos",
+      "session_limit_info:other": "Utilizou {{count}}/{{limit}} espaços para dispositivos"
     },
     "verify_email": {
       "code_expired_alert": {

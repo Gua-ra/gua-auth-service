@@ -74,30 +74,44 @@
     },
     "consent": {
       "client_wants_access": "<span>%(client_name)s</span> em <span>%(redirect_uri)s</span> quer aceder à sua conta.",
+      "continue_to": "Continuar para <span>%(client_name)s</span>?",
       "heading": "Permitir acesso à sua conta?",
       "make_sure_you_trust": "Certifique-se de que confia em <span>%(client_name)s</span>.",
+      "scope_list_preface": "Ao continuar, permite que <span>%(client_name)s</span>:",
       "this_will_allow": "Isso permitirá que <span>%(client_name)s</span>:",
+      "this_will_setup": "Isto irá ligar %(client_name)s à sua conta Gua.",
+      "use_another_account": "Utilizar outra conta",
       "you_may_be_sharing": "Você pode estar compartilhando informações confidenciais com este site ou aplicativo."
     },
     "device_card": {
       "access_requested": "Acesso solicitado",
       "device_code": "Código",
       "generic_device": "Dispositivo",
-      "ip_address": "Endereço de IP"
+      "ip_address": "Endereço de IP",
+      "security_code": "Código de segurança"
     },
     "device_code_link": {
       "description": "Vincular um dispositivo",
-      "headline": "Digite o código exibido no seu dispositivo"
+      "headline": "Digite o código exibido no seu dispositivo",
+      "verification_code": "Código de verificação"
     },
     "device_consent": {
       "another_device_access": "Outro dispositivo deseja acessar sua conta.",
+      "confirm_device": "Sim, confirmo que este é o meu dispositivo e quero iniciar sessão nele.",
       "denied": {
         "description": "Você negou acesso a%(client_name)s . Você pode fechar esta janela.",
         "heading": "Acesso negado"
       },
+      "description": "<strong>Outro dispositivo</strong> quer vincular %(client_name)s (<span>%(client_uri)s</span>) à sua conta <span>%(server_name)s</span>. Certifique-se de que reconhece este dispositivo.",
+      "grant_access": "Conceder acesso",
       "granted": {
         "description": "Você concedeu acesso a%(client_name)s . Você pode fechar esta janela.",
         "heading": "Acesso concedido"
+      },
+      "title": "Dar acesso à sua conta?",
+      "warning": {
+        "description": "Tem a certeza de que este é o seu dispositivo? Os administradores ou o suporte informático nunca lhe pediriam para aceitar isto.",
+        "title": "Está prestes a conceder a um dispositivo remoto acesso à sua conta"
       }
     },
     "device_display_name": {
@@ -145,6 +159,9 @@
       "username_too_long": "O nome de utilizador é demasiado longo",
       "username_too_short": "O nome de utilizador é demasiado curto"
     },
+    "legacy_consent": {
+      "this_will_setup": "Isto irá configurar <span>%(client_name)s</span> com a sua conta <span>%(server_name)s</span>."
+    },
     "login": {
       "call_to_register": "Ainda não tem uma conta?",
       "continue_with_provider": "Continue com %(provider)s",
@@ -173,7 +190,12 @@
     "policy_violation": {
       "description": "Isso pode ser devido ao cliente que criou a solicitação, ao usuário conectado no momento ou à própria solicitação.",
       "heading": "O pedido de autorização foi negado a política imposta por este serviço",
-      "logged_as": "Registrado como <span class=\"font-semibold\">%(username)s</span>"
+      "logged_as": "Registrado como <span class=\"font-semibold\">%(username)s</span>",
+      "too_many_sessions": {
+        "description": "A sua conta já tem sessão iniciada no número máximo de dispositivos. Para continuar, <span class=\"font-semibold\">remova %(num_devices_to_remove)s dos seus dispositivos existentes</span> e inicie sessão novamente.",
+        "heading": "Limite de dispositivos atingido",
+        "manage_devices": "Gerir dispositivos"
+      }
     },
     "recovery": {
       "consumed": {
@@ -210,6 +232,7 @@
     "register": {
       "call_to_login": "Já tem uma conta?",
       "continue_with_email": "Continuar com endereço de e-mail",
+      "continue_with_password": "Continuar com palavra-passe",
       "create_account": {
         "description": "Escolha um nome de utilizador para continuar.",
         "heading": "Criar uma conta"

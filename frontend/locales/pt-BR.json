@@ -2,169 +2,169 @@
   "action": {
     "back": "Voltar",
     "cancel": "Cancelar",
-    "clear": "Clear",
-    "close": "Close",
-    "collapse": "Collapse",
-    "confirm": "Confirm",
+    "clear": "Limpar",
+    "close": "Fechar",
+    "collapse": "Recolher",
+    "confirm": "Confirmar",
     "continue": "Continuar",
-    "edit": "Edit",
-    "expand": "Expand",
+    "edit": "Editar",
+    "expand": "Expandir",
     "save": "Salvar",
-    "save_and_continue": "Save and continue",
+    "save_and_continue": "Salvar e continuar",
     "sign_out": "Sair",
-    "start_over": "Start over"
+    "start_over": "Recomeçar"
   },
   "branding": {
     "privacy_policy": {
-      "alt": "Link to the service privacy policy",
-      "link": "Privacy Policy"
+      "alt": "Link para a política de privacidade do serviço",
+      "link": "Política de Privacidade"
     },
     "terms_and_conditions": {
-      "alt": "Link to the service terms and conditions",
-      "link": "Terms & Conditions"
+      "alt": "Link para os termos e condições do serviço",
+      "link": "Termos e Condições"
     }
   },
   "common": {
     "add": "Adicionar",
-    "e2ee": "End-to-end encryption",
+    "e2ee": "Criptografia de ponta a ponta",
     "error": "Erro",
     "loading": "Carregando…",
     "next": "Próximo",
     "password": "Senha",
     "previous": "Anterior",
-    "saved": "Saved",
-    "saving": "Saving…"
+    "saved": "Salvo",
+    "saving": "Salvando…"
   },
   "frontend": {
     "account": {
-      "account_password": "Account password",
-      "contact_info": "Contact info",
+      "account_password": "Senha da conta",
+      "contact_info": "Informações de contato",
       "delete_account": {
-        "alert_description": "This account will be permanently erased and you’ll no longer have access to any of your messages.",
-        "alert_title": "You’re about to lose all of your data",
-        "button": "Delete account",
-        "dialog_description": "<text>Confirm that you would like to delete your account:</text>\n<profile />\n<list>\n<item>You will not be able to reactivate your account</item>\n<item>You will no longer be able to sign in</item>\n<item>No one will be able to reuse your username (MXID), including you</item>\n<item>You will leave all rooms and direct messages you are in</item>\n<item>You will be removed from the identity server, and no one will be able to find you with your email or phone number</item>\n</list>\n<text>Your old messages will still be visible to people who received them. Would you like to hide your sent messages from people who join rooms in the future?</text>",
-        "dialog_title": "Delete this account?",
-        "erase_checkbox_label": "Yes, hide all my messages from new joiners",
-        "incorrect_password": "Incorrect password, please try again",
-        "mxid_label": "Confirm your Matrix ID ({{ mxid }})",
-        "mxid_mismatch": "This value does not match your Matrix ID",
-        "password_label": "Enter your password to continue"
+        "alert_description": "Esta conta será apagada permanentemente e você perderá o acesso a todas as suas mensagens.",
+        "alert_title": "Você está prestes a perder todos os seus dados",
+        "button": "Excluir conta",
+        "dialog_description": "<text>Confirme que você deseja excluir sua conta:</text>\n<profile />\n<list>\n<item>Você não poderá reativar sua conta</item>\n<item>Você não poderá mais entrar</item>\n<item>Ninguém poderá reutilizar seu nome de usuário (MXID), nem mesmo você</item>\n<item>Você sairá de todas as salas e mensagens diretas em que está</item>\n<item>Você será removido do servidor de identidade e ninguém poderá encontrar você pelo seu e-mail ou número de telefone</item>\n</list>\n<text>Suas mensagens antigas continuarão visíveis para as pessoas que as receberam. Você quer ocultar as mensagens que enviou das pessoas que entrarem nas salas no futuro?</text>",
+        "dialog_title": "Excluir esta conta?",
+        "erase_checkbox_label": "Sim, ocultar todas as minhas mensagens de quem entrar depois",
+        "incorrect_password": "Senha incorreta, tente novamente",
+        "mxid_label": "Confirme seu ID do Matrix ({{ mxid }})",
+        "mxid_mismatch": "Este valor não corresponde ao seu ID do Matrix",
+        "password_label": "Digite sua senha para continuar"
       },
       "edit_profile": {
-        "display_name_help": "This is what others will see wherever you’re signed in.",
-        "display_name_label": "Display name",
-        "title": "Edit profile",
+        "display_name_help": "É isso que as outras pessoas verão onde quer que você esteja conectado.",
+        "display_name_label": "Nome de exibição",
+        "title": "Editar perfil",
         "username_label": "Nome de usuário"
       },
       "password": {
         "change": "Alterar a senha",
-        "change_disabled": "Password changes are disabled by the administrator.",
+        "change_disabled": "A alteração de senha está desativada pelo administrador.",
         "label": "Senha"
       },
       "sign_out": {
-        "button": "Sign out of account",
-        "dialog": "Sign out of this account?"
+        "button": "Sair da conta",
+        "dialog": "Sair desta conta?"
       },
-      "title": "Your account"
+      "title": "Sua conta"
     },
     "add_email_form": {
       "email_denied_alert": {
         "text": "O endereço de e-mail inserido não é permitido pela política do servidor.",
         "title": "Email denied by policy"
       },
-      "email_denied_error": "The entered email is not allowed by the server policy",
+      "email_denied_error": "O e-mail digitado não é permitido pela política do servidor",
       "email_exists_alert": {
         "text": "O endereço de e-mail inserido já foi adicionado a esta conta.",
         "title": "Email already exists"
       },
       "email_exists_error": "O endereço de e-mail inserido já foi adicionado a esta conta.",
-      "email_field_help": "Add an alternative email you can use to access this account.",
+      "email_field_help": "Adicione um e-mail alternativo que você possa usar para acessar esta conta.",
       "email_field_label": "Adicionar e-mail",
-      "email_in_use_error": "The entered email is already in use",
+      "email_in_use_error": "O e-mail digitado já está em uso",
       "email_invalid_alert": {
         "text": "O endereço de e-mail inserido é inválido.",
         "title": "E-mail inválido"
       },
       "email_invalid_error": "O endereço de e-mail inserido é inválido.",
-      "incorrect_password_error": "Incorrect password, please try again",
-      "password_confirmation": "Confirm your account password to add this email address"
+      "incorrect_password_error": "Senha incorreta, tente novamente",
+      "password_confirmation": "Confirme a senha da sua conta para adicionar este endereço de e-mail"
     },
     "app_sessions_list": {
       "error": "Failed to load app sessions",
       "heading": "Apps"
     },
     "browser_session_details": {
-      "current_badge": "Current",
+      "current_badge": "Atual",
       "session_details_title": "Session"
     },
     "browser_sessions_overview": {
-      "body:one": "{{count}} active session",
-      "body:other": "{{count}} active sessions",
-      "heading": "Browsers",
+      "body:one": "{{count}} sessão ativa",
+      "body:other": "{{count}} sessões ativas",
+      "heading": "Navegadores",
       "no_active_sessions": {
-        "default": "You are not signed in to any web browsers.",
-        "inactive_90_days": "All your sessions have been active in the last 90 days."
+        "default": "Você não está conectado em nenhum navegador.",
+        "inactive_90_days": "Todas as suas sessões estiveram ativas nos últimos 90 dias."
       },
-      "view_all_button": "View all"
+      "view_all_button": "Ver tudo"
     },
     "compat_session_detail": {
-      "client_details_title": "Client info",
+      "client_details_title": "Informações do cliente",
       "name": "Nome",
       "session_details_title": "Session"
     },
     "device_type_icon_label": {
       "desktop": "Desktop",
-      "mobile": "Mobile",
-      "pc": "Computer",
+      "mobile": "Celular",
+      "pc": "Computador",
       "tablet": "Tablet",
-      "unknown": "Unknown device type",
+      "unknown": "Tipo de dispositivo desconhecido",
       "web": "Web"
     },
     "email_in_use": {
-      "heading": "The email address {{email}} is already in use."
+      "heading": "O endereço de e-mail {{email}} já está em uso."
     },
     "end_session_button": {
-      "confirmation_modal_body_text": "Make sure you always have access to another verified device or your recovery key to avoid losing your encrypted chat history.",
-      "confirmation_modal_title": "Are you sure you want to remove this device?",
-      "text": "Remove device"
+      "confirmation_modal_body_text": "Garanta que você sempre tenha acesso a outro dispositivo verificado ou à sua chave de recuperação para não perder o histórico das suas conversas criptografadas.",
+      "confirmation_modal_title": "Tem certeza de que quer remover este dispositivo?",
+      "text": "Remover dispositivo"
     },
     "error": {
-      "hideDetails": "Hide details",
-      "showDetails": "Show details",
-      "subtitle": "An unexpected error occurred. Please try again.",
-      "title": "Something went wrong"
+      "hideDetails": "Ocultar detalhes",
+      "showDetails": "Mostrar detalhes",
+      "subtitle": "Ocorreu um erro inesperado. Tente novamente.",
+      "title": "Algo deu errado"
     },
     "error_boundary_title": "Something went wrong",
     "errors": {
       "field_required": "Este campo é obrigatório",
-      "rate_limit_exceeded": "You've made too many requests in a short period. Please wait a few minutes and try again."
+      "rate_limit_exceeded": "Você fez muitas solicitações em um curto período. Aguarde alguns minutos e tente novamente."
     },
     "last_active": {
-      "active_date": "Active {{relativeDate}}",
-      "active_now": "Active now",
-      "inactive_90_days": "Inactive for 90+ days"
+      "active_date": "Ativo {{relativeDate}}",
+      "active_now": "Ativo agora",
+      "inactive_90_days": "Inativo há mais de 90 dias"
     },
     "nav": {
-      "device_limit_error": "Device limit reached",
-      "devices": "Devices",
-      "plan": "Plan",
+      "device_limit_error": "Limite de dispositivos atingido",
+      "devices": "Dispositivos",
+      "plan": "Plano",
       "profile": "Perfil",
       "sessions": "Sessões",
-      "settings": "Settings"
+      "settings": "Configurações"
     },
-    "not_found_alert_title": "Not found.",
+    "not_found_alert_title": "Não encontrado.",
     "not_logged_in_alert": "You're not logged in.",
     "oauth2_client_detail": {
-      "details_title": "Client info",
+      "details_title": "Informações do cliente",
       "id": "Client ID",
       "name": "Nome",
-      "policy": "Policy",
-      "terms": "Terms of service"
+      "policy": "Política",
+      "terms": "Termos de serviço"
     },
     "oauth2_session_detail": {
       "client_details_name": "Nome",
-      "client_title": "Client info",
+      "client_title": "Informações do cliente",
       "session_details_title": "Session"
     },
     "pagination_controls": {
@@ -174,153 +174,153 @@
       "current_password_label": "Senha atual",
       "failure": {
         "description": {
-          "account_locked": "Your account is locked and can not be recovered at this time. If this is not expected, please contact your server administrator.",
-          "expired_recovery_ticket": "The recovery link has expired. Please start the account recovery process again from the start.",
-          "invalid_new_password": "The new password you chose is invalid; it may not meet the configured security policy.",
-          "no_current_password": "You don't have a current password.",
-          "no_such_recovery_ticket": "The recovery link is invalid. If you copied the link from the recovery e-mail, please check the full link was copied.",
-          "password_changes_disabled": "Password changes are disabled.",
-          "recovery_ticket_already_used": "The recovery link has already been used. It cannot be used again.",
-          "unspecified": "This might be a temporary problem, so please try again later. If the problem persists, please contact your server administrator.",
-          "wrong_password": "The password you supplied as your current password is incorrect. Please try again."
+          "account_locked": "Sua conta está bloqueada e não pode ser recuperada neste momento. Se você não esperava por isso, entre em contato com o administrador do servidor.",
+          "expired_recovery_ticket": "O link de recuperação expirou. Comece o processo de recuperação da conta novamente desde o início.",
+          "invalid_new_password": "A nova senha escolhida é inválida; ela pode não atender à política de segurança configurada.",
+          "no_current_password": "Você não tem uma senha atual.",
+          "no_such_recovery_ticket": "O link de recuperação é inválido. Se você copiou o link do e-mail de recuperação, verifique se copiou o link completo.",
+          "password_changes_disabled": "A alteração de senha está desativada.",
+          "recovery_ticket_already_used": "O link de recuperação já foi usado. Ele não pode ser usado novamente.",
+          "unspecified": "Isso pode ser um problema temporário; tente novamente mais tarde. Se o problema persistir, entre em contato com o administrador do servidor.",
+          "wrong_password": "A senha que você informou como senha atual está incorreta. Tente novamente."
         },
-        "title": "Failed to update password"
+        "title": "Falha ao atualizar a senha"
       },
-      "new_password_again_label": "Enter new password again",
+      "new_password_again_label": "Digite a nova senha novamente",
       "new_password_label": "Nova senha",
-      "passwords_match": "Passwords match!",
-      "passwords_no_match": "Passwords don't match",
-      "subtitle": "Choose a new password for your account.",
+      "passwords_match": "As senhas coincidem!",
+      "passwords_no_match": "As senhas não coincidem",
+      "subtitle": "Escolha uma nova senha para sua conta.",
       "success": {
-        "description": "Your password has been updated successfully.",
-        "title": "Password updated"
+        "description": "Sua senha foi atualizada com sucesso.",
+        "title": "Senha atualizada"
       },
-      "title": "Change your password"
+      "title": "Altere sua senha"
     },
     "password_reset": {
       "consumed": {
-        "subtitle": "To create a new password, start over and select ”Forgot password“.",
-        "title": "The link to reset your password has already been used"
+        "subtitle": "Para criar uma nova senha, recomece e selecione “Esqueceu a senha?”.",
+        "title": "O link para redefinir sua senha já foi usado"
       },
       "expired": {
-        "resend_email": "Resend email",
-        "subtitle": "Request a new email that will be sent to: {{email}}",
-        "title": "The link to reset your password has expired"
+        "resend_email": "Reenviar e-mail",
+        "subtitle": "Solicite um novo e-mail, que será enviado para: {{email}}",
+        "title": "O link para redefinir sua senha expirou"
       },
-      "subtitle": "Choose a new password for your account.",
-      "title": "Reset your password"
+      "subtitle": "Escolha uma nova senha para sua conta.",
+      "title": "Redefina sua senha"
     },
     "password_strength": {
-      "placeholder": "Password strength",
+      "placeholder": "Força da senha",
       "score": {
-        "0": "Extremely weak password",
-        "1": "Very weak password",
-        "2": "Weak password",
-        "3": "Strong password",
-        "4": "Very strong password"
+        "0": "Senha extremamente fraca",
+        "1": "Senha muito fraca",
+        "2": "Senha fraca",
+        "3": "Senha forte",
+        "4": "Senha muito forte"
       },
       "suggestion": {
-        "all_uppercase": "Capitalise some, but not all letters.",
-        "another_word": "Add more words that are less common.",
-        "associated_years": "Avoid years that are associated with you.",
-        "capitalization": "Capitalise more than the first letter.",
-        "dates": "Avoid dates and years that are associated with you.",
-        "l33t": "Avoid predictable letter substitutions like '@' for 'a'.",
-        "longer_keyboard_pattern": "Use longer keyboard patterns and change typing direction multiple times.",
-        "no_need": "You can create strong passwords without using symbols, numbers, or uppercase letters.",
-        "pwned": "If you use this password elsewhere, you should change it.",
-        "recent_years": "Avoid recent years.",
-        "repeated": "Avoid repeated words and characters.",
-        "reverse_words": "Avoid reversed spellings of common words.",
-        "sequences": "Avoid common character sequences.",
-        "use_words": "Use multiple words, but avoid common phrases."
+        "all_uppercase": "Use maiúsculas em algumas letras, mas não em todas.",
+        "another_word": "Adicione mais palavras que sejam menos comuns.",
+        "associated_years": "Evite anos associados a você.",
+        "capitalization": "Use maiúsculas em mais do que a primeira letra.",
+        "dates": "Evite datas e anos associados a você.",
+        "l33t": "Evite substituições previsíveis de letras, como '@' no lugar de 'a'.",
+        "longer_keyboard_pattern": "Use padrões de teclado mais longos e mude a direção da digitação várias vezes.",
+        "no_need": "Você pode criar senhas fortes sem usar símbolos, números ou letras maiúsculas.",
+        "pwned": "Se você usa esta senha em outro lugar, deve alterá-la.",
+        "recent_years": "Evite anos recentes.",
+        "repeated": "Evite palavras e caracteres repetidos.",
+        "reverse_words": "Evite palavras comuns escritas de trás para frente.",
+        "sequences": "Evite sequências comuns de caracteres.",
+        "use_words": "Use várias palavras, mas evite frases comuns."
       },
-      "too_weak": "This password is too weak",
+      "too_weak": "Esta senha é fraca demais",
       "warning": {
-        "common": "This is a commonly used password.",
-        "common_names": "Common names and surnames are easy to guess.",
-        "dates": "Dates are easy to guess.",
-        "extended_repeat": "Repeated character patterns like \"abcabcabc\" are easy to guess.",
-        "key_pattern": "Short keyboard patterns are easy to guess.",
-        "names_by_themselves": "Single names or surnames are easy to guess.",
-        "pwned": "Your password was exposed by a data breach on the Internet.",
-        "recent_years": "Recent years are easy to guess.",
-        "sequences": "Common character sequences like \"abc\" are easy to guess.",
-        "similar_to_common": "This is similar to a commonly used password.",
-        "simple_repeat": "Repeated characters like \"aaa\" are easy to guess.",
-        "straight_row": "Straight rows of keys on your keyboard are easy to guess.",
-        "top_hundred": "This is a frequently used password.",
-        "top_ten": "This is a heavily used password.",
-        "user_inputs": "There should not be any personal or page related data.",
-        "word_by_itself": "Single words are easy to guess."
+        "common": "Esta é uma senha usada com frequência.",
+        "common_names": "Nomes e sobrenomes comuns são fáceis de adivinhar.",
+        "dates": "Datas são fáceis de adivinhar.",
+        "extended_repeat": "Padrões repetidos de caracteres como \"abcabcabc\" são fáceis de adivinhar.",
+        "key_pattern": "Padrões curtos de teclado são fáceis de adivinhar.",
+        "names_by_themselves": "Nomes ou sobrenomes sozinhos são fáceis de adivinhar.",
+        "pwned": "Sua senha foi exposta em um vazamento de dados na Internet.",
+        "recent_years": "Anos recentes são fáceis de adivinhar.",
+        "sequences": "Sequências comuns de caracteres como \"abc\" são fáceis de adivinhar.",
+        "similar_to_common": "Esta senha é parecida com uma senha usada com frequência.",
+        "simple_repeat": "Caracteres repetidos como \"aaa\" são fáceis de adivinhar.",
+        "straight_row": "Sequências de teclas vizinhas no teclado são fáceis de adivinhar.",
+        "top_hundred": "Esta é uma senha usada com muita frequência.",
+        "top_ten": "Esta é uma senha extremamente comum.",
+        "user_inputs": "Não deve haver dados pessoais nem relacionados à página.",
+        "word_by_itself": "Palavras sozinhas são fáceis de adivinhar."
       }
     },
     "reset_cross_signing": {
       "button": "Reset identity",
       "cancelled": {
-        "description_1": "You can close this window and go back to the app to continue.",
-        "description_2": "If don’t have access to any other verified devices and you don’t have your recovery key, then you’ll need to reset your digital identity to continue using the app.",
-        "heading": "Digital identity reset cancelled."
+        "description_1": "Você pode fechar esta janela e voltar ao aplicativo para continuar.",
+        "description_2": "Se você saiu da conta em todos os dispositivos e não lembra do seu código de recuperação, ainda vai precisar redefinir sua identidade.",
+        "heading": "Redefinição de identidade cancelada."
       },
-      "description": "If don’t have access to any other verified devices and you don’t have your recovery key, then you’ll need to reset your digital identity to continue using the app.",
+      "description": "Se você não está conectado em nenhum outro dispositivo e perdeu sua chave de recuperação, vai precisar redefinir sua identidade para continuar usando o aplicativo.",
       "effect_list": {
         "negative_1": "You will lose your existing message history",
         "negative_2": "You will need to verify all your existing devices and contacts again",
-        "neutral_1": "You will lose any message history that's stored only on the server",
-        "neutral_2": "You will need to verify all your existing devices and contacts again",
-        "positive_1": "Your account details, contacts, preferences, and chat list will be kept"
+        "neutral_1": "Você perderá qualquer histórico de mensagens armazenado apenas no servidor",
+        "neutral_2": "Você precisará verificar novamente todos os seus dispositivos e contatos",
+        "positive_1": "Os dados da sua conta, contatos, preferências e lista de conversas serão mantidos"
       },
       "failure": {
-        "description": "This might be a temporary problem, so please try again later. If the problem persists, please contact your server administrator.",
-        "heading": "Failed to allow digital identity reset",
+        "description": "Isso pode ser um problema temporário; tente novamente mais tarde. Se o problema persistir, entre em contato com o administrador do servidor.",
+        "heading": "Falha ao permitir a redefinição da identidade criptográfica",
         "title": "Failed to allow crypto identity"
       },
-      "finish_reset": "Finish reset",
-      "heading": "Reset your digital identity in case you can't confirm another way",
-      "start_reset": "Start reset",
+      "finish_reset": "Concluir redefinição",
+      "heading": "Redefina sua identidade caso não consiga confirmar de outra forma",
+      "start_reset": "Iniciar redefinição",
       "success": {
-        "description": "The digital identity reset has been approved for the next {{minutes}} minutes. You can close this window and go back to the app to continue.",
-        "heading": "Digital identity reset successfully. Go back to the app to finish the process.",
+        "description": "A redefinição de identidade foi aprovada pelos próximos {{minutes}} minutos. Você pode fechar esta janela e voltar ao aplicativo para continuar.",
+        "heading": "Identidade redefinida com sucesso. Volte ao aplicativo para concluir o processo.",
         "title": "Crypto identity reset temporarily allowed"
       },
-      "warning": "Only reset your digital identity if you don't have access to another verified device and you don't have your recovery key."
+      "warning": "Só redefina sua identidade se você não tiver acesso a outro dispositivo conectado e tiver perdido sua chave de recuperação."
     },
     "selectable_session": {
       "label": "Select session"
     },
     "session": {
-      "client_id_label": "Client ID",
-      "current": "Current",
+      "client_id_label": "ID do cliente",
+      "current": "Atual",
       "current_badge": "Current",
-      "device_id_label": "Device ID",
+      "device_id_label": "ID do dispositivo",
       "finished_date": "Finished <datetime/>",
-      "finished_label": "Finished",
-      "generic_browser_session": "Browser session",
+      "finished_label": "Encerrada",
+      "generic_browser_session": "Sessão de navegador",
       "id_label": "ID",
-      "ip_label": "IP Address",
-      "last_active_label": "Last Active",
+      "ip_label": "Endereço IP",
+      "last_active_label": "Última atividade",
       "last_auth_label": "Last Authentication",
-      "name_for_platform": "{{name}} for {{platform}}",
-      "scopes_label": "Scopes",
+      "name_for_platform": "{{name}} para {{platform}}",
+      "scopes_label": "Escopos",
       "set_device_name": {
-        "help": "Set a name that will help you identify this device.",
-        "label": "Device name",
-        "title": "Edit device name"
+        "help": "Defina um nome que ajude você a identificar este dispositivo.",
+        "label": "Nome do dispositivo",
+        "title": "Editar nome do dispositivo"
       },
       "signed_in_date": "Signed in <datetime/>",
-      "signed_in_label": "Signed in",
-      "title": "Device details",
-      "unknown_browser": "Unknown browser",
-      "unknown_device": "Unknown device",
-      "uri_label": "Uri",
+      "signed_in_label": "Conectado em",
+      "title": "Detalhes do dispositivo",
+      "unknown_browser": "Navegador desconhecido",
+      "unknown_device": "Dispositivo desconhecido",
+      "uri_label": "URI",
       "user_id_label": "User ID",
       "username_label": "User name"
     },
     "session_detail": {
       "alert": {
         "button": "Voltar",
-        "text": "This session does not exist, or is no longer active.",
-        "title": "Cannot find session: {{deviceId}}"
+        "text": "Esta sessão não existe ou não está mais ativa.",
+        "title": "Não foi possível encontrar a sessão: {{deviceId}}"
       }
     },
     "unknown_route": "Unknown route {{route}}",
@@ -333,12 +333,12 @@
     "user_email": {
       "cant_delete_primary": "Choose a different primary email to delete this one.",
       "delete_button_confirmation_modal": {
-        "action": "Delete email",
-        "body": "Delete this email?",
-        "incorrect_password": "Incorrect password, please try again",
-        "password_confirmation": "Confirm your account password to delete this email address"
+        "action": "Excluir e-mail",
+        "body": "Excluir este e-mail?",
+        "incorrect_password": "Senha incorreta, tente novamente",
+        "password_confirmation": "Confirme a senha da sua conta para excluir este endereço de e-mail"
       },
-      "delete_button_title": "Remove email address",
+      "delete_button_title": "Remover endereço de e-mail",
       "email": "E-mail",
       "make_primary_button": "Make primary",
       "not_verified": "Not verified",
@@ -359,47 +359,47 @@
     "user_sessions_overview": {
       "active_sessions:one": "{{count}} active session",
       "active_sessions:other": "{{count}} active sessions",
-      "approaching_session_limit_warning_description:one": "You've used {{num_sessions}} of {{count}} device slot. Once you reach your limit, you'll need to remove an existing device to add another.",
-      "approaching_session_limit_warning_description:other": "You've used {{num_sessions}} of {{count}} device slots. Once you reach your limit, you'll need to remove an existing device to add another.",
-      "approaching_session_limit_warning_header": "Heads up, you're close to your device limit",
-      "heading": "Where you're signed in",
-      "hit_session_limit_warning_description:one": "You've used {{num_sessions}} of {{count}} device slot. When you try to sign-in again, you'll need to remove an existing device.",
-      "hit_session_limit_warning_description:other": "You've used {{num_sessions}} of {{count}} device slots. When you try to sign-in again, you'll need to remove an existing device.",
-      "hit_session_limit_warning_header": "You've hit the device limit",
+      "approaching_session_limit_warning_description:one": "Você usou {{num_sessions}} de {{count}} espaço para dispositivos. Quando atingir o limite, você precisará remover um dispositivo existente para adicionar outro.",
+      "approaching_session_limit_warning_description:other": "Você usou {{num_sessions}} de {{count}} espaços para dispositivos. Quando atingir o limite, você precisará remover um dispositivo existente para adicionar outro.",
+      "approaching_session_limit_warning_header": "Atenção: você está perto do limite de dispositivos",
+      "heading": "Onde você está conectado",
+      "hit_session_limit_warning_description:one": "Você usou {{num_sessions}} de {{count}} espaço para dispositivos. Na próxima vez que entrar, você precisará remover um dispositivo existente.",
+      "hit_session_limit_warning_description:other": "Você usou {{num_sessions}} de {{count}} espaços para dispositivos. Na próxima vez que entrar, você precisará remover um dispositivo existente.",
+      "hit_session_limit_warning_header": "Você atingiu o limite de dispositivos",
       "no_active_sessions": {
-        "default": "You are not signed in to any application.",
-        "inactive_90_days": "All your sessions have been active in the last 90 days."
+        "default": "Você não está conectado em nenhum aplicativo.",
+        "inactive_90_days": "Todas as suas sessões estiveram ativas nos últimos 90 dias."
       },
       "num_sessions_filtered_header": {
-        "header:one": "{{count}} device matches your filter ({{unfiltered_session_total}})",
-        "header:other": "{{count}} devices match your filter ({{unfiltered_session_total}})",
-        "unfiltered_session_total:one": "{{count}} total",
-        "unfiltered_session_total:other": "{{count}} total"
+        "header:one": "{{count}} dispositivo corresponde ao seu filtro ({{unfiltered_session_total}})",
+        "header:other": "{{count}} dispositivos correspondem ao seu filtro ({{unfiltered_session_total}})",
+        "unfiltered_session_total:one": "{{count}} no total",
+        "unfiltered_session_total:other": "{{count}} no total"
       },
-      "num_sessions_header:one": "{{count}} device",
-      "num_sessions_header:other": "{{count}} devices",
-      "session_limit_info:one": "You've used {{count}}/{{limit}} device slots",
-      "session_limit_info:other": "You've used {{count}}/{{limit}} device slots"
+      "num_sessions_header:one": "{{count}} dispositivo",
+      "num_sessions_header:other": "{{count}} dispositivos",
+      "session_limit_info:one": "Você usou {{count}}/{{limit}} espaços para dispositivos",
+      "session_limit_info:other": "Você usou {{count}}/{{limit}} espaços para dispositivos"
     },
     "verify_email": {
       "code_expired_alert": {
-        "description": "The code has expired. Please request a new code.",
-        "title": "Code expired"
+        "description": "O código expirou. Solicite um novo código.",
+        "title": "Código expirado"
       },
-      "code_field_error": "Code not recognised",
-      "code_field_label": "6-digit code",
-      "code_field_wrong_shape": "Code must be 6 digits",
+      "code_field_error": "Código não reconhecido",
+      "code_field_label": "Código de 6 dígitos",
+      "code_field_wrong_shape": "O código deve ter 6 dígitos",
       "email_sent_alert": {
-        "description": "Enter the new code below.",
-        "title": "New code sent"
+        "description": "Digite o novo código abaixo.",
+        "title": "Novo código enviado"
       },
-      "enter_code_prompt": "Enter the 6-digit code sent to: <email>{{email}}</email>",
+      "enter_code_prompt": "Digite o código de 6 dígitos enviado para: <email>{{email}}</email>",
       "heading": "Verifique seu e-mail",
       "invalid_code_alert": {
-        "description": "Check the code sent to your email and update the fields below to continue.",
-        "title": "You entered the wrong code"
+        "description": "Confira o código enviado para o seu e-mail e atualize os campos abaixo para continuar.",
+        "title": "Você digitou o código errado"
       },
-      "resend_code": "Resend code",
+      "resend_code": "Reenviar código",
       "resend_email": "Resend email",
       "sent": "Sent!",
       "unknown_email": "Unknown email"
@@ -409,10 +409,10 @@
     "scope": {
       "edit_profile": "Edite seu perfil e seus dados de contato.",
       "manage_sessions": "Gerencie seus dispositivos e sessões",
-      "mas_admin": "Manage users (urn:mas:admin)",
-      "send_messages": "Send new messages on your behalf",
-      "synapse_admin": "Administer the server (urn:synapse:admin:*)",
-      "view_messages": "View your existing messages and data",
+      "mas_admin": "Gerenciar usuários (urn:mas:admin)",
+      "send_messages": "Enviar novas mensagens em seu nome",
+      "synapse_admin": "Administrar o servidor (urn:synapse:admin:*)",
+      "view_messages": "Ver suas mensagens e dados existentes",
       "view_profile": "Veja as informações do seu perfil e os seus dados de contato."
     }
   }
