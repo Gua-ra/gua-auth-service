@@ -346,6 +346,8 @@ impl OidcProvider {
             claims_imports,
             additional_authorization_parameters,
             forward_login_hint: self.forward_login_hint,
+            forward_downstream_client: false,
+            downstream_client_web_origin: None,
             on_backchannel_logout,
             registration_token_required: false,
         })

@@ -19,6 +19,33 @@ use mas_storage_pg::PgRepository;
 use sqlx::{Connection, PgConnection, postgres::PgAdvisoryLock};
 use tracing::{error, info, info_span, warn};
 
+/// Build the per-provider [`DownstreamClientGuardConfig`] from the upstream
+/// OAuth 2.0 configuration.
+///
+/// This maps each configured provider id to whether the `gua_downstream`
+/// marker should be forwarded and, if so, the host derived from the configured
+/// web origin. It is used to thread the guard into the authorize handler
+/// without persisting it to the database.
+#[must_use]
+pub fn downstream_client_guard_from_config(
+    config: &UpstreamOAuth2Config,
+) -> mas_data_model::DownstreamClientGuardConfig {
+    let entries = config.providers.iter().map(|provider| {
+        (
+            provider.id,
+            mas_data_model::DownstreamClientGuardEntry {
+                forward_downstream_client: provider.forward_downstream_client,
+                web_origin_host: provider
+                    .downstream_client_web_origin
+                    .as_ref()
+                    .and_then(|url| url.host_str().map(str::to_owned)),
+            },
+        )
+    });
+
+    mas_data_model::DownstreamClientGuardConfig::new(entries)
+}
+
 fn map_import_action(
     config: mas_config::UpstreamOAuth2ImportAction,
 ) -> mas_data_model::UpstreamOAuthProviderImportAction {

@@ -219,6 +219,15 @@ impl Options {
         let limiter = Limiter::new(&config.rate_limiting)
             .context("rate-limiting configuration is not valid")?;
 
+        // Build the per-provider Gua downstream-client guard config from the
+        // upstream OAuth 2.0 providers. This is threaded into the authorize
+        // handler out of band of the persisted provider records.
+        let downstream_client_guard = {
+            let upstream_oauth2_config = UpstreamOAuth2Config::extract_or_default(figment)
+                .map_err(anyhow::Error::from_boxed)?;
+            crate::sync::downstream_client_guard_from_config(&upstream_oauth2_config)
+        };
+
         // Explicitly the config to properly zeroize secret keys
         drop(config);
 
@@ -249,6 +258,7 @@ impl Options {
                 password_manager,
                 metadata_cache,
                 site_config,
+                downstream_client_guard,
                 activity_tracker,
                 trusted_proxies,
                 limiter,

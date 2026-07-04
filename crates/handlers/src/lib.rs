@@ -37,7 +37,7 @@ use hyper::{
     },
 };
 use mas_axum_utils::{InternalError, cookies::CookieJar};
-use mas_data_model::SiteConfig;
+use mas_data_model::{DownstreamClientGuardConfig, SiteConfig};
 use mas_http::CorsLayerExt;
 use mas_keystore::{Encrypter, Keystore};
 use mas_matrix::HomeserverConnection;
@@ -350,6 +350,7 @@ where
     PasswordManager: FromRef<S>,
     MetadataCache: FromRef<S>,
     SiteConfig: FromRef<S>,
+    DownstreamClientGuardConfig: FromRef<S>,
     Limiter: FromRef<S>,
     reqwest::Client: FromRef<S>,
     Arc<dyn HomeserverConnection>: FromRef<S>,

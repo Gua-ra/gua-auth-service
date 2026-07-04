@@ -12,8 +12,8 @@ pub use self::{
     link::UpstreamOAuthLink,
     provider::{
         ClaimsImports as UpstreamOAuthProviderClaimsImports,
-        DiscoveryMode as UpstreamOAuthProviderDiscoveryMode,
-        ImportAction as UpstreamOAuthProviderImportAction,
+        DiscoveryMode as UpstreamOAuthProviderDiscoveryMode, DownstreamClientGuardConfig,
+        DownstreamClientGuardEntry, ImportAction as UpstreamOAuthProviderImportAction,
         ImportPreference as UpstreamOAuthProviderImportPreference,
         LocalpartPreference as UpstreamOAuthProviderLocalpartPreference,
         OnBackchannelLogout as UpstreamOAuthProviderOnBackchannelLogout,

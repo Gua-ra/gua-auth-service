@@ -308,6 +308,72 @@ impl UpstreamOAuthProvider {
     }
 }
 
+/// Per-provider settings for the Gua downstream-client marker.
+///
+/// This carries, per upstream provider, whether a `gua_downstream` marker
+/// should be forwarded on the upstream authorization request and, if so, the
+/// origin host that identifies the downstream web client. It is threaded into
+/// the authorize handler out of band of the persisted provider record so that
+/// no database migration is required to toggle the guard.
+#[derive(Debug, Clone, Default)]
+pub struct DownstreamClientGuardConfig {
+    entries: std::collections::HashMap<Ulid, DownstreamClientGuardEntry>,
+}
+
+/// A single provider's downstream-client marker settings.
+#[derive(Debug, Clone)]
+pub struct DownstreamClientGuardEntry {
+    /// Whether to forward the `gua_downstream` marker for this provider.
+    pub forward_downstream_client: bool,
+
+    /// The host that identifies the downstream web client, derived from the
+    /// configured web origin. `None` means every client is treated as
+    /// `native`.
+    pub web_origin_host: Option<String>,
+}
+
+impl DownstreamClientGuardConfig {
+    /// Build a guard config from an iterator of per-provider entries.
+    #[must_use]
+    pub fn new(entries: impl IntoIterator<Item = (Ulid, DownstreamClientGuardEntry)>) -> Self {
+        Self {
+            entries: entries.into_iter().collect(),
+        }
+    }
+
+    /// Look up the entry for a provider, if any.
+    #[must_use]
+    pub fn get(&self, provider_id: Ulid) -> Option<&DownstreamClientGuardEntry> {
+        self.entries.get(&provider_id)
+    }
+
+    /// Compute the `gua_downstream` marker value for a downstream client of
+    /// the given provider.
+    ///
+    /// Returns `None` when the guard is disabled for this provider (the marker
+    /// must not be appended at all). When enabled, returns `Some("web")` if the
+    /// downstream client's `client_uri` host matches the configured web origin
+    /// host, and `Some("native")` otherwise (including when the host or origin
+    /// is absent). Comparison is ASCII-case-insensitive on the host only.
+    #[must_use]
+    pub fn marker_for(&self, provider_id: Ulid, client_uri: Option<&Url>) -> Option<&'static str> {
+        let entry = self.get(provider_id)?;
+        if !entry.forward_downstream_client {
+            return None;
+        }
+
+        let Some(web_host) = entry.web_origin_host.as_deref() else {
+            return Some("native");
+        };
+
+        let client_host = client_uri.and_then(Url::host_str);
+        match client_host {
+            Some(host) if host.eq_ignore_ascii_case(web_host) => Some("web"),
+            _ => Some("native"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub struct ClaimsImports {
     #[serde(default)]
@@ -433,4 +499,93 @@ pub enum OnConflict {
     /// Adds the upstream OAuth 2.0 identity link *only* if there is no existing
     /// link for this provider on the matching user
     Set,
+}
+
+#[cfg(test)]
+mod tests {
+    use ulid::Ulid;
+    use url::Url;
+
+    use super::{DownstreamClientGuardConfig, DownstreamClientGuardEntry};
+
+    fn guard(
+        provider_id: Ulid,
+        forward: bool,
+        web_origin_host: Option<&str>,
+    ) -> DownstreamClientGuardConfig {
+        DownstreamClientGuardConfig::new([(
+            provider_id,
+            DownstreamClientGuardEntry {
+                forward_downstream_client: forward,
+                web_origin_host: web_origin_host.map(str::to_owned),
+            },
+        )])
+    }
+
+    #[test]
+    fn marker_web_for_matching_web_origin() {
+        let provider_id = Ulid::nil();
+        let guard = guard(provider_id, true, Some("app.gua.global"));
+        let web_client: Url = "https://app.gua.global/".parse().unwrap();
+
+        assert_eq!(
+            guard.marker_for(provider_id, Some(&web_client)),
+            Some("web")
+        );
+    }
+
+    #[test]
+    fn marker_native_for_non_web_origin() {
+        let provider_id = Ulid::nil();
+        let guard = guard(provider_id, true, Some("app.gua.global"));
+        let native_client: Url = "https://elsewhere.example.com/".parse().unwrap();
+
+        assert_eq!(
+            guard.marker_for(provider_id, Some(&native_client)),
+            Some("native")
+        );
+    }
+
+    #[test]
+    fn marker_native_when_client_uri_missing() {
+        // A native client typically has no client_uri; fail closed to native so
+        // the web signup allowlist never applies to it.
+        let provider_id = Ulid::nil();
+        let guard = guard(provider_id, true, Some("app.gua.global"));
+
+        assert_eq!(guard.marker_for(provider_id, None), Some("native"));
+    }
+
+    #[test]
+    fn marker_absent_when_flag_off() {
+        // Flag off means the marker must never be appended, even for a client
+        // whose host matches the web origin.
+        let provider_id = Ulid::nil();
+        let guard = guard(provider_id, false, Some("app.gua.global"));
+        let web_client: Url = "https://app.gua.global/".parse().unwrap();
+
+        assert_eq!(guard.marker_for(provider_id, Some(&web_client)), None);
+    }
+
+    #[test]
+    fn marker_absent_when_provider_not_configured() {
+        let configured = Ulid::from_parts(1, 0);
+        let other = Ulid::from_parts(2, 0);
+        let guard = guard(configured, true, Some("app.gua.global"));
+        let web_client: Url = "https://app.gua.global/".parse().unwrap();
+
+        assert_eq!(guard.marker_for(other, Some(&web_client)), None);
+    }
+
+    #[test]
+    fn marker_host_comparison_is_case_insensitive() {
+        let provider_id = Ulid::nil();
+        let guard = guard(provider_id, true, Some("app.gua.global"));
+        let web_client: Url = "https://APP.Gua.Global/".parse().unwrap();
+
+        assert_eq!(
+            guard.marker_for(provider_id, Some(&web_client)),
+            Some("web")
+        );
+    }
 }

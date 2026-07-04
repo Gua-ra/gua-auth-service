@@ -11,7 +11,7 @@ use axum::{
 use axum_extra::extract::Query;
 use hyper::StatusCode;
 use mas_axum_utils::{GenericError, InternalError, cookies::CookieJar};
-use mas_data_model::{BoxClock, BoxRng, UpstreamOAuthProvider};
+use mas_data_model::{BoxClock, BoxRng, DownstreamClientGuardConfig, UpstreamOAuthProvider};
 use mas_oidc_client::requests::authorization_code::AuthorizationRequestData;
 use mas_router::{PostAuthAction, UrlBuilder};
 use mas_storage::{
@@ -63,6 +63,7 @@ pub(crate) async fn get(
     mut repo: BoxRepository,
     State(url_builder): State<UrlBuilder>,
     State(http_client): State<reqwest::Client>,
+    State(downstream_guard): State<DownstreamClientGuardConfig>,
     cookie_jar: CookieJar,
     Path(provider_id): Path<Ulid>,
     Query(query): Query<OptionalPostAuthAction>,
@@ -92,18 +93,45 @@ pub(crate) async fn get(
         data = data.with_response_mode(response_mode.into());
     }
 
+    // Fetch the authorization grant once if we need it, either to forward the
+    // login hint or to resolve the downstream client for the Gua marker.
+    let grant = if (provider.forward_login_hint
+        || downstream_guard
+            .get(provider.id)
+            .is_some_and(|entry| entry.forward_downstream_client))
+        && let Some(PostAuthAction::ContinueAuthorizationGrant { id }) = &query.post_auth_action
+    {
+        repo.oauth2_authorization_grant().lookup(*id).await?
+    } else {
+        None
+    };
+
     // Forward the raw login hint upstream for the provider to handle however it
     // sees fit
     if provider.forward_login_hint
-        && let Some(PostAuthAction::ContinueAuthorizationGrant { id }) = &query.post_auth_action
-        && let Some(login_hint) = repo
-            .oauth2_authorization_grant()
-            .lookup(*id)
-            .await?
-            .and_then(|grant| grant.login_hint)
+        && let Some(login_hint) = grant.as_ref().and_then(|grant| grant.login_hint.clone())
     {
         data = data.with_login_hint(login_hint);
     }
+
+    // Resolve the Gua downstream-client marker (`web` / `native`) for the
+    // downstream client that initiated this flow, if the guard is enabled for
+    // this provider. We look the client up now so the value can be appended to
+    // the extra params below. This only touches the new-login flow (a grant is
+    // present); existing-user login, re-auth, change-phone and passkey flows
+    // carry no `ContinueAuthorizationGrant` grant here and are never marked.
+    let guard_enabled = downstream_guard
+        .get(provider.id)
+        .is_some_and(|entry| entry.forward_downstream_client);
+    let gua_downstream_marker = if let (true, Some(grant)) = (guard_enabled, grant.as_ref()) {
+        let client = repo.oauth2_client().lookup(grant.client_id).await?;
+        let client_uri = client
+            .as_ref()
+            .and_then(|client| client.client_uri.as_ref());
+        downstream_guard.marker_for(provider.id, client_uri)
+    } else {
+        None
+    };
 
     let data = if let Some(methods) = lazy_metadata.pkce_methods().await? {
         data.with_code_challenge_methods_supported(methods)
@@ -124,6 +152,12 @@ pub(crate) async fn get(
         let mut params = url.query_pairs_mut();
         for (key, value) in &provider.additional_authorization_parameters {
             params.append_pair(key, value);
+        }
+
+        // Append the Gua downstream-client marker so the upstream provider can
+        // apply the web signup allowlist only to web signups.
+        if let Some(marker) = gua_downstream_marker {
+            params.append_pair("gua_downstream", marker);
         }
     }
 

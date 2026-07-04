@@ -756,6 +756,18 @@ upstream_oauth2:
       # authorization request.
       #forward_login_hint: false
 
+      # Whether a `gua_downstream` marker identifying the downstream client
+      # (`web` or `native`) should be forwarded to the provider in the
+      # authorization request. When enabled, the downstream client's
+      # `client_uri` host is compared against `downstream_client_web_origin`:
+      # a match forwards `gua_downstream=web`, anything else forwards
+      # `gua_downstream=native`.
+      #forward_downstream_client: false
+
+      # The web origin whose host identifies the downstream web client, used
+      # together with `forward_downstream_client`.
+      #downstream_client_web_origin: "https://app.example.com/"
+
       # What to do when receiving an OIDC Backchannel logout request.
       # Possible values are:
       #  - `do_nothing` (default): do nothing, other than validating and logging the request

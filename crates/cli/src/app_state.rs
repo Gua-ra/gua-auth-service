@@ -9,7 +9,9 @@ use std::{convert::Infallible, net::IpAddr, sync::Arc};
 use axum::extract::{FromRef, FromRequestParts};
 use ipnetwork::IpNetwork;
 use mas_context::LogContext;
-use mas_data_model::{AppVersion, BoxClock, BoxRng, SiteConfig, SystemClock};
+use mas_data_model::{
+    AppVersion, BoxClock, BoxRng, DownstreamClientGuardConfig, SiteConfig, SystemClock,
+};
 use mas_handlers::{
     ActivityTracker, BoundActivityTracker, CookieManager, ErrorWrapper, GraphQLSchema, Limiter,
     MetadataCache, RequesterFingerprint, passwords::PasswordManager,
@@ -44,6 +46,7 @@ pub struct AppState {
     pub password_manager: PasswordManager,
     pub metadata_cache: MetadataCache,
     pub site_config: SiteConfig,
+    pub downstream_client_guard: DownstreamClientGuardConfig,
     pub activity_tracker: ActivityTracker,
     pub trusted_proxies: Vec<IpNetwork>,
     pub limiter: Limiter,
@@ -193,6 +196,12 @@ impl FromRef<AppState> for MetadataCache {
 impl FromRef<AppState> for SiteConfig {
     fn from_ref(input: &AppState) -> Self {
         input.site_config.clone()
+    }
+}
+
+impl FromRef<AppState> for DownstreamClientGuardConfig {
+    fn from_ref(input: &AppState) -> Self {
+        input.downstream_client_guard.clone()
     }
 }
 
