@@ -335,9 +335,7 @@ pub struct DownstreamClientGuardEntry {
 impl DownstreamClientGuardConfig {
     /// Build a guard config from an iterator of per-provider entries.
     #[must_use]
-    pub fn new(
-        entries: impl IntoIterator<Item = (Ulid, DownstreamClientGuardEntry)>,
-    ) -> Self {
+    pub fn new(entries: impl IntoIterator<Item = (Ulid, DownstreamClientGuardEntry)>) -> Self {
         Self {
             entries: entries.into_iter().collect(),
         }

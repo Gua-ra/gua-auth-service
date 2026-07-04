@@ -125,7 +125,9 @@ pub(crate) async fn get(
         .is_some_and(|entry| entry.forward_downstream_client);
     let gua_downstream_marker = if let (true, Some(grant)) = (guard_enabled, grant.as_ref()) {
         let client = repo.oauth2_client().lookup(grant.client_id).await?;
-        let client_uri = client.as_ref().and_then(|client| client.client_uri.as_ref());
+        let client_uri = client
+            .as_ref()
+            .and_then(|client| client.client_uri.as_ref());
         downstream_guard.marker_for(provider.id, client_uri)
     } else {
         None
