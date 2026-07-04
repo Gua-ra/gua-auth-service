@@ -11,6 +11,7 @@ mod session;
 pub use self::{
     link::UpstreamOAuthLink,
     provider::{
+        DownstreamClientGuardConfig, DownstreamClientGuardEntry,
         ClaimsImports as UpstreamOAuthProviderClaimsImports,
         DiscoveryMode as UpstreamOAuthProviderDiscoveryMode,
         ImportAction as UpstreamOAuthProviderImportAction,

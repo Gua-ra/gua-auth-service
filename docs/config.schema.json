@@ -2331,6 +2331,19 @@
           "type": "boolean",
           "default": false
         },
+        "forward_downstream_client": {
+          "description": "Whether a `gua_downstream` marker identifying the downstream client\n (`web` or `native`) should be forwarded to the provider in the\n authorization request.\n\n When enabled, the downstream client that initiated the flow is\n resolved and its `client_uri` host is compared against\n [`Self::downstream_client_web_origin`]. If the hosts match, `web` is\n sent, otherwise `native`. The upstream provider uses this marker to\n decide whether the web signup allowlist applies.\n\n Defaults to `false`.",
+          "type": "boolean",
+          "default": false
+        },
+        "downstream_client_web_origin": {
+          "description": "The web origin whose host identifies the downstream web client, used\n together with [`Self::forward_downstream_client`].\n\n When `forward_downstream_client` is enabled and the downstream\n client's `client_uri` host equals this origin's host, the\n `gua_downstream=web` marker is forwarded upstream. Any other host\n (or a missing `client_uri`) is treated as `native`.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uri"
+        },
         "on_backchannel_logout": {
           "description": "What to do when receiving an OIDC Backchannel logout request.\n\n Defaults to `do_nothing`.",
           "allOf": [

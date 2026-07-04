@@ -46,6 +46,7 @@ pub use self::{
         AccessToken, AccessTokenState, RefreshToken, RefreshTokenState, TokenFormatError, TokenType,
     },
     upstream_oauth2::{
+        DownstreamClientGuardConfig, DownstreamClientGuardEntry,
         UpstreamOAuthAuthorizationSession, UpstreamOAuthAuthorizationSessionState,
         UpstreamOAuthLink, UpstreamOAuthProvider, UpstreamOAuthProviderClaimsImports,
         UpstreamOAuthProviderDiscoveryMode, UpstreamOAuthProviderImportAction,

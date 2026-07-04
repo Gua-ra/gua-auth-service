@@ -28,7 +28,9 @@ use mas_axum_utils::{
     cookies::{CookieJar, CookieManager},
 };
 use mas_config::RateLimitingConfig;
-use mas_data_model::{AppVersion, BoxClock, BoxRng, SiteConfig, clock::MockClock};
+use mas_data_model::{
+    AppVersion, BoxClock, BoxRng, DownstreamClientGuardConfig, SiteConfig, clock::MockClock,
+};
 use mas_email::{MailTransport, Mailer};
 use mas_i18n::Translator;
 use mas_keystore::{Encrypter, JsonWebKey, JsonWebKeySet, Keystore, PrivateKey};
@@ -107,6 +109,7 @@ pub(crate) struct TestState {
     pub graphql_schema: graphql::Schema,
     pub password_manager: PasswordManager,
     pub site_config: SiteConfig,
+    pub downstream_client_guard: DownstreamClientGuardConfig,
     pub activity_tracker: ActivityTracker,
     pub limiter: Limiter,
     pub clock: Arc<MockClock>,
@@ -283,6 +286,7 @@ impl TestState {
             graphql_schema,
             password_manager,
             site_config,
+            downstream_client_guard: DownstreamClientGuardConfig::default(),
             activity_tracker,
             limiter,
             clock,
@@ -574,6 +578,12 @@ impl FromRef<TestState> for MetadataCache {
 impl FromRef<TestState> for SiteConfig {
     fn from_ref(input: &TestState) -> Self {
         input.site_config.clone()
+    }
+}
+
+impl FromRef<TestState> for DownstreamClientGuardConfig {
+    fn from_ref(input: &TestState) -> Self {
+        input.downstream_client_guard.clone()
     }
 }
 
