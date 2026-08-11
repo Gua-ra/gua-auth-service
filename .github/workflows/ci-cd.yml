@@ -171,7 +171,7 @@ jobs:
         run: |
           IMG="${{ needs.build.outputs.ref }}"
           # Runs on the in-cluster gua-auth-deploy-runner pod (ServiceAccount gua-auth-deployer,
-          # scoped to patch ONLY this deployment), so plain kubectl uses the in-cluster config —
+          # scoped to patch ONLY this deployment), so plain kubectl uses the in-cluster config,
           # no sudo/k3s on the node. k8s pulls the immutable sha-tagged image from GHCR via the
           # ghcr-pull secret (imagePullPolicy: IfNotPresent + imagePullSecrets).
           kubectl -n gua set image deployment/gua-matrix-authentication-service \
