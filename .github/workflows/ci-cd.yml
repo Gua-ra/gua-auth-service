@@ -7,6 +7,11 @@ name: CI/CD
 # schema-drift/OPA/frontend) stays in the upstream ci.yaml ("CI"); this file does not
 # replace it. This is the single canonical build+deploy pipeline for the Gua fork.
 #
+# Deploy paths, in order of how often they are used:
+#
+#   label a PR `deploy:dev` => builds that branch and rolls it onto dev, so a change can
+#                              be tried on the real stack before it is merged. Remove the
+#                              label and re-add it to redeploy after new commits.
 #   merge to main           => auto build + auto deploy to DEV + stage an
 #                              approval-gated PROD deployment
 #   workflow_dispatch (dev) => build the triggering branch + deploy to DEV (QA)
@@ -16,6 +21,8 @@ name: CI/CD
 on:
   push:
     branches: ["main"]
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
   workflow_dispatch:
     inputs:
       environment:
@@ -27,9 +34,14 @@ on:
 permissions:
   contents: read
   packages: write
+  # So a labelled PR can be told where it landed.
+  pull-requests: write
 
 env:
   IMAGE: ghcr.io/gua-ra/gua-auth-service
+  # Put this label on a PR to roll that PR's build onto dev. Only people with write
+  # access can label, which is what keeps this from being an open door on a public repo.
+  DEPLOY_LABEL: deploy:dev
 
 jobs:
   # Rust build + test gate. Mirrors the upstream MAS test invocation (nextest, with
@@ -41,6 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       ref: ${{ steps.ref.outputs.ref }}
+      deploy-to-dev: ${{ steps.gate.outputs.dev }}
 
     services:
       postgres:
@@ -86,10 +99,26 @@ jobs:
           SQLX_OFFLINE: "1"
           DATABASE_URL: postgresql://postgres:postgres@localhost/postgres
 
+      - id: gate
+        name: Decide whether this PR asked for a dev deploy
+        # Same-repo check: a PR from a fork has no access to the registry credentials, so
+        # labelling one would fail at the push step rather than deploy anything.
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ] \
+             && [ "${{ github.event.pull_request.head.repo.full_name }}" = "${{ github.repository }}" ] \
+             && ${{ contains(github.event.pull_request.labels.*.name, 'deploy:dev') }}; then
+            echo "dev=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "dev=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # An unlabelled PR stops at "it builds and the tests pass": no image, no deploy.
       - name: Set up Buildx
+        if: github.event_name != 'pull_request' || steps.gate.outputs.dev == 'true'
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to GHCR
+        if: github.event_name != 'pull_request' || steps.gate.outputs.dev == 'true'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -101,15 +130,20 @@ jobs:
         run: echo "ref=${IMAGE}:sha-${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
 
       - name: Image tags
+        if: github.event_name != 'pull_request' || steps.gate.outputs.dev == 'true'
         uses: docker/metadata-action@v5
         id: meta
         with:
           images: ${{ env.IMAGE }}
+          # Deploys always use the immutable sha tag. `dev` stays pinned to main so it keeps
+          # meaning "what main builds"; a labelled PR gets a pr-N tag for humans to spot.
           tags: |
             type=sha,format=long
             type=raw,value=dev,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=pr-${{ github.event.number }},enable=${{ github.event_name == 'pull_request' }}
 
       - name: Build and push
+        if: github.event_name != 'pull_request' || steps.gate.outputs.dev == 'true'
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -121,12 +155,13 @@ jobs:
           cache-to: type=gha,mode=max
 
   # AUTOMATIC on merge to main; also manually dispatchable (environment=dev) to roll
-  # any branch onto dev for QA.
+  # any branch onto dev for QA, and fires for a PR labelled `deploy:dev`.
   deploy-dev:
     needs: build
     if: >-
       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-      (github.event_name == 'workflow_dispatch' && inputs.environment == 'dev')
+      (github.event_name == 'workflow_dispatch' && inputs.environment == 'dev') ||
+      needs.build.outputs.deploy-to-dev == 'true'
     # Unique label → routes ONLY to the in-cluster scoped-SA pod runner
     # (k8s/cicd/gua-auth-deploy-runner.yaml in gua-deploy), never a privileged host runner.
     runs-on: [self-hosted, gua-auth-incluster]
@@ -143,12 +178,30 @@ jobs:
             matrix-authentication-service="$IMG" database-migrate="$IMG"
           kubectl -n gua rollout status deployment/gua-matrix-authentication-service --timeout=180s
 
+      - name: Tell the PR where it went
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `Deployed to **dev** (ns \`gua\`): \`${{ needs.build.outputs.ref }}\`\n\nDev keeps running this build until something else is deployed over it. Merging to main returns dev to main's build.`
+            })
+
   # APPROVAL GATE: fires on every merge to main and on workflow_dispatch with
   # environment=prod. A merge deploys dev automatically (deploy-dev above) and also
   # stages this prod deployment, which pauses until the `production` GitHub
   # Environment is approved (it has a required reviewer plus a main-only branch
   # policy). Remaining prerequisite for prod: register the in-cluster prod runner
   # (label gua-auth-incluster-prod); until then an approved run queues with no runner.
+  #
+  # NOTE: this job targets ns gua-prod. It used to say `-n gua`, the DEV namespace, so an
+  # approved prod deploy would have silently re-rolled dev and prod would never have
+  # received the build. The missing prod runner is what kept that from ever happening: the
+  # job queues instead of deploying, which is the safe failure, and it can no longer hit
+  # the wrong namespace once a runner does exist.
   deploy-prod:
     needs: build
     if: >-
@@ -161,6 +214,6 @@ jobs:
         run: |
           IMG="${{ needs.build.outputs.ref }}"
           # Same in-cluster scoped-SA runner model as dev (a prod runner + cluster are future work).
-          kubectl -n gua set image deployment/gua-matrix-authentication-service \
+          kubectl -n gua-prod set image deployment/gua-matrix-authentication-service \
             matrix-authentication-service="$IMG" database-migrate="$IMG"
-          kubectl -n gua rollout status deployment/gua-matrix-authentication-service --timeout=180s
+          kubectl -n gua-prod rollout status deployment/gua-matrix-authentication-service --timeout=180s
