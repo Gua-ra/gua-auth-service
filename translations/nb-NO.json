@@ -11,9 +11,8 @@
     "submit": "Send"
   },
   "app": {
-    "human_name": "Matrix Authentication Service",
-    "name": "matrix-authentication-service",
-    "technical_description": "OpenID Connect oppdagelsesdokument: <a class=\"cpd-link\" data-kind=\"primary\" href=\"%(discovery_url)s\">%(discovery_url)s</a>"
+    "human_name": "Gua",
+    "name": "Gua"
   },
   "branding": {
     "privacy_policy": {
@@ -29,7 +28,6 @@
     "display_name": "Visningsnavn",
     "email_address": "E-postadresse",
     "loading": "Laster inn...",
-    "mxid": "Matrix ID",
     "password": "Passord",
     "password_confirm": "Bekreft passord",
     "username": "Brukernavn"
@@ -40,11 +38,9 @@
   "mas": {
     "account": {
       "deactivated": {
-        "description": "Denne kontoen (<em>%(mxid)s</em>) har blitt slettet. Hvis dette ikke er forventet, må du kontakte serveradministratoren.",
         "heading": "Konto slettet"
       },
       "locked": {
-        "description": "Denne kontoen (<em>%(mxid)s</em> ) har blitt låst. Hvis dette ikke er forventet, kontakt serveradministratoren din.",
         "heading": "Konto låst"
       },
       "logged_out": {
@@ -121,7 +117,6 @@
         "copy_link": "Kopier følgende lenke og lim den inn i en nettleser for å opprette et nytt passord:",
         "create_new_password": "Opprett nytt passord",
         "fallback": "Fungerer ikke knappen for deg?",
-        "headline": "Du har bedt om tilbakestilling av passord for %(server_name)s kontoen din.",
         "subject": "Tilbakestill kontopassordet ditt (%(mxid)s)",
         "you_can_ignore": "Hvis du ikke ba om et nytt passord, kan du ignorere denne e-posten. Ditt nåværende passord vil fortsette å fungere."
       },
@@ -150,9 +145,7 @@
       "username_too_long": "Brukernavnet er for langt",
       "username_too_short": "Brukernavnet er for kort"
     },
-    "legacy_consent": {
-      "this_will_setup": "Dette vil konfigurere <span>%(client_name)s</span> med din <span>%(server_name)s</span> konto."
-    },
+    "legacy_consent": {},
     "login": {
       "call_to_register": "Har du ikke en konto ennå?",
       "continue_with_provider": "Fortsett med %(provider)s",
@@ -227,7 +220,6 @@
       "terms_of_service": "Jeg godtar <a href=\"%s\" data-kind=\"primary\" class=\"cpd-link\">vilkårene og betingelsene</a>"
     },
     "registration_token": {
-      "description": "Enter et registreringstoken som er levert av administratoren av homeserveren.",
       "field": "Registreringstoken",
       "headline": "Registreringstoken"
     },
@@ -260,7 +252,6 @@
         "forced_email": "Vil bruke følgende e-postadresse",
         "forced_localpart": "Vil bruke følgende brukernavn",
         "import_data": {
-          "description": "Bekreft informasjonen som vil bli knyttet til din nye %(server_name)s konto.",
           "heading": "Importer dataene dine"
         },
         "imported_from_upstream": "Importert fra oppstrømskontoen din",

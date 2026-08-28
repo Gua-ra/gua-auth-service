@@ -22,7 +22,7 @@ Please see LICENSE files in the repository root for full details.
           {{ _("mas.upstream_oauth2.register.import_data.heading") }}
         </h1>
         <p class="text">
-          {{ _("mas.upstream_oauth2.register.import_data.description", server_name=branding.server_name) }}
+          {{ _("mas.upstream_oauth2.register.import_data.description") }}
         </p>
       </div>
     </header>
@@ -90,8 +90,9 @@ Please see LICENSE files in the repository root for full details.
 
 
     {% if force_localpart %}
-      {% call(f) field.field(label=_("common.mxid"), name="mxid") %}
-        <input {{ field.attributes(f) }} class="cpd-text-control" type="text" value="@{{ imported_localpart }}:{{ branding.server_name }}" readonly aria-describedby="{{ f.id }}-help" />
+      {# GUA FORK: this is the person's handle, not a "Matrix ID". #}
+      {% call(f) field.field(label=_("common.username"), name="username") %}
+        <input {{ field.attributes(f) }} class="cpd-text-control" type="text" value="@{{ imported_localpart }}" readonly aria-describedby="{{ f.id }}-help" />
 
         <div class="cpd-form-message cpd-form-help-message" id="{{ f.id }}-help">
           {{- _("mas.upstream_oauth2.register.enforced_by_policy") -}}
@@ -104,7 +105,7 @@ Please see LICENSE files in the repository root for full details.
 
         {% if f.errors is empty %}
           <div class="cpd-form-message cpd-form-help-message" id="{{ f.id }}-help">
-            @{{ imported_localpart or (_("common.username") | lower) }}:{{ branding.server_name }}
+            @{{ imported_localpart or (_("common.username") | lower) }}
           </div>
         {% endif %}
       {% endcall %}

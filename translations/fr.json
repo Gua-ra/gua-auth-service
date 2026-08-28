@@ -11,9 +11,8 @@
     "submit": "Soumettre"
   },
   "app": {
-    "human_name": "Matrix Authentication Service",
-    "name": "matrix-authentication-service",
-    "technical_description": "Document de découverte OpenID Connect : <a class=\"cpd-link\" data-kind=\"primary\" href=\"%(discovery_url)s\">%(discovery_url)s</a>"
+    "human_name": "Gua",
+    "name": "Gua"
   },
   "branding": {
     "privacy_policy": {
@@ -29,7 +28,6 @@
     "display_name": "Pseudonyme",
     "email_address": "Adresse e-mail",
     "loading": "Chargement…",
-    "mxid": "Matrix ID",
     "password": "Mot de passe",
     "password_confirm": "Confirmer le mot de passe",
     "username": "Nom d’utilisateur"
@@ -40,11 +38,11 @@
   "mas": {
     "account": {
       "deactivated": {
-        "description": "Ce compte (<em>%(mxid)s</em>) a été supprimé. Si vous ne vous attendez pas à cela, contactez l'administrateur de votre serveur.",
+        "description": "Ce compte (<em>%(username)s</em>) a été supprimé. Si ce n'est pas normal, contactez le support.",
         "heading": "Compte supprimé"
       },
       "locked": {
-        "description": "Ce compte (<em>%(mxid)s</em>) a été verrouillé. Si vous ne vous attendez pas à cela, contactez l'administrateur de votre serveur.",
+        "description": "Ce compte (<em>%(username)s</em>) a été verrouillé. Si ce n'est pas normal, contactez le support.",
         "heading": "Compte bloqué"
       },
       "logged_out": {
@@ -102,7 +100,7 @@
         "description": "Vous avez refusé l'accès à %(client_name)s. Vous pouvez fermer cette fenêtre.",
         "heading": "Accès refusé"
       },
-      "description": "<strong>Un autre appareil</strong> souhaite associer %(client_name)s (<span>%(client_uri)s</span>) avec votre compte <span>%(server_name)s</span>. Assurez-vous de reconnaître cet appareil.",
+      "description": "<strong>Un autre appareil</strong> souhaite connecter %(client_name)s à votre compte Gua. Assurez-vous de reconnaître cet appareil.",
       "grant_access": "Accorder l'accès",
       "granted": {
         "description": "Vous avez accordé l'accès à %(client_name)s. Vous pouvez fermer cette fenêtre.",
@@ -131,7 +129,7 @@
         "copy_link": "Copiez le lien suivant et collez-le dans un navigateur pour créer un nouveau mot de passe :",
         "create_new_password": "Créer un nouveau mot de passe",
         "fallback": "Le bouton ne fonctionne pas pour vous ?",
-        "headline": "Vous avez demandé la réinitialisation du mot de passe de votre compte %(server_name)s.",
+        "headline": "Vous avez demandé la réinitialisation du mot de passe de votre compte Gua.",
         "subject": "Réinitialisez le mot de passe de votre compte (%(mxid)s)",
         "you_can_ignore": "Si vous n’avez pas demandé à réinitialisation votre mot de passe, vous pouvez ignorer cet e-mail. Votre mot de passe actuel continuera de fonctionner."
       },
@@ -161,7 +159,7 @@
       "username_too_short": "Le nom d'utilisateur est trop court"
     },
     "legacy_consent": {
-      "this_will_setup": "Continuer connectera <span>%(client_name)s</span> avec votre compte <span>%(server_name)s</span>."
+      "this_will_setup": "Cela connectera <span>%(client_name)s</span> à votre compte Gua."
     },
     "login": {
       "call_to_register": "Vous n’avez pas encore de compte ?",
@@ -242,7 +240,7 @@
       "terms_of_service": "J'accepte les <a href=\"%s\" data-kind=\"primary\" class=\"cpd-link\">Conditions d'utilisation</a>"
     },
     "registration_token": {
-      "description": "Saisissez le jeton d'enregistrement fourni par l'administrateur du serveur d'accueil.",
+      "description": "Saisissez le code d'invitation qui vous a été transmis.",
       "field": "Jeton d'enregistrement",
       "headline": "Jeton d'enregistrement"
     },
@@ -275,7 +273,7 @@
         "forced_email": "Utilisera l’adresse e-mail suivante",
         "forced_localpart": "Utilisera le nom d'utilisateur suivant",
         "import_data": {
-          "description": "Confirmez les informations qui seront associées à votre nouveau compte %(server_name)s.",
+          "description": "Confirmez les informations qui seront liées à votre nouveau compte Gua.",
           "heading": "Importez vos données"
         },
         "imported_from_upstream": "Importé de votre compte en amont",

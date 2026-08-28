@@ -7,8 +7,10 @@ Please see LICENSE files in the repository root for full details.
 -#}
 
 {%- set _ = translator(lang) -%}
+{# GUA FORK: a mail subject reaches lock screens and mail archives, so it carries the
+   handle only, never the homeserver. #}
 {%- set mxid -%}
-    @{{ user.username }}:{{ branding.server_name }}
+    @{{ user.username }}
 {%- endset -%}
 
 {{ _("mas.emails.recovery.subject", mxid=mxid) }}

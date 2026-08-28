@@ -16,8 +16,8 @@ Please see LICENSE files in the repository root for full details.
 
       <div class="header">
         <h1 class="title">{{ _("mas.account.locked.heading") }}</h1>
-        {% set mxid = "@" + user.username + ":" + branding.server_name %}
-        <p class="text">{{ _("mas.account.locked.description", mxid=mxid) }}</p>
+        {# GUA FORK: the handle only, never the homeserver. #}
+        <p class="text">{{ _("mas.account.locked.description", username="@" + user.username) }}</p>
       </div>
 
       {{ logout.button(text=_("action.sign_in"), csrf_token=csrf_token) }}

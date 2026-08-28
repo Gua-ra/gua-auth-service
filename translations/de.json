@@ -11,9 +11,8 @@
     "submit": "Absenden"
   },
   "app": {
-    "human_name": "Matrix Authentication Service",
-    "name": "matrix-authentication-service",
-    "technical_description": "OpenID Connect discovery document: <a class=\"cpd-link\" data-kind=\"primary\" href=\"%(discovery_url)s\">%(discovery_url)s</a>"
+    "human_name": "Gua",
+    "name": "Gua"
   },
   "branding": {
     "privacy_policy": {
@@ -29,7 +28,6 @@
     "display_name": "Anzeigename",
     "email_address": "E-Mail-Adresse",
     "loading": "Lade …",
-    "mxid": "Matrix-ID",
     "password": "Passwort",
     "password_confirm": "Passwort wiederholen",
     "username": "Benutzername"
@@ -40,11 +38,9 @@
   "mas": {
     "account": {
       "deactivated": {
-        "description": "Dieses Konto (<em>%(mxid)s</em>) wurde entfernt. Wenn du dies nicht erwartet hast, wende dich an den Server Admin",
         "heading": "Konto gelöscht"
       },
       "locked": {
-        "description": "Dieses Konto (<em>%(mxid)s</em>) wurde gesperrt. Wenn du dies nicht erwartet hast, wende dich an den Server Admin.",
         "heading": "Konto gesperrt"
       },
       "logged_out": {
@@ -102,7 +98,6 @@
         "description": "Du hast den Zugriff auf %(client_name)s abgelehnt. Du kannst dieses Fenster jetzt schließen.",
         "heading": "Zugriff verweigert"
       },
-      "description": "<strong>Ein anderes Gerät</strong> möchte %(client_name)s (<span>%(client_uri)s</span>) mit deinem <span>%(server_name)s</span> Konto verknüpfen. Bitte stelle sicher, dass du dieses Gerät erkennst.",
       "grant_access": "Zugriff gewähren",
       "granted": {
         "description": "Du hast %(client_name)s Zugriff gegeben. Du kannst dieses Fenster jetzt schließen.",
@@ -131,7 +126,6 @@
         "copy_link": "Kopier den folgenden Link und füge ihn in deinen Browser ein, um ein neues Passwort zu erstellen:",
         "create_new_password": "Neues Passwort erstellen",
         "fallback": "Funktioniert der Button bei Ihnen nicht?",
-        "headline": "Du hast das Zurücksetzen des Passworts für dein Konto bei %(server_name)s angefordert.",
         "subject": "Setze dein Konto Passwort zurück (%(mxid)s)",
         "you_can_ignore": "Wenn du kein neues Passwort angefordert hast, kannst du diese E-Mail einfach ignorieren. Dein aktuelles Passwort funktioniert weiterhin."
       },
@@ -160,9 +154,7 @@
       "username_too_long": "Der Benutzername ist zu lang",
       "username_too_short": "Der Benutzername ist zu kurz"
     },
-    "legacy_consent": {
-      "this_will_setup": "Dadurch wird <span>%(client_name)s</span> mit deinem <span>%(server_name)s</span> Konto eingerichtet."
-    },
+    "legacy_consent": {},
     "login": {
       "call_to_register": "Du hast noch kein Konto?",
       "continue_with_provider": "Weiter mit %(provider)s",
@@ -242,7 +234,6 @@
       "terms_of_service": "Ich stimme den <a href=\"%s\" data-kind=\"primary\" class=\"cpd-link\">Allgemeinen Geschäftsbedingungen</a> zu."
     },
     "registration_token": {
-      "description": "Gib das Registrierungstoken ein, das du vom Homeserver-Admin bekommen hast.",
       "field": "Registrierungstoken",
       "headline": "Registrierungstoken"
     },
@@ -275,7 +266,6 @@
         "forced_email": "Verwendet die folgende E-Mail-Adresse",
         "forced_localpart": "Verwendet den folgenden Benutzernamen",
         "import_data": {
-          "description": "Bestätige die Informationen, die mit dem neuen %(server_name)s Konto verknüpft werden.",
           "heading": "Deine Daten importieren"
         },
         "imported_from_upstream": "Aus deinem Upstream-Konto importiert",

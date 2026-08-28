@@ -60,7 +60,7 @@ Please see LICENSE files in the repository root for full details.
     <div class="flex flex-col">
       <div class="text-primary cpd-text-body-lg-semibold">{{ matrix_user.display_name or current_session.user.username }}</div>
       {% if matrix_user.display_name %}
-      <div class="text-secondary cpd-text-body-md-regular">{{ current_session.user.username }}</div>
+      <div class="text-secondary cpd-text-body-md-regular">@{{ current_session.user.username }}</div>
       {% endif %}
     </div>
   </section>

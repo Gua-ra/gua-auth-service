@@ -11,9 +11,8 @@
     "submit": "Skicka in"
   },
   "app": {
-    "human_name": "Matrix Authentication Service",
-    "name": "matrix-authentication-service",
-    "technical_description": "Dokument för OpenID Connect-identifiering: <a class=\"cpd-link\" data-kind=\"primary\" href=\"%(discovery_url)s\">%(discovery_url)s</a>"
+    "human_name": "Gua",
+    "name": "Gua"
   },
   "branding": {
     "privacy_policy": {
@@ -29,7 +28,6 @@
     "display_name": "Visningsnamn",
     "email_address": "E-postadress",
     "loading": "Laddar …",
-    "mxid": "Matrix ID",
     "password": "Lösenord",
     "password_confirm": "Bekräfta lösenordet",
     "username": "Användarnamn"
@@ -99,7 +97,6 @@
         "click_button": "Klicka på knappen nedan för att skapa ett nytt lösenord:",
         "copy_link": "Kopiera följande länk och klistra in den i en webbläsare för att skapa ett nytt lösenord:",
         "create_new_password": "Skapa nytt lösenord",
-        "headline": "Du begärde en lösenordsåterställning för ditt %(server_name)s konto.",
         "subject": "Återställ ditt kontolösenord (%(mxid)s)",
         "you_can_ignore": "Om du inte har bett om ett nytt lösenord kan du ignorera detta e-postmeddelande. Ditt nuvarande lösenord kommer att fortsätta att fungera."
       },
@@ -223,7 +220,6 @@
         "forced_email": "Kommer att använda följande e-postadress",
         "forced_localpart": "Kommer att använda följande användarnamn",
         "import_data": {
-          "description": "Bekräfta informationen som kommer att länkas till ditt nya %(server_name)s konto.",
           "heading": "Importera dina data"
         },
         "imported_from_upstream": "Importeras från ditt upstream-konto",

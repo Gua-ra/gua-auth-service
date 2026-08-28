@@ -11,9 +11,8 @@
     "submit": "Indsend"
   },
   "app": {
-    "human_name": "Matrix Authentication Service",
-    "name": "matrix-authentication-service",
-    "technical_description": "OpenID Connect opdagelsesdokument: <a class=\"cpd-link\" data-kind=\"primary\" href=\"%(discovery_url)s\">%(discovery_url)s</a>"
+    "human_name": "Gua",
+    "name": "Gua"
   },
   "branding": {
     "privacy_policy": {
@@ -29,7 +28,6 @@
     "display_name": "Vist navn",
     "email_address": "E-mailadresse",
     "loading": "Indlæser...",
-    "mxid": "Matrix ID",
     "password": "Adgangskode",
     "password_confirm": "Bekræft adgangskode",
     "username": "Brugernavn"
@@ -40,11 +38,9 @@
   "mas": {
     "account": {
       "deactivated": {
-        "description": "Denne konto (<em>%(mxid)s</em>) er blevet slettet. Hvis dette ikke er forventet, skal du kontakte din serveradministrator.",
         "heading": "Konto slettet"
       },
       "locked": {
-        "description": "Denne konto (<em>%(mxid)s</em>) er blevet låst. Hvis dette ikke er forventet, skal du kontakte din serveradministrator.",
         "heading": "Konto låst"
       },
       "logged_out": {
@@ -116,7 +112,6 @@
         "copy_link": "Kopier følgende link, og indsæt det i en browser for at oprette en ny adgangskode:",
         "create_new_password": "Opret ny adgangskode",
         "fallback": "Virker knappen ikke for dig?",
-        "headline": "Du har anmodet om en nulstilling af adgangskoden til din %(server_name)s konto.",
         "subject": "Nulstil adgangskoden til din konto (%(mxid)s)",
         "you_can_ignore": "Hvis du ikke har bedt om en ny adgangskode, kan du ignorere denne e-mail. Din nuværende adgangskode vil fortsætte med at fungere."
       },
@@ -219,7 +214,6 @@
       "terms_of_service": "Jeg accepterer <a href=\"%s\" data-kind=\"primary\" class=\"cpd-link\">Vilkår og betingelser</a>"
     },
     "registration_token": {
-      "description": "Indtast et registreringstoken fra hjemmeserverens administrator.",
       "field": "Registreringstoken",
       "headline": "Registreringstoken"
     },
@@ -252,7 +246,6 @@
         "forced_email": "Bruger følgende e-mail-adresse",
         "forced_localpart": "Bruger følgende brugernavn",
         "import_data": {
-          "description": "Bekræft de oplysninger, der vil blive knyttet til din nye %(server_name)s konto.",
           "heading": "Importér dine data"
         },
         "imported_from_upstream": "Importeret fra din upstream-konto",

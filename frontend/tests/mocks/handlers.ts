@@ -73,6 +73,7 @@ export const handlers = [
             {
               __typename: "User",
               id: "user-id",
+              username: "alice",
               matrix: {
                 mxid: "@alice:example.com",
                 displayName: "Alice",

@@ -34,20 +34,15 @@
     }
   },
   "app": {
-    "human_name": "Matrix Authentication Service",
+    "human_name": "Gua",
     "@human_name": {
       "context": "pages/index.html:15:29-48",
       "description": "Human readable name of the application"
     },
-    "name": "matrix-authentication-service",
+    "name": "Gua",
     "@name": {
       "context": "app.html:17:14-27, base.html:24:31-44",
       "description": "Name of the application"
-    },
-    "technical_description": "OpenID Connect discovery document: <a class=\"cpd-link\" data-kind=\"primary\" href=\"%(discovery_url)s\">%(discovery_url)s</a>",
-    "@technical_description": {
-      "context": "pages/index.html:17:13-72",
-      "description": "Introduction text displayed on the home page"
     }
   },
   "branding": {
@@ -85,10 +80,6 @@
     "@loading": {
       "context": "form_post.html:14:27-46"
     },
-    "mxid": "Matrix ID",
-    "@mxid": {
-      "context": "pages/upstream_oauth2/do_register.html:93:35-51"
-    },
     "password": "Password",
     "@password": {
       "context": "pages/login.html:56:37-57, pages/reauth.html:28:35-55, pages/register/password.html:45:33-53"
@@ -112,7 +103,7 @@
   "mas": {
     "account": {
       "deactivated": {
-        "description": "This account (<em>%(mxid)s</em>) has been deleted. If this is not expected, contact your server administrator.",
+        "description": "This account (<em>%(username)s</em>) has been deleted. If this is not expected, contact support.",
         "@description": {
           "context": "pages/account/deactivated.html:20:27-78"
         },
@@ -122,7 +113,7 @@
         }
       },
       "locked": {
-        "description": "This account (<em>%(mxid)s</em>) has been locked. If this is not expected, contact your server administrator.",
+        "description": "This account (<em>%(username)s</em>) has been locked. If this is not expected, contact support.",
         "@description": {
           "context": "pages/account/locked.html:20:27-73"
         },
@@ -254,7 +245,7 @@
           "context": "pages/device_consent.html:192:29-67"
         }
       },
-      "description": "<strong>Another device</strong> wants to link %(client_name)s (<span>%(client_uri)s</span>) with your <span>%(server_name)s</span> account. Make sure you recognise this device.",
+      "description": "<strong>Another device</strong> wants to connect %(client_name)s to your Gua account. Make sure you recognise this device.",
       "@description": {
         "context": "pages/device_consent.html:45:13-146",
         "description": "On the device consent page, the body text below the title describing which client is asking to be linked with the user's homeserver account."
@@ -341,7 +332,7 @@
         "@fallback": {
           "context": "emails/recovery.html:45:9-42"
         },
-        "headline": "You requested a password reset for your %(server_name)s account.",
+        "headline": "You requested a password reset for your Gua account.",
         "@headline": {
           "context": "emails/recovery.html:26:7-74, emails/recovery.txt:10:3-70"
         },
@@ -445,7 +436,7 @@
       }
     },
     "legacy_consent": {
-      "this_will_setup": "This will set up <span>%(client_name)s</span> with your <span>%(server_name)s</span> account.",
+      "this_will_setup": "This will connect <span>%(client_name)s</span> to your Gua account.",
       "@this_will_setup": {
         "context": "pages/sso.html:28:11-109"
       }
@@ -687,7 +678,7 @@
       }
     },
     "registration_token": {
-      "description": "Enter a registration token provided by the homeserver administrator.",
+      "description": "Enter the invite code you were given.",
       "@description": {
         "context": "pages/register/steps/registration_token.html:17:25-64"
       },
@@ -777,7 +768,7 @@
           "description": "Tells the user which username will be used"
         },
         "import_data": {
-          "description": "Confirm the information that will be linked to your new %(server_name)s account.",
+          "description": "Confirm the information that will be linked to your new Gua account.",
           "@description": {
             "context": "pages/upstream_oauth2/do_register.html:25:13-104"
           },
