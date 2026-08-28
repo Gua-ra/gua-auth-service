@@ -10,8 +10,8 @@
     "submit": "Bevestigen"
   },
   "app": {
-    "human_name": "Matrix Authentication Service",
-    "name": "matrix-authentication-service"
+    "human_name": "Gua",
+    "name": "Gua"
   },
   "branding": {
     "privacy_policy": {
@@ -27,7 +27,6 @@
     "display_name": "Weergavenaam",
     "email_address": "E-mailadres",
     "loading": "Laden...",
-    "mxid": "Matrix ID",
     "password": "Wachtwoord",
     "password_confirm": "Bevestig wachtwoord",
     "username": "Gebruikersnaam"

@@ -19,6 +19,7 @@ const Template: React.FC<{
   const user = makeFragmentData(
     {
       id: "user id",
+      username: mxid.replace(/^@/, "").split(":")[0],
       matrix: {
         mxid,
         displayName,

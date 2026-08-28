@@ -11,9 +11,8 @@
     "submit": "Lähetä"
   },
   "app": {
-    "human_name": "Matrix Authentication Service",
-    "name": "matrix-authentication-service",
-    "technical_description": "OpenID Connect -metatietoasiakirja: <a class=\"cpd-link\" data-kind=\"primary\" href=\"%(discovery_url)s\">%(discovery_url)s</a>"
+    "human_name": "Gua",
+    "name": "Gua"
   },
   "branding": {
     "privacy_policy": {
@@ -29,7 +28,6 @@
     "display_name": "Näyttönimi",
     "email_address": "Sähköpostiosoite",
     "loading": "Ladataan…",
-    "mxid": "Matrix tunnus",
     "password": "Salasana",
     "password_confirm": "Vahvista salasana",
     "username": "Käyttäjänimi"
@@ -40,11 +38,9 @@
   "mas": {
     "account": {
       "deactivated": {
-        "description": "Tämä tili (<em>%(mxid)s</em>) on poistettu. Jos tämä on virhe, ota yhteyttä palvelimen ylläpitäjään.",
         "heading": "Tili poistettu"
       },
       "locked": {
-        "description": "Tämä tili (<em>%(mxid)s</em>) on lukittu. Jos tämä on virhe, ota yhteyttä palvelimen ylläpitäjään.",
         "heading": "Tili lukittu"
       },
       "logged_out": {
@@ -102,7 +98,6 @@
         "description": "Kielsit pääsyn %(client_name)s -sovellukselta. Voit sulkea tämän ikkunan.",
         "heading": "Pääsy kielletty"
       },
-      "description": "<strong>Toinen laite</strong> haluaa yhdistää %(client_name)s (<span>%(client_uri)s</span>) sovelluksen <span>%(server_name)s</span> tiliisi. Varmista, että tunnistat kyseisen laitteen.",
       "grant_access": "Salli pääsyoikeus",
       "granted": {
         "description": "Annoit pääsyn %(client_name)s -sovellukselle. Voit sulkea tämän ikkunan.",
@@ -131,7 +126,6 @@
         "copy_link": "Luo uusi salasana kopioimalla seuraava linkki ja liittämällä se selaimeen:",
         "create_new_password": "Luo uusi salasana",
         "fallback": "Eikö painike toimi sinulle?",
-        "headline": "Pyysit salasanan palautusta %(server_name)s -tilillesi.",
         "subject": "Palauta tilisi salasana (%(mxid)s)",
         "you_can_ignore": "Jos et pyytänyt uutta salasanaa, voit jättää tämän sähköpostiviestin huomiotta. Nykyinen salasanasi toimii edelleen."
       },
@@ -160,9 +154,7 @@
       "username_too_long": "Käyttäjänimi on liian pitkä",
       "username_too_short": "Käyttäjänimi on liian lyhyt"
     },
-    "legacy_consent": {
-      "this_will_setup": "Tämä yhdistää <span>%(client_name)s</span> -sovelluksen <span>%(server_name)s</span> tiliisi."
-    },
+    "legacy_consent": {},
     "login": {
       "call_to_register": "Eikö sinulla ole vielä tiliä?",
       "continue_with_provider": "Jatka %(provider)s -tilillä",
@@ -242,7 +234,6 @@
       "terms_of_service": "Hyväksyn <a href=\"%s\" data-kind=\"primary\" class=\"cpd-link\">Käyttöehdot</a>"
     },
     "registration_token": {
-      "description": "Anna kotipalvelimen ylläpitäjän antama rekisteröitymispoletti.",
       "field": "Rekisteröitymispoletti",
       "headline": "Rekisteröitymispoletti"
     },
@@ -275,7 +266,6 @@
         "forced_email": "Käytetään seuraavaa sähköpostiosoitetta",
         "forced_localpart": "Käytetään seuraavaa käyttäjänimeä",
         "import_data": {
-          "description": "Vahvista tiedot, jotka liitetään uuteen %(server_name)s -tiliisi.",
           "heading": "Tuo tietosi"
         },
         "imported_from_upstream": "Tuotu toiselta tililtäsi",

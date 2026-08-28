@@ -11,9 +11,8 @@
     "submit": "Enviar"
   },
   "app": {
-    "human_name": "Matrix Authentication Service",
-    "name": "matrix-authentication-service",
-    "technical_description": "Documento de descoberta do OpenID Connect: <a class=\"cpd-link\" data-kind=\"primary\" href=\"%(discovery_url)s\">%(discovery_url)s</a>"
+    "human_name": "Gua",
+    "name": "Gua"
   },
   "branding": {
     "privacy_policy": {
@@ -29,7 +28,6 @@
     "display_name": "Nome de exibição",
     "email_address": "Endereço de e-mail",
     "loading": "A carregar...",
-    "mxid": "ID do Matrix",
     "password": "Palavra-passe",
     "password_confirm": "Confirmar palavra-passe",
     "username": "Nome de utilizador"
@@ -40,11 +38,9 @@
   "mas": {
     "account": {
       "deactivated": {
-        "description": "Esta conta (<em>%(mxid)s</em>) foi eliminada. Se isto não for esperado, contacte o administrador do servidor.",
         "heading": "Conta eliminada"
       },
       "locked": {
-        "description": "Esta conta (<em>%(mxid)s</em>) foi bloqueada. Se isto não for esperado, contacte o administrador do servidor.",
         "heading": "Conta bloqueada"
       },
       "logged_out": {
@@ -102,7 +98,6 @@
         "description": "Você negou acesso a%(client_name)s . Você pode fechar esta janela.",
         "heading": "Acesso negado"
       },
-      "description": "<strong>Outro dispositivo</strong> quer vincular %(client_name)s (<span>%(client_uri)s</span>) à sua conta <span>%(server_name)s</span>. Certifique-se de que reconhece este dispositivo.",
       "grant_access": "Conceder acesso",
       "granted": {
         "description": "Você concedeu acesso a%(client_name)s . Você pode fechar esta janela.",
@@ -130,7 +125,6 @@
         "copy_link": "Copie o link a seguir e cole-o em um navegador para criar uma nova senha:",
         "create_new_password": "Criar nova palavra-passe",
         "fallback": "O botão não funciona?",
-        "headline": "Você solicitou uma redefinição de senha para sua conta %(server_name)s.",
         "subject": "Repor a palavra-passe da sua conta (%(mxid)s)",
         "you_can_ignore": "Se não pediu uma nova palavra-passe, pode ignorar este e-mail. A sua palavra-passe atual continuará a funcionar."
       },
@@ -159,9 +153,7 @@
       "username_too_long": "O nome de utilizador é demasiado longo",
       "username_too_short": "O nome de utilizador é demasiado curto"
     },
-    "legacy_consent": {
-      "this_will_setup": "Isto irá configurar <span>%(client_name)s</span> com a sua conta <span>%(server_name)s</span>."
-    },
+    "legacy_consent": {},
     "login": {
       "call_to_register": "Ainda não tem uma conta?",
       "continue_with_provider": "Continue com %(provider)s",
@@ -241,7 +233,6 @@
       "terms_of_service": "Concordo com o <a href=\"%s\" data-kind=\"primary\" class=\"cpd-link\">Termos e Condições</a>"
     },
     "registration_token": {
-      "description": "Introduza um token de registo fornecido pelo administrador do servidor doméstico.",
       "field": "Token de registo",
       "headline": "Token de registo"
     },
@@ -273,7 +264,6 @@
         "forced_email": "Usará o seguinte endereço de e-mail",
         "forced_localpart": "Utilizará o seguinte nome de utilizador",
         "import_data": {
-          "description": "Confirme as informações que serão vinculadas à sua nova conta %(server_name)s.",
           "heading": "Importe os seus dados"
         },
         "imported_from_upstream": "Importado da sua conta upstream",

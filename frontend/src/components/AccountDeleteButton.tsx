@@ -46,9 +46,10 @@ type Props = {
 
 const UserCard: React.FC<{
   mxid: string;
+  localpart: string;
   displayName?: string | null;
   username: string;
-}> = ({ mxid, displayName, username }) => (
+}> = ({ mxid, localpart, displayName, username }) => (
   <section className="flex items-center p-4 gap-4 border border-[var(--cpd-color-gray-400)] rounded-xl">
     <Avatar id={mxid} name={displayName || username} size="56px" />
     <div className="flex-1 flex flex-col">
@@ -56,7 +57,7 @@ const UserCard: React.FC<{
         {displayName || username}
       </Text>
       <Text type="body" weight="regular" size="md" className="text-secondary">
-        {mxid}
+        {localpart}
       </Text>
     </div>
   </section>
@@ -66,6 +67,12 @@ const AccountDeleteButton: React.FC<Props> = (props) => {
   const user = useFragment(USER_FRAGMENT, props.user);
   const siteConfig = useFragment(CONFIG_FRAGMENT, props.siteConfig);
   const { t } = useTranslation();
+
+  // GUA FORK: Show only the localpart (e.g. "alice") instead of the full Matrix
+  // ID ("@alice:dev.local"). The homeserver suffix is jargon for our users and
+  // clashes with Gua's frictionless design. Used for display and the deletion
+  // confirmation prompt — the user types just their username, not the full mxid.
+  const localpart = user.matrix.mxid.replace(/^@/, "").split(":")[0];
   const mutation = useMutation({
     mutationFn: ({
       password,
@@ -120,9 +127,9 @@ const AccountDeleteButton: React.FC<Props> = (props) => {
 
   const onMxidInput = useCallback(
     (e: React.InputEvent<HTMLInputElement>) => {
-      setIsMaybeValid(e.currentTarget.value === user.matrix.mxid);
+      setIsMaybeValid(e.currentTarget.value === localpart);
     },
-    [user.matrix.mxid],
+    [localpart],
   );
 
   const onSubmit = useCallback(
@@ -182,6 +189,7 @@ const AccountDeleteButton: React.FC<Props> = (props) => {
             profile: (
               <UserCard
                 mxid={user.matrix.mxid}
+                localpart={localpart}
                 username={user.username}
                 displayName={user.matrix.displayName}
               />
@@ -225,13 +233,13 @@ const AccountDeleteButton: React.FC<Props> = (props) => {
           <Form.Field name="mxid">
             <Form.Label>
               {t("frontend.account.delete_account.mxid_label", {
-                mxid: user.matrix.mxid,
+                localpart,
               })}
             </Form.Label>
 
             <Form.TextControl
               required
-              placeholder={user.matrix.mxid}
+              placeholder={localpart}
               onInput={onMxidInput}
             />
 
@@ -239,7 +247,7 @@ const AccountDeleteButton: React.FC<Props> = (props) => {
               {t("frontend.errors.field_required")}
             </Form.ErrorMessage>
 
-            <Form.ErrorMessage match={(value) => value !== user.matrix.mxid}>
+            <Form.ErrorMessage match={(value) => value !== localpart}>
               {t("frontend.account.delete_account.mxid_mismatch")}
             </Form.ErrorMessage>
           </Form.Field>

@@ -39,7 +39,7 @@ type Documents = {
     "\n  fragment OAuth2Session_detail on Oauth2Session {\n    id\n    scope\n    createdAt\n    finishedAt\n    lastActiveIp\n    lastActiveAt\n    humanName\n\n    ...EndOAuth2SessionButton_session\n\n    userAgent {\n      name\n      model\n      os\n    }\n\n    client {\n      id\n      clientId\n      clientName\n      clientUri\n      logoUri\n    }\n  }\n": typeof types.OAuth2Session_DetailFragmentDoc,
     "\n  fragment UserEmail_email on UserEmail {\n    id\n    email\n  }\n": typeof types.UserEmail_EmailFragmentDoc,
     "\n  mutation RemoveEmail($id: ID!, $password: String) {\n    removeEmail(input: { userEmailId: $id, password: $password }) {\n      status\n\n      user {\n        id\n      }\n    }\n  }\n": typeof types.RemoveEmailDocument,
-    "\n  fragment UserGreeting_user on User {\n    id\n    matrix {\n      mxid\n      displayName\n    }\n  }\n": typeof types.UserGreeting_UserFragmentDoc,
+    "\n  fragment UserGreeting_user on User {\n    id\n    username\n    matrix {\n      mxid\n      displayName\n    }\n  }\n": typeof types.UserGreeting_UserFragmentDoc,
     "\n  fragment UserGreeting_siteConfig on SiteConfig {\n    displayNameChangeAllowed\n  }\n": typeof types.UserGreeting_SiteConfigFragmentDoc,
     "\n  mutation SetDisplayName($userId: ID!, $displayName: String) {\n    setDisplayName(input: { userId: $userId, displayName: $displayName }) {\n      status\n    }\n  }\n": typeof types.SetDisplayNameDocument,
     "\n  fragment AddEmailForm_user on User {\n    hasPassword\n  }\n": typeof types.AddEmailForm_UserFragmentDoc,
@@ -96,7 +96,7 @@ const documents: Documents = {
     "\n  fragment OAuth2Session_detail on Oauth2Session {\n    id\n    scope\n    createdAt\n    finishedAt\n    lastActiveIp\n    lastActiveAt\n    humanName\n\n    ...EndOAuth2SessionButton_session\n\n    userAgent {\n      name\n      model\n      os\n    }\n\n    client {\n      id\n      clientId\n      clientName\n      clientUri\n      logoUri\n    }\n  }\n": types.OAuth2Session_DetailFragmentDoc,
     "\n  fragment UserEmail_email on UserEmail {\n    id\n    email\n  }\n": types.UserEmail_EmailFragmentDoc,
     "\n  mutation RemoveEmail($id: ID!, $password: String) {\n    removeEmail(input: { userEmailId: $id, password: $password }) {\n      status\n\n      user {\n        id\n      }\n    }\n  }\n": types.RemoveEmailDocument,
-    "\n  fragment UserGreeting_user on User {\n    id\n    matrix {\n      mxid\n      displayName\n    }\n  }\n": types.UserGreeting_UserFragmentDoc,
+    "\n  fragment UserGreeting_user on User {\n    id\n    username\n    matrix {\n      mxid\n      displayName\n    }\n  }\n": types.UserGreeting_UserFragmentDoc,
     "\n  fragment UserGreeting_siteConfig on SiteConfig {\n    displayNameChangeAllowed\n  }\n": types.UserGreeting_SiteConfigFragmentDoc,
     "\n  mutation SetDisplayName($userId: ID!, $displayName: String) {\n    setDisplayName(input: { userId: $userId, displayName: $displayName }) {\n      status\n    }\n  }\n": types.SetDisplayNameDocument,
     "\n  fragment AddEmailForm_user on User {\n    hasPassword\n  }\n": types.AddEmailForm_UserFragmentDoc,
@@ -228,7 +228,7 @@ export function graphql(source: "\n  mutation RemoveEmail($id: ID!, $password: S
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  fragment UserGreeting_user on User {\n    id\n    matrix {\n      mxid\n      displayName\n    }\n  }\n"): typeof import('./graphql').UserGreeting_UserFragmentDoc;
+export function graphql(source: "\n  fragment UserGreeting_user on User {\n    id\n    username\n    matrix {\n      mxid\n      displayName\n    }\n  }\n"): typeof import('./graphql').UserGreeting_UserFragmentDoc;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

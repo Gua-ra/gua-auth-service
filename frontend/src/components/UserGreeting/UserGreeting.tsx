@@ -31,6 +31,7 @@ import styles from "./UserGreeting.module.css";
 export const FRAGMENT = graphql(/* GraphQL */ `
   fragment UserGreeting_user on User {
     id
+    username
     matrix {
       mxid
       displayName
@@ -118,7 +119,8 @@ const UserGreeting: React.FC<Props> = ({ user, siteConfig }) => {
       <Avatar
         size="var(--cpd-space-14x)"
         id={data.matrix.mxid}
-        name={data.matrix.displayName || data.matrix.mxid}
+        aria-label={`@${data.username}`}
+        name={data.matrix.displayName || data.username}
         className={styles.avatar}
       />
       <div className={styles.meta}>
@@ -127,13 +129,13 @@ const UserGreeting: React.FC<Props> = ({ user, siteConfig }) => {
             <Text size="lg" weight="semibold">
               {data.matrix.displayName}
             </Text>
-            <Text size="md" className={styles.mxid}>
-              {data.matrix.mxid}
+            <Text size="md" className={styles.handle}>
+              {`@${data.username}`}
             </Text>
           </>
         ) : (
           <Text size="lg" weight="semibold">
-            {data.matrix.mxid}
+            {`@${data.username}`}
           </Text>
         )}
       </div>
@@ -156,7 +158,8 @@ const UserGreeting: React.FC<Props> = ({ user, siteConfig }) => {
             size="88px"
             className="self-center"
             id={data.matrix.mxid}
-            name={data.matrix.displayName || data.matrix.mxid}
+            aria-label={`@${data.username}`}
+            name={data.matrix.displayName || data.username}
           />
 
           <Dialog.Description asChild>
@@ -192,11 +195,11 @@ const UserGreeting: React.FC<Props> = ({ user, siteConfig }) => {
                   </Form.HelpMessage>
                 </Form.Field>
 
-                <Form.Field name="mxid">
+                <Form.Field name="username">
                   <Form.Label>
                     {t("frontend.account.edit_profile.username_label")}
                   </Form.Label>
-                  <Form.TextControl value={data.matrix.mxid} readOnly />
+                  <Form.TextControl value={`@${data.username}`} readOnly />
                 </Form.Field>
               </div>
 

@@ -11,9 +11,8 @@
     "submit": "Enviar"
   },
   "app": {
-    "human_name": "Matrix Authentication Service",
-    "name": "matrix-authentication-service",
-    "technical_description": "Documento de descoberta OpenID Connect: <a class=\"cpd-link\" data-kind=\"primary\" href=\"%(discovery_url)s\">%(discovery_url)s</a>"
+    "human_name": "Gua",
+    "name": "Gua"
   },
   "branding": {
     "privacy_policy": {
@@ -29,7 +28,6 @@
     "display_name": "Nome e sobrenome",
     "email_address": "Endereço de e-mail",
     "loading": "Carregando…",
-    "mxid": "ID do Matrix",
     "password": "Senha",
     "password_confirm": "Confirme a nova senha",
     "username": "Nome de usuário"
@@ -40,11 +38,11 @@
   "mas": {
     "account": {
       "deactivated": {
-        "description": "Esta conta (<em>%(mxid)s</em>) foi excluída. Se você não esperava por isso, entre em contato com o administrador do servidor.",
+        "description": "Esta conta (<em>%(username)s</em>) foi excluída. Se isso não era esperado, fale com o suporte.",
         "heading": "Conta excluída"
       },
       "locked": {
-        "description": "Esta conta (<em>%(mxid)s</em>) foi bloqueada. Se você não esperava por isso, entre em contato com o administrador do servidor.",
+        "description": "Esta conta (<em>%(username)s</em>) foi bloqueada. Se isso não era esperado, fale com o suporte.",
         "heading": "Conta bloqueada"
       },
       "logged_out": {
@@ -90,7 +88,7 @@
         "description": "Você negou o acesso a %(client_name)s. Você pode fechar esta janela.",
         "heading": "Acesso negado"
       },
-      "description": "<strong>Outro dispositivo</strong> quer vincular %(client_name)s (<span>%(client_uri)s</span>) à sua conta <span>%(server_name)s</span>. Verifique se você reconhece este dispositivo.",
+      "description": "<strong>Outro dispositivo</strong> quer conectar %(client_name)s à sua conta Gua. Confirme que você reconhece este dispositivo.",
       "grant_access": "Conceder acesso",
       "granted": {
         "description": "Você concedeu acesso a %(client_name)s. Você pode fechar esta janela.",
@@ -118,7 +116,7 @@
         "copy_link": "Copie o link a seguir e cole em um navegador para criar uma nova senha:",
         "create_new_password": "Criar nova senha",
         "fallback": "O botão não funcionou?",
-        "headline": "Você solicitou a redefinição de senha da sua conta %(server_name)s.",
+        "headline": "Você pediu para redefinir a senha da sua conta Gua.",
         "subject": "Redefina a senha da sua conta (%(mxid)s)",
         "you_can_ignore": "Se você não pediu uma nova senha, pode ignorar este e-mail. Sua senha atual continuará funcionando."
       },
@@ -148,7 +146,7 @@
       "username_too_short": "O nome de usuário é muito curto"
     },
     "legacy_consent": {
-      "this_will_setup": "Isso configurará <span>%(client_name)s</span> com a sua conta <span>%(server_name)s</span>."
+      "this_will_setup": "Isso vai conectar <span>%(client_name)s</span> à sua conta Gua."
     },
     "login": {
       "call_to_register": "Ainda não tem uma conta?",
@@ -229,7 +227,7 @@
       "terms_of_service": "Concordo com os <a href=\"%s\" data-kind=\"primary\" class=\"cpd-link\">Termos e Condições</a>"
     },
     "registration_token": {
-      "description": "Digite um token de registro fornecido pelo administrador do servidor.",
+      "description": "Digite o código de convite que você recebeu.",
       "field": "Token de registro",
       "headline": "Token de registro"
     },
@@ -260,7 +258,7 @@
         "forced_email": "O seguinte endereço de e-mail será usado",
         "forced_localpart": "O seguinte nome de usuário será usado",
         "import_data": {
-          "description": "Confirme as informações que serão vinculadas à sua nova conta %(server_name)s.",
+          "description": "Confirme as informações que serão vinculadas à sua nova conta Gua.",
           "heading": "Importar seus dados"
         },
         "imported_from_upstream": "Importado da sua conta externa",

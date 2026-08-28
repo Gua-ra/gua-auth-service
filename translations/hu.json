@@ -11,9 +11,8 @@
     "submit": "Elküldés"
   },
   "app": {
-    "human_name": "Matrix Authentication Service",
-    "name": "matrix-authentication-service",
-    "technical_description": "OpenID Connect felfedezési dokumentum: <a class=\"cpd-link\" data-kind=\"primary\" href=\"%(discovery_url)s\">%(discovery_url)s</a>"
+    "human_name": "Gua",
+    "name": "Gua"
   },
   "branding": {
     "privacy_policy": {
@@ -29,7 +28,6 @@
     "display_name": "Megjelenítési név",
     "email_address": "E-mail-cím",
     "loading": "Betöltés…",
-    "mxid": "Matrix-azonosító",
     "password": "Jelszó",
     "password_confirm": "Jelszó megerősítése",
     "username": "Felhasználói név"
@@ -40,11 +38,9 @@
   "mas": {
     "account": {
       "deactivated": {
-        "description": "Ez a fiók (<em>%(mxid)s</em>) törölve lett. Ha erre nem számított, vegye fel a kapcsolatot a kiszolgáló rendszergazdájával.",
         "heading": "Fiók törölve"
       },
       "locked": {
-        "description": "Ez a fiók (<em>%(mxid)s</em>) zárolva lett. Ha erre nem számított, vegye fel a kapcsolatot a kiszolgáló rendszergazdájával.",
         "heading": "Fiók zárolva"
       },
       "logged_out": {
@@ -102,7 +98,6 @@
         "description": "Elutasította a(z) %(client_name)s hozzáférését. Bezárhatja ezt az ablakot.",
         "heading": "Hozzáférés megtagadva"
       },
-      "description": "<strong>Egy másik eszköz</strong>, hozzá akarja kapcsolni a(z) %(client_name)s (<span>%(client_uri)s</span>) eszközt az Ön <span>%(server_name)s</span>-fiókjához. Győződjön meg róla, hogy felismeri ezt az eszközt.",
       "grant_access": "Hozzáférés engedélyezése",
       "granted": {
         "description": "Megadta a(z) %(client_name)s hozzáférését. Bezárhatja ezt az ablakot.",
@@ -131,7 +126,6 @@
         "copy_link": "Másolja a következő hivatkozást, és illessze be a böngészőbe egy új jelszó létrehozásához:",
         "create_new_password": "Új jelszó létrehozása",
         "fallback": "A gomb nem működik?",
-        "headline": "Jelszó-visszaállítást kért a(z) %(server_name)s fiókjához.",
         "subject": "Fiókjelszó visszaállítása (%(mxid)s)",
         "you_can_ignore": "Ha nem kért új jelszót, akkor figyelmen kívül hagyhatja ezt a levelet. A jelenlegi jelszava továbbra is működni fog."
       },
@@ -160,9 +154,7 @@
       "username_too_long": "A felhasználónév túl hosszú",
       "username_too_short": "A felhasználónév túl rövid"
     },
-    "legacy_consent": {
-      "this_will_setup": "Egy beállítja a(z) <span>%(client_name)s</span> klienst a(z) <span>%(server_name)s</span> fiókjával."
-    },
+    "legacy_consent": {},
     "login": {
       "call_to_register": "Még nincs fiókja?",
       "continue_with_provider": "Folytatás ezzel a szolgáltatóval: %(provider)s",
@@ -242,7 +234,6 @@
       "terms_of_service": "Elfogadom a <a href=\"%s\" data-kind=\"primary\" class=\"cpd-link\">Szolgáltatási feltételeket</a>"
     },
     "registration_token": {
-      "description": "Adja meg a Matrix-kiszolgáló rendszergazdája által megadott regisztrációs tokent.",
       "field": "Regisztrációs token",
       "headline": "Regisztrációs token"
     },
@@ -275,7 +266,6 @@
         "forced_email": "A következő e-mail-címet fogja használni",
         "forced_localpart": "A következő felhasználónevet fogja használni",
         "import_data": {
-          "description": "Erősítse meg az információkat, melyek a(z) %(server_name)s fiókjához lesznek kapcsolva.",
           "heading": "Saját adatok importálása"
         },
         "imported_from_upstream": "Importálva a forrásfiókjából",

@@ -11,9 +11,8 @@
     "submit": "提交"
   },
   "app": {
-    "human_name": "Matrix Authentication Service",
-    "name": "matrix-authentication-service",
-    "technical_description": "OpenID Connect 发现文档： <a class=\"cpd-link\" data-kind=\"primary\" href=\"%(discovery_url)s\">%(discovery_url)s</a>"
+    "human_name": "Gua",
+    "name": "Gua"
   },
   "branding": {
     "privacy_policy": {
@@ -29,7 +28,6 @@
     "display_name": "显示名称",
     "email_address": "邮箱地址",
     "loading": "加载中...",
-    "mxid": "Matrix ID",
     "password": "密码",
     "password_confirm": "确认密码",
     "username": "用户名"
@@ -40,11 +38,9 @@
   "mas": {
     "account": {
       "deactivated": {
-        "description": "此账户（<em>%(mxid)s</em>）已被删除。如果这并非预期，请联系服务器管理员。",
         "heading": "账户已删除"
       },
       "locked": {
-        "description": "此账户（<em>%(mxid)s</em>）已被锁定。如果这并非预期，请联系服务器管理员。",
         "heading": "账户已锁定"
       },
       "logged_out": {
@@ -102,7 +98,6 @@
         "description": "你已拒绝 %(client_name)s 的访问。你可以关闭此窗口。",
         "heading": "访问被拒绝"
       },
-      "description": "<strong>另一设备</strong>想要关联你位于 <span>%(server_name)s</span> 上的账户： %(client_name)s（<span>%(client_uri)s</span>），请确保你认识该设备。",
       "grant_access": "授予访问权",
       "granted": {
         "description": "你已授予 %(client_name)s 访问权限。可以关闭此窗口。",
@@ -131,7 +126,6 @@
         "copy_link": "复制以下链接并粘贴到浏览器中以创建新密码：",
         "create_new_password": "创建新密码",
         "fallback": "此按钮对你无效？",
-        "headline": "你已请求重置位于 %(server_name)s 上的账户密码。",
         "subject": "重置账户密码 (%(mxid)s)",
         "you_can_ignore": "如果你没有请求过重置密码可以忽略此邮件。当前密码仍然有效。"
       },
@@ -160,9 +154,7 @@
       "username_too_long": "用户名太长",
       "username_too_short": "用户名太短"
     },
-    "legacy_consent": {
-      "this_will_setup": "这将使用你位于 <span>%(server_name)s</span> 上的账户设置 <span>%(client_name)s</span>。"
-    },
+    "legacy_consent": {},
     "login": {
       "call_to_register": "还没有账户？",
       "continue_with_provider": "以 %(provider)s 继续",
@@ -242,7 +234,6 @@
       "terms_of_service": "我同意<a href=\"%s\" data-kind=\"primary\" class=\"cpd-link\">条款与条件 </a>"
     },
     "registration_token": {
-      "description": "输入由服务器管理员提供的注册 Token。",
       "field": "注册 Token",
       "headline": "注册 Token"
     },
@@ -275,7 +266,6 @@
         "forced_email": "将使用以下电子邮件地址",
         "forced_localpart": "将使用以下用户名",
         "import_data": {
-          "description": "确认将链接到新%(server_name)s 账户的信息。",
           "heading": "导入数据"
         },
         "imported_from_upstream": "从上游账户导入",
