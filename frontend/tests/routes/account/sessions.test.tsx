@@ -6,8 +6,9 @@
 // @vitest-environment happy-dom
 
 import { screen } from "@testing-library/react";
+import { parseISO } from "date-fns";
 import { HttpResponse } from "msw";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FRAGMENT as BROWSER_SESSIONS_FRAGMENT } from "../../../src/components/UserSessionsOverview/BrowserSessionsOverview";
 import { makeFragmentData } from "../../../src/gql";
 import {
@@ -17,6 +18,22 @@ import {
 import { renderPage, server } from "../render";
 
 describe("Account sessions page", () => {
+  // The mocked sessions below carry fixed timestamps, but <LastActive /> renders
+  // them relative to the current time, so the rendered page drifts as real time
+  // passes: 90 days after the mocked `lastActiveAt` it flips from
+  // "Active <date>" to "Inactive for 90+ days" and the snapshot breaks on a
+  // branch nobody touched. Pin the clock just after the mocked timestamps so
+  // the output is stable. Only `Date` is faked, so msw and react-query keep
+  // running on real timers.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(parseISO("2026-04-24T00:00:00.000Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("renders the page", async () => {
     const { asFragment } = await renderPage("/sessions");
     expect(asFragment()).toMatchSnapshot();

@@ -23,7 +23,23 @@ ignore = [
     # Rand 0.8.5 unsoundness with custom logger + thread_rng reseeding.
     # Only triggers when the `log` feature is enabled, which we don't use.
     "RUSTSEC-2026-0097",
+    # A bug in wasmtime, but we are not affected: every Store we create comes
+    # from the one Engine held by the PolicyFactory (crates/policy/src/lib.rs),
+    # so type indices are never mixed across Engines. The advisory also says
+    # explicitly:
+    # > This bug is not triggerable by guest WebAssembly programs.
+    # We cannot bump past it on our own: opa-wasm 0.2.0 requires wasmtime 43,
+    # and the fix first landed in 46.0.2. Drop this entry when we move to
+    # opa-wasm 0.3.x. Review by 2026-11-30.
+    "RUSTSEC-2026-0222",
 ]
+
+# Only warn about unmaintained crates that are direct dependencies of the
+# workspace, not transitive ones. RUSTSEC-2026-0249 (smartstring, archived by
+# its author with no safe upgrade available) only reaches us through
+# opentelemetry-prometheus-text-exporter, and pinning an ignore for a crate
+# that will never be patched would just get renewed forever.
+unmaintained = "workspace"
 
 [licenses]
 version = 2
