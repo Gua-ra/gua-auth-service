@@ -228,8 +228,8 @@ Error details: {e}
         };
 
         if can_reach_cs {
-            // Try the whoami API. If it replies with `M_UNKNOWN` this is because Synapse
-            // couldn't reach MAS
+            // Try the whoami API. If it replies with `M_UNKNOWN` this is
+            // because Synapse couldn't reach MAS
             let whoami = hs_api.join("/_matrix/client/v3/account/whoami")?;
             let result = http_client
                 .get(whoami.as_str())
@@ -341,8 +341,9 @@ Error details: {e}
             Ok(response) => {
                 let status = response.status();
                 if status.is_success() {
-                    // Now we need to inspect the body to figure out whether it's Synapse or MAS
-                    // which handled the request
+                    // Now we need to inspect the body to figure out whether
+                    // it's Synapse or MAS which handled the
+                    // request
                     let body = response
                         .json::<serde_json::Value>()
                         .await

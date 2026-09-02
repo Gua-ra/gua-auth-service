@@ -233,7 +233,8 @@ mod tests {
         let response: ClientRegistrationResponse = response.json();
         let client_id = response.client_id;
 
-        // Test the happy path: the client is allowed to use the device code grant type
+        // Test the happy path: the client is allowed to use the device code
+        // grant type
         let request = Request::post(mas_router::OAuth2DeviceAuthorizationEndpoint::PATH).form(
             serde_json::json!({
                 "client_id": client_id,

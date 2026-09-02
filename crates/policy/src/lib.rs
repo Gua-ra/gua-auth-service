@@ -280,8 +280,8 @@ impl PolicyFactory {
         &self,
         dynamic_data: mas_data_model::PolicyData,
     ) -> Result<bool, LoadError> {
-        // Check if the version of the dynamic data we have is the same as the one we're
-        // trying to set
+        // Check if the version of the dynamic data we have is the same as the
+        // one we're trying to set
         if self.dynamic_data.load().version == Some(dynamic_data.id) {
             // Don't do anything if the version is the same
             return Ok(false);
@@ -663,8 +663,8 @@ mod tests {
             .await
             .unwrap();
 
-        // That is around 1 MB of JSON data. Each element is a 5-digit string, so 8
-        // characters including the quotes and a comma.
+        // That is around 1 MB of JSON data. Each element is a 5-digit string,
+        // so 8 characters including the quotes and a comma.
         let data: Vec<String> = (0..(1024 * 1024 / 8))
             .map(|i| format!("{:05}", i % 100_000))
             .collect();
@@ -678,8 +678,8 @@ mod tests {
             .await
             .unwrap();
 
-        // Try instantiating the policy, make sure 5-digit numbers are banned from email
-        // addresses
+        // Try instantiating the policy, make sure 5-digit numbers are banned
+        // from email addresses
         let mut policy = factory.instantiate().await.unwrap();
         let res = policy
             .evaluate_register(RegisterInput {

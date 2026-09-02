@@ -134,10 +134,11 @@ async fn try_main() -> anyhow::Result<ExitCode> {
 
     let sentry_layer = sentry.is_enabled().then(|| {
         sentry_tracing::layer().event_filter(|md| {
-            // By default, Sentry records all events as breadcrumbs, except errors.
+            // By default, Sentry records all events as breadcrumbs, except
+            // errors.
             //
-            // Because we're emitting error events for 5xx responses, we need to exclude
-            // them and also record them as breadcrumbs.
+            // Because we're emitting error events for 5xx responses, we need to
+            // exclude them and also record them as breadcrumbs.
             if md.name() == "http.server.response" {
                 EventFilter::Breadcrumb
             } else {

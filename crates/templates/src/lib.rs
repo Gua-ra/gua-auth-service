@@ -233,8 +233,9 @@ impl Templates {
                 env.set_undefined_behavior(if strict {
                     UndefinedBehavior::Strict
                 } else {
-                    // For now, allow semi-strict, because we don't have total test coverage of
-                    // tests and some tests rely on if conditions against sometimes-undefined
+                    // For now, allow semi-strict, because we don't have total
+                    // test coverage of tests and some tests
+                    // rely on if conditions against sometimes-undefined
                     // variables
                     UndefinedBehavior::SemiStrict
                 });

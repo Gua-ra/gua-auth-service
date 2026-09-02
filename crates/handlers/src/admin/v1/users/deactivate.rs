@@ -248,7 +248,8 @@ mod tests {
         let user = repo.user().lock(&state.clock, user).await.unwrap();
         repo.save().await.unwrap();
 
-        // Move the clock forward to make sure the locked_at timestamp doesn't change
+        // Move the clock forward to make sure the locked_at timestamp doesn't
+        // change
         state.clock.advance(Duration::try_minutes(1).unwrap());
 
         let request = Request::post(format!("/api/admin/v1/users/{}/deactivate", user.id))
@@ -264,7 +265,8 @@ mod tests {
             serde_json::json!(state.clock.now())
         );
 
-        // The deactivated_at timestamp should be different from the locked_at timestamp
+        // The deactivated_at timestamp should be different from the locked_at
+        // timestamp
         assert_ne!(
             body["data"]["attributes"]["deactivated_at"],
             body["data"]["attributes"]["locked_at"],

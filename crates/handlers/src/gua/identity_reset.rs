@@ -107,7 +107,8 @@ pub async fn post(
         .await?
         .ok_or(RouteError::NoSuchUser(user_id))?;
 
-    // Only ever for the session's own user: the caller does not get to name anyone.
+    // Only ever for the session's own user: the caller does not get to name
+    // anyone.
     homeserver
         .allow_cross_signing_reset(&user.username)
         .await

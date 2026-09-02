@@ -347,7 +347,8 @@ impl UserRecoveryRepository for PgUserRecoveryRepository<'_> {
     ) -> Result<(usize, Option<Ulid>), Self::Error> {
         // Use ULID cursor-based pagination. Since ULIDs contain a timestamp,
         // we can efficiently delete old sessions without needing an index.
-        // `MAX(uuid)` isn't a thing in Postgres, so we aggregate on the client side.
+        // `MAX(uuid)` isn't a thing in Postgres, so we aggregate on the client
+        // side.
         let res = sqlx::query_scalar!(
             r#"
                 WITH to_delete AS (

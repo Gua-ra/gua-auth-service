@@ -481,9 +481,9 @@ impl Object for IncludeAsset {
 
         let assets_base: &Utf8Path = self.url_builder.assets_base().into();
 
-        // We store the list of assets we've already included and already preloaded in a
-        // 'temp' object. Those live throughout the template render and reset on each
-        // new render.
+        // We store the list of assets we've already included and already
+        // preloaded in a 'temp' object. Those live throughout the
+        // template render and reset on each new render.
         let tracker =
             state.get_or_set_temp_object("included_assets_tracker", IncludedAssetsTracker::default);
         let mut tracker = tracker.lock();
@@ -523,7 +523,8 @@ impl Object for IncludeAsset {
             }
 
             mas_spa::FileType::Json => {
-                // When a JSON is included at the top level (a translation), we preload it
+                // When a JSON is included at the top level (a translation), we
+                // preload it
                 let src = main.src(assets_base);
                 if tracker.mark_preloaded(&src) {
                     writeln!(output, r#"<link rel="preload" href="{src}" as="fetch" />"#,).unwrap();
@@ -544,7 +545,8 @@ impl Object for IncludeAsset {
             let src = asset.src(assets_base);
             match asset.file_type() {
                 mas_spa::FileType::Stylesheet => {
-                    // Imported stylesheets are inserted directly, not just preloaded
+                    // Imported stylesheets are inserted directly, not just
+                    // preloaded
                     if tracker.mark_included(&src) {
                         let integrity = asset.integrity_attr();
                         writeln!(

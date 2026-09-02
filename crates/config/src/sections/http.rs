@@ -206,7 +206,8 @@ impl TlsConfig {
             (None, None) => bail!("Either `key` or `key_file` must be set"),
             (Some(_), Some(_)) => bail!("Only one of `key` or `key_file` can be set at a time"),
             (Some(key), None) => {
-                // If the key was embedded in the config file, assume it is formatted as PEM
+                // If the key was embedded in the config file, assume it is
+                // formatted as PEM
                 if let Some(password) = password {
                     PrivateKey::load_encrypted_pem(key, password.as_bytes())?
                 } else {
@@ -214,8 +215,8 @@ impl TlsConfig {
                 }
             }
             (None, Some(path)) => {
-                // When reading from disk, it might be either PEM or DER. `PrivateKey::load*`
-                // will try both.
+                // When reading from disk, it might be either PEM or DER.
+                // `PrivateKey::load*` will try both.
                 let key = std::fs::read(path)?;
                 if let Some(password) = password {
                     PrivateKey::load_encrypted(&key, password.as_bytes())?

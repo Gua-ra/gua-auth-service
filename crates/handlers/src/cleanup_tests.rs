@@ -242,8 +242,8 @@ async fn create_session_hierarchy(
             .await
             .unwrap();
 
-        // Complete the session with the link and ID token claims (including sub and
-        // sid)
+        // Complete the session with the link and ID token claims (including sub
+        // and sid)
         let id_token_claims = serde_json::json!({
             "sub": UPSTREAM_OAUTH_SUBJECT,
             "sid": UPSTREAM_OAUTH_SESSION_ID,
@@ -556,7 +556,8 @@ async fn test_cleanup_user_session_blocked_by_child_sessions(pool: PgPool) {
         state.run_jobs_in_queue().await;
     }
 
-    // Verify browser session still exists because compat session is still active
+    // Verify browser session still exists because compat session is still
+    // active
     let mut repo = state.repository().await.unwrap();
     assert!(
         repo.browser_session()

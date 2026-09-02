@@ -52,7 +52,8 @@ where
             // If there are no remaining bytes, let the bytes get dropped.
             if !prefix.is_empty() {
                 let copy_len = cmp::min(prefix.len(), buf.remaining());
-                // TODO: There should be a way to do following two lines cleaner...
+                // TODO: There should be a way to do following two lines
+                // cleaner...
                 buf.put_slice(&prefix[..copy_len]);
                 prefix.advance(copy_len);
                 // Put back what's left
@@ -121,13 +122,15 @@ mod tests {
         let mut buf = [0; 2];
         stream.read_exact(&mut buf).await.expect("read1");
 
-        // Rewind the stream so that it is as if we never read in the first place.
+        // Rewind the stream so that it is as if we never read in the first
+        // place.
         stream.rewind(Bytes::copy_from_slice(&buf[..]));
 
         let mut buf = [0; 5];
         stream.read_exact(&mut buf).await.expect("read1");
 
-        // At this point we should have read everything that was in the MockStream
+        // At this point we should have read everything that was in the
+        // MockStream
         assert_eq!(&buf, &underlying);
     }
 
@@ -142,7 +145,8 @@ mod tests {
         let mut buf = [0; 5];
         stream.read_exact(&mut buf).await.expect("read1");
 
-        // Rewind the stream so that it is as if we never read in the first place.
+        // Rewind the stream so that it is as if we never read in the first
+        // place.
         stream.rewind(Bytes::copy_from_slice(&buf[..]));
 
         let mut buf = [0; 5];

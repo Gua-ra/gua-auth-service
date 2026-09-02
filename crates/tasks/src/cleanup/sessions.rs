@@ -29,14 +29,15 @@ impl RunnableJob for CleanupFinishedCompatSessionsJob {
         let until = state.clock.now() - chrono::Duration::days(30);
         let mut total = 0;
 
-        // Run until we get cancelled. We don't schedule a retry if we get cancelled, as
-        // this is a scheduled job and it will end up being rescheduled later anyway.
+        // Run until we get cancelled. We don't schedule a retry if we get
+        // cancelled, as this is a scheduled job and it will end up
+        // being rescheduled later anyway.
         let mut since = None;
         while !context.cancellation_token.is_cancelled() {
             let mut repo = state.repository().await.map_err(JobError::retry)?;
 
-            // This returns the number of deleted sessions, and the last finished_at
-            // timestamp
+            // This returns the number of deleted sessions, and the last
+            // finished_at timestamp
             let (count, last_finished_at) = repo
                 .compat_session()
                 .cleanup_finished(since, until, BATCH_SIZE)
@@ -64,7 +65,8 @@ impl RunnableJob for CleanupFinishedCompatSessionsJob {
     }
 
     fn timeout(&self) -> Option<Duration> {
-        // This job runs every hour, so having it running it for 10 minutes is fine
+        // This job runs every hour, so having it running it for 10 minutes is
+        // fine
         Some(Duration::from_secs(10 * 60))
     }
 }
@@ -77,14 +79,15 @@ impl RunnableJob for CleanupFinishedOAuth2SessionsJob {
         let until = state.clock.now() - chrono::Duration::days(30);
         let mut total = 0;
 
-        // Run until we get cancelled. We don't schedule a retry if we get cancelled, as
-        // this is a scheduled job and it will end up being rescheduled later anyway.
+        // Run until we get cancelled. We don't schedule a retry if we get
+        // cancelled, as this is a scheduled job and it will end up
+        // being rescheduled later anyway.
         let mut since = None;
         while !context.cancellation_token.is_cancelled() {
             let mut repo = state.repository().await.map_err(JobError::retry)?;
 
-            // This returns the number of deleted sessions, and the last finished_at
-            // timestamp
+            // This returns the number of deleted sessions, and the last
+            // finished_at timestamp
             let (count, last_finished_at) = repo
                 .oauth2_session()
                 .cleanup_finished(since, until, BATCH_SIZE)
@@ -112,7 +115,8 @@ impl RunnableJob for CleanupFinishedOAuth2SessionsJob {
     }
 
     fn timeout(&self) -> Option<Duration> {
-        // This job runs every hour, so having it running it for 10 minutes is fine
+        // This job runs every hour, so having it running it for 10 minutes is
+        // fine
         Some(Duration::from_secs(10 * 60))
     }
 }
@@ -121,19 +125,22 @@ impl RunnableJob for CleanupFinishedOAuth2SessionsJob {
 impl RunnableJob for CleanupFinishedUserSessionsJob {
     #[tracing::instrument(name = "job.cleanup_finished_user_sessions", skip_all)]
     async fn run(&self, state: &State, context: JobContext) -> Result<(), JobError> {
-        // Cleanup user/browser sessions that were finished more than 30 days ago
+        // Cleanup user/browser sessions that were finished more than 30 days
+        // ago
         let until = state.clock.now() - chrono::Duration::days(30);
         let mut total = 0;
 
-        // Run until we get cancelled. We don't schedule a retry if we get cancelled, as
-        // this is a scheduled job and it will end up being rescheduled later anyway.
+        // Run until we get cancelled. We don't schedule a retry if we get
+        // cancelled, as this is a scheduled job and it will end up
+        // being rescheduled later anyway.
         let mut since = None;
         while !context.cancellation_token.is_cancelled() {
             let mut repo = state.repository().await.map_err(JobError::retry)?;
 
-            // This returns the number of deleted sessions, and the last finished_at
-            // timestamp. Only deletes sessions that have no child sessions
-            // (compat_sessions or oauth2_sessions).
+            // This returns the number of deleted sessions, and the last
+            // finished_at timestamp. Only deletes sessions that
+            // have no child sessions (compat_sessions or
+            // oauth2_sessions).
             let (count, last_finished_at) = repo
                 .browser_session()
                 .cleanup_finished(since, until, BATCH_SIZE)
@@ -161,7 +168,8 @@ impl RunnableJob for CleanupFinishedUserSessionsJob {
     }
 
     fn timeout(&self) -> Option<Duration> {
-        // This job runs every hour, so having it running it for 10 minutes is fine
+        // This job runs every hour, so having it running it for 10 minutes is
+        // fine
         Some(Duration::from_secs(10 * 60))
     }
 }

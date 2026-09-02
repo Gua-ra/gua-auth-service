@@ -84,8 +84,8 @@ impl SessionQuery {
             .for_device(&device);
         let sessions = repo.oauth2_session().list(filter, pagination).await?;
 
-        // It's possible to have multiple active OAuth 2.0 sessions. For now, we just
-        // log it if it is the case
+        // It's possible to have multiple active OAuth 2.0 sessions. For now, we
+        // just log it if it is the case
         if sessions.has_previous_page {
             // XXX: should we bail out?
             tracing::warn!(

@@ -290,8 +290,8 @@ impl QueueWorker {
             )
             .build();
 
-        // We put a cancellation drop guard in the structure, so that when it gets
-        // dropped, we're sure to cancel the token
+        // We put a cancellation drop guard in the structure, so that when it
+        // gets dropped, we're sure to cancel the token
         let cancellation_guard = cancellation_token.clone().drop_guard();
 
         Ok(Self {
@@ -312,8 +312,8 @@ impl QueueWorker {
     pub(crate) fn register_handler<T: RunnableJob + InsertableJob + FromJob>(
         &mut self,
     ) -> &mut Self {
-        // There is a potential panic here, which is fine as it's going to be caught
-        // within the job task
+        // There is a potential panic here, which is fine as it's going to be
+        // caught within the job task
         let factory = |payload: JobPayload| {
             box_runnable_job(T::from_job(payload).expect("Failed to deserialize job"))
         };
@@ -440,11 +440,12 @@ impl QueueWorker {
             n => tracing::warn!("There are {n} jobs still running, waiting for them to finish"),
         }
 
-        // TODO: we may want to introduce a timeout here, and abort the tasks if they
-        // take too long. It's fine for now, as we don't have long-running
-        // tasks, most of them are idempotent, and the only effect might be that
-        // the worker would 'dirtily' shutdown, meaning that its tasks would be
-        // considered, later retried by another worker
+        // TODO: we may want to introduce a timeout here, and abort the tasks if
+        // they take too long. It's fine for now, as we don't have
+        // long-running tasks, most of them are idempotent, and the only
+        // effect might be that the worker would 'dirtily' shutdown,
+        // meaning that its tasks would be considered, later retried by
+        // another worker
 
         // Wait for all the jobs to finish
         self.tracker
@@ -469,9 +470,10 @@ impl QueueWorker {
     async fn wait_until_wakeup(&mut self) -> Result<(), QueueRunnerError> {
         let mut rng = self.state.rng();
 
-        // This is to make sure we wake up every second to do the maintenance tasks
-        // We add a little bit of random jitter to the duration, so that we don't get
-        // fully synced workers waking up at the same time after each notification
+        // This is to make sure we wake up every second to do the maintenance
+        // tasks We add a little bit of random jitter to the duration,
+        // so that we don't get fully synced workers waking up at the
+        // same time after each notification
         let sleep_duration = rng.sample(Uniform::new(MIN_SLEEP_DURATION, MAX_SLEEP_DURATION));
         let wakeup_sleep = tokio::time::sleep(sleep_duration);
 
@@ -529,8 +531,8 @@ impl QueueWorker {
             .map_err(QueueRunnerError::StartTransaction)?;
         let mut repo = PgRepository::from_conn(txn);
 
-        // We send a heartbeat every minute, to avoid writing to the database too often
-        // on a logged table
+        // We send a heartbeat every minute, to avoid writing to the database
+        // too often on a logged table
         if now - self.last_heartbeat >= chrono::Duration::minutes(1) {
             tracing::info!("Sending heartbeat");
             repo.queue_worker()
@@ -593,8 +595,9 @@ impl QueueWorker {
             }
         }
 
-        // After this point, we are locking the leader table, so it's important that we
-        // commit as soon as possible to not block the other workers for too long
+        // After this point, we are locking the leader table, so it's important
+        // that we commit as soon as possible to not block the other
+        // workers for too long
         repo.into_inner()
             .commit()
             .await
@@ -616,7 +619,8 @@ impl QueueWorker {
 
     #[tracing::instrument(name = "worker.perform_leader_duties", skip_all)]
     async fn perform_leader_duties(&mut self) -> Result<(), QueueRunnerError> {
-        // This should have been checked by the caller, but better safe than sorry
+        // This should have been checked by the caller, but better safe than
+        // sorry
         if !self.am_i_leader {
             return Err(QueueRunnerError::NotLeader);
         }
@@ -631,17 +635,19 @@ impl QueueWorker {
             .await
             .map_err(QueueRunnerError::StartTransaction)?;
 
-        // The thing with the leader election is that it locks the table during the
-        // election, preventing other workers from going through the loop.
+        // The thing with the leader election is that it locks the table during
+        // the election, preventing other workers from going through the
+        // loop.
         //
-        // Ideally, we would do the leader duties in the same transaction so that we
-        // make sure only one worker is doing the leader duties, but that
-        // would mean we would lock all the workers for the duration of the
-        // duties, which is not ideal.
+        // Ideally, we would do the leader duties in the same transaction so
+        // that we make sure only one worker is doing the leader duties,
+        // but that would mean we would lock all the workers for the
+        // duration of the duties, which is not ideal.
         //
-        // So we do the duties in a separate transaction, in which we take an advisory
-        // lock, so that in the very rare case where two workers think they are the
-        // leader, we still don't have two workers doing the duties at the same time.
+        // So we do the duties in a separate transaction, in which we take an
+        // advisory lock, so that in the very rare case where two
+        // workers think they are the leader, we still don't have two
+        // workers doing the duties at the same time.
         let lock = PgAdvisoryLock::new("leader-duties");
 
         let locked = lock
@@ -713,8 +719,8 @@ impl QueueWorker {
                 .await?;
         }
 
-        // We also check if the worker is dead, and if so, we shutdown all the dead
-        // workers that haven't checked in the last two minutes
+        // We also check if the worker is dead, and if so, we shutdown all the
+        // dead workers that haven't checked in the last two minutes
         repo.queue_worker()
             .shutdown_dead_workers(clock, Duration::minutes(2))
             .await?;
@@ -756,8 +762,8 @@ impl QueueWorker {
         // I swear, I'm the leader!
         self.am_i_leader = true;
 
-        // First, perform the leader duties. This will make sure that we schedule
-        // recurring jobs.
+        // First, perform the leader duties. This will make sure that we
+        // schedule recurring jobs.
         self.perform_leader_duties().await?;
 
         let clock = self.state.clock();
@@ -877,18 +883,20 @@ impl JobTracker {
             let span = context.span();
             log_context
                 .run(async move || {
-                    // We should never crash, but in case we do, we do that in the task and
-                    // don't crash the worker
+                    // We should never crash, but in case we do, we do that in
+                    // the task and don't crash the worker
                     let job = factory.expect("unknown job factory")(payload);
 
                     let timeout = job.timeout();
-                    // If there is a timeout set on the job, spawn a task which will cancel the
-                    // CancellationToken once the timeout is reached
+                    // If there is a timeout set on the job, spawn a task which
+                    // will cancel the CancellationToken
+                    // once the timeout is reached
                     if let Some(timeout) = timeout {
                         let context = context.clone();
 
-                        // It's fine to spawn this task without tracking it, as it is quite
-                        // lightweight and has no reason to crash.
+                        // It's fine to spawn this task without tracking it, as
+                        // it is quite lightweight and
+                        // has no reason to crash.
                         tokio::spawn(
                             context
                                 .cancellation_token
@@ -923,12 +931,14 @@ impl JobTracker {
                     let Some(context_stats) =
                         LogContext::maybe_with(mas_context::LogContext::stats)
                     else {
-                        // This should never happen, but if it does it's fine: we're recovering fine
+                        // This should never happen, but if it does it's fine:
+                        // we're recovering fine
                         // from panics in those tasks
                         panic!("Missing log context, this should never happen");
                     };
 
-                    // We log the result here so that it's attached to the right span & log context
+                    // We log the result here so that it's attached to the right
+                    // span & log context
                     match &result {
                         Ok(()) => {
                             tracing::info!(
@@ -1139,8 +1149,9 @@ impl JobTracker {
                         &[KeyValue::new("job.queue.name", context.queue_name.clone())],
                     );
 
-                    // This measurement is not accurate as it includes the time processing the jobs,
-                    // but it's fine, it's only for panicked tasks
+                    // This measurement is not accurate as it includes the time
+                    // processing the jobs, but it's fine,
+                    // it's only for panicked tasks
                     let elapsed = context
                         .start
                         .elapsed()

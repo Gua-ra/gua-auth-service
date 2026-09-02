@@ -164,9 +164,10 @@ impl QueueWorkerRepository for PgQueueWorkerRepository<'_> {
         clock: &dyn Clock,
         threshold: Duration,
     ) -> Result<(), Self::Error> {
-        // Here the threshold is usually set to a few minutes, so we don't need to use
-        // the database time, as we can assume worker clocks have less than a minute
-        // skew between each other, else other things would break
+        // Here the threshold is usually set to a few minutes, so we don't need
+        // to use the database time, as we can assume worker clocks have
+        // less than a minute skew between each other, else other things
+        // would break
         let now = clock.now();
         sqlx::query!(
             r#"
@@ -197,8 +198,8 @@ impl QueueWorkerRepository for PgQueueWorkerRepository<'_> {
         &mut self,
         _clock: &dyn Clock,
     ) -> Result<(), Self::Error> {
-        // `expires_at` is a rare exception where we use the database time, as this
-        // would be very sensitive to clock skew between workers
+        // `expires_at` is a rare exception where we use the database time, as
+        // this would be very sensitive to clock skew between workers
         sqlx::query!(
             r#"
                 DELETE FROM queue_leader
@@ -227,14 +228,14 @@ impl QueueWorkerRepository for PgQueueWorkerRepository<'_> {
         worker: &Worker,
     ) -> Result<bool, Self::Error> {
         let now = clock.now();
-        // The queue_leader table is meant to only have a single row, which conflicts on
-        // the `active` column
+        // The queue_leader table is meant to only have a single row, which
+        // conflicts on the `active` column
 
-        // If there is a conflict, we update the `expires_at` column ONLY IF the current
-        // leader is ourselves.
+        // If there is a conflict, we update the `expires_at` column ONLY IF the
+        // current leader is ourselves.
 
-        // `expires_at` is a rare exception where we use the database time, as this
-        // would be very sensitive to clock skew between workers
+        // `expires_at` is a rare exception where we use the database time, as
+        // this would be very sensitive to clock skew between workers
         let res = sqlx::query!(
             r#"
                 INSERT INTO queue_leader (elected_at, expires_at, queue_worker_id)
@@ -250,8 +251,8 @@ impl QueueWorkerRepository for PgQueueWorkerRepository<'_> {
         .execute(&mut *self.conn)
         .await?;
 
-        // We can then detect whether we are the leader or not by checking how many rows
-        // were affected by the upsert
+        // We can then detect whether we are the leader or not by checking how
+        // many rows were affected by the upsert
         let am_i_the_leader = res.rows_affected() == 1;
 
         Ok(am_i_the_leader)

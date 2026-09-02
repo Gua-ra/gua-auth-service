@@ -295,9 +295,10 @@ pub(crate) async fn post(
     let grant = if grant.is_pending() {
         match form.action {
             Action::Consent => {
-                // The user must explicitly tick the "confirm this is my device" box.
-                // The browser enforces `required` client-side; this is the
-                // server-side safety net.
+                // The user must explicitly tick the "confirm this is my device"
+                // box. The browser enforces `required`
+                // client-side; this is the server-side safety
+                // net.
                 if form.confirm_device.is_none() {
                     return Err(InternalError::from_anyhow(anyhow::anyhow!(
                         "The device must be confirmed before consent can be granted"
@@ -316,7 +317,8 @@ pub(crate) async fn post(
         }
     } else {
         // XXX: In case we're not pending, let's just return the grant as-is
-        // since it might just be a form resubmission, and feedback is nice enough
+        // since it might just be a form resubmission, and feedback is nice
+        // enough
         warn!(
             oauth2_device_code.id = %grant.id,
             browser_session.id = %session.id,

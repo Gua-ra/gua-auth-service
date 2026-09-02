@@ -337,8 +337,8 @@ impl Serialize for EmptyContext {
         S: serde::Serializer,
     {
         let mut s = serializer.serialize_struct("EmptyContext", 0)?;
-        // FIXME: for some reason, serde seems to not like struct flattening with empty
-        // stuff
+        // FIXME: for some reason, serde seems to not like struct flattening
+        // with empty stuff
         s.serialize_field("__UNUSED", &())?;
         s.end()
     }

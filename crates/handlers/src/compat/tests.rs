@@ -184,7 +184,8 @@ async fn test_refresh_with_consumed_token(pool: sqlx::PgPool) {
 
     let _first_refresh_response: RefreshResponse = first_refresh_response.json();
 
-    // Try to use the same refresh token again - should fail because it's consumed
+    // Try to use the same refresh token again - should fail because it's
+    // consumed
     let second_refresh_request = Request::post("/_matrix/client/v3/refresh").json(&refresh_request);
 
     let second_refresh_response = state.request(second_refresh_request).await;

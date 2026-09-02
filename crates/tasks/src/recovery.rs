@@ -96,7 +96,8 @@ impl RunnableJob for SendAccountRecoveryEmailsJob {
                 let context = EmailRecoveryContext::new(user, session.clone(), url)
                     .with_language(lang.clone());
 
-                // XXX: we only log if the email fails to send, to avoid stopping the loop
+                // XXX: we only log if the email fails to send, to avoid
+                // stopping the loop
                 if let Err(e) = mailer.send_recovery_email(mailbox, &context).await {
                     error!(
                         error = &e as &dyn std::error::Error,

@@ -88,8 +88,8 @@ impl BrowserSessionMutations {
 
         repo.save().await?;
 
-        // If we are ending the *current* session, we need to clear the session cookie
-        // as well
+        // If we are ending the *current* session, we need to clear the session
+        // cookie as well
         if requester
             .browser_session()
             .is_some_and(|s| s.id == session.id)

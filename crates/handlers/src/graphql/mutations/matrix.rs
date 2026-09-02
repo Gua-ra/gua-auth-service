@@ -79,7 +79,8 @@ impl MatrixMutations {
             return Err(async_graphql::Error::new("Unauthorized"));
         }
 
-        // Allow non-admins to change their display name if the site config allows it
+        // Allow non-admins to change their display name if the site config
+        // allows it
         if !requester.is_admin() && !state.site_config().displayname_change_allowed {
             return Err(async_graphql::Error::new("Unauthorized"));
         }

@@ -204,8 +204,8 @@ impl Tree {
         value: Message,
         location: Option<String>,
     ) -> bool {
-        // We're temporarily moving the tree out of the struct to be able to nicely
-        // iterate on it
+        // We're temporarily moving the tree out of the struct to be able to
+        // nicely iterate on it
         let mut fake_root = Node {
             metadata: None,
             value: Value::Tree(Tree {

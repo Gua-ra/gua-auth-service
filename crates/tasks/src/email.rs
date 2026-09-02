@@ -25,9 +25,9 @@ impl RunnableJob for VerifyEmailJob {
         skip_all,
     )]
     async fn run(&self, _state: &State, _context: JobContext) -> Result<(), JobError> {
-        // This job was for the old email verification flow, which has been replaced.
-        // We still want to consume existing jobs in the queue, so we just make them
-        // permanently fail.
+        // This job was for the old email verification flow, which has been
+        // replaced. We still want to consume existing jobs in the
+        // queue, so we just make them permanently fail.
         Err(JobError::fail(anyhow::anyhow!("Not implemented")))
     }
 }

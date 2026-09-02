@@ -220,7 +220,8 @@ pub async fn config_sync(
                 continue;
             }
 
-            // Use the position in the config of the provider as position in the UI
+            // Use the position in the config of the provider as position in the
+            // UI
             let ui_order = index.try_into().unwrap_or(i32::MAX);
 
             let _span = info_span!("provider", %provider.id).entered();
@@ -239,9 +240,10 @@ pub async fn config_sync(
             let encrypted_client_secret = if let Some(client_secret) = provider.client_secret {
                 Some(encrypter.encrypt_to_string(client_secret.value().await?.as_bytes())?)
             } else if let Some(mut siwa) = provider.sign_in_with_apple.clone() {
-                // if private key file is defined and not private key (raw), we populate the
-                // private key to hold the content of the private key file.
-                // private key (raw) takes precedence so both can be defined
+                // if private key file is defined and not private key (raw), we
+                // populate the private key to hold the content
+                // of the private key file. private key (raw)
+                // takes precedence so both can be defined
                 // without issues
                 if siwa.private_key.is_none()
                     && let Some(private_key_file) = siwa.private_key_file.take()

@@ -70,8 +70,8 @@ pub struct Options {
 impl Options {
     pub async fn run(self, figment: &Figment) -> anyhow::Result<ExitCode> {
         use Subcommand as S;
-        // We Box the futures for each subcommand so that we avoid this function being
-        // big on the stack all the time
+        // We Box the futures for each subcommand so that we avoid this function
+        // being big on the stack all the time
         match self.subcommand {
             Some(S::Config(c)) => Box::pin(c.run(figment)).await,
             Some(S::Database(c)) => Box::pin(c.run(figment)).await,

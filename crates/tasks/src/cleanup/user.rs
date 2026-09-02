@@ -25,23 +25,25 @@ impl RunnableJob for CleanupUserRegistrationsJob {
     #[tracing::instrument(name = "job.cleanup_user_registrations", skip_all)]
     async fn run(&self, state: &State, context: JobContext) -> Result<(), JobError> {
         // Remove user registrations after 30 days. They are in practice only
-        // valid for 1h, but keeping them around helps investigate abuse patterns.
+        // valid for 1h, but keeping them around helps investigate abuse
+        // patterns.
         let until = state.clock.now() - chrono::Duration::days(30);
-        // We use the fact that ULIDs include the creation time in their first 48 bits
-        // as a cursor
+        // We use the fact that ULIDs include the creation time in their first
+        // 48 bits as a cursor
         let until = Ulid::from_parts(
             u64::try_from(until.timestamp_millis()).unwrap_or(u64::MIN),
             u128::MAX,
         );
         let mut total = 0;
 
-        // Run until we get cancelled. We don't schedule a retry if we get cancelled, as
-        // this is a scheduled job and it will end up being rescheduled later anyway.
+        // Run until we get cancelled. We don't schedule a retry if we get
+        // cancelled, as this is a scheduled job and it will end up
+        // being rescheduled later anyway.
         let mut since = None;
         while !context.cancellation_token.is_cancelled() {
             let mut repo = state.repository().await.map_err(JobError::retry)?;
-            // This returns the number of deleted registrations, and the greatest ULID
-            // processed
+            // This returns the number of deleted registrations, and the
+            // greatest ULID processed
             let (count, cursor) = repo
                 .user_registration()
                 .cleanup(since, until, BATCH_SIZE)
@@ -68,7 +70,8 @@ impl RunnableJob for CleanupUserRegistrationsJob {
     }
 
     fn timeout(&self) -> Option<Duration> {
-        // This job runs every hour, so having it running it for 10 minutes is fine
+        // This job runs every hour, so having it running it for 10 minutes is
+        // fine
         Some(Duration::from_secs(10 * 60))
     }
 }
@@ -81,20 +84,22 @@ impl RunnableJob for CleanupUserRecoverySessionsJob {
         // valid for a short time (tickets expire after 10 minutes), but keeping
         // them around helps investigate abuse patterns.
         let until = state.clock.now() - chrono::Duration::days(7);
-        // We use the fact that ULIDs include the creation time in their first 48 bits
-        // as a cursor
+        // We use the fact that ULIDs include the creation time in their first
+        // 48 bits as a cursor
         let until = Ulid::from_parts(
             u64::try_from(until.timestamp_millis()).unwrap_or(u64::MIN),
             u128::MAX,
         );
         let mut total = 0;
 
-        // Run until we get cancelled. We don't schedule a retry if we get cancelled, as
-        // this is a scheduled job and it will end up being rescheduled later anyway.
+        // Run until we get cancelled. We don't schedule a retry if we get
+        // cancelled, as this is a scheduled job and it will end up
+        // being rescheduled later anyway.
         let mut since = None;
         while !context.cancellation_token.is_cancelled() {
             let mut repo = state.repository().await.map_err(JobError::retry)?;
-            // This returns the number of deleted sessions, and the greatest ULID processed
+            // This returns the number of deleted sessions, and the greatest
+            // ULID processed
             let (count, cursor) = repo
                 .user_recovery()
                 .cleanup(since, until, BATCH_SIZE)
@@ -121,7 +126,8 @@ impl RunnableJob for CleanupUserRecoverySessionsJob {
     }
 
     fn timeout(&self) -> Option<Duration> {
-        // This job runs every hour, so having it running it for 10 minutes is fine
+        // This job runs every hour, so having it running it for 10 minutes is
+        // fine
         Some(Duration::from_secs(10 * 60))
     }
 }
@@ -134,21 +140,22 @@ impl RunnableJob for CleanupUserEmailAuthenticationsJob {
         // valid for a short time (codes expire after 10 minutes), but keeping
         // them around helps investigate abuse patterns.
         let until = state.clock.now() - chrono::Duration::days(7);
-        // We use the fact that ULIDs include the creation time in their first 48 bits
-        // as a cursor
+        // We use the fact that ULIDs include the creation time in their first
+        // 48 bits as a cursor
         let until = Ulid::from_parts(
             u64::try_from(until.timestamp_millis()).unwrap_or(u64::MIN),
             u128::MAX,
         );
         let mut total = 0;
 
-        // Run until we get cancelled. We don't schedule a retry if we get cancelled, as
-        // this is a scheduled job and it will end up being rescheduled later anyway.
+        // Run until we get cancelled. We don't schedule a retry if we get
+        // cancelled, as this is a scheduled job and it will end up
+        // being rescheduled later anyway.
         let mut since = None;
         while !context.cancellation_token.is_cancelled() {
             let mut repo = state.repository().await.map_err(JobError::retry)?;
-            // This returns the number of deleted authentications, and the greatest ULID
-            // processed
+            // This returns the number of deleted authentications, and the
+            // greatest ULID processed
             let (count, cursor) = repo
                 .user_email()
                 .cleanup_authentications(since, until, BATCH_SIZE)
@@ -175,7 +182,8 @@ impl RunnableJob for CleanupUserEmailAuthenticationsJob {
     }
 
     fn timeout(&self) -> Option<Duration> {
-        // This job runs every hour, so having it running it for 10 minutes is fine
+        // This job runs every hour, so having it running it for 10 minutes is
+        // fine
         Some(Duration::from_secs(10 * 60))
     }
 }

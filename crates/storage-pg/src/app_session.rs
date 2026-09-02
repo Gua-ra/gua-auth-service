@@ -49,8 +49,8 @@ impl<'c> PgAppSessionRepository<'c> {
 }
 
 mod priv_ {
-    // The enum_def macro generates a public enum, which we don't want, because it
-    // triggers the missing docs warning
+    // The enum_def macro generates a public enum, which we don't want, because
+    // it triggers the missing docs warning
 
     use std::net::IpAddr;
 
@@ -93,8 +93,8 @@ impl TryFrom<AppSessionLookup> for AppSession {
     type Error = DatabaseError;
 
     fn try_from(value: AppSessionLookup) -> Result<Self, Self::Error> {
-        // This is annoying to do, but we have to match on all the fields to determine
-        // whether it's a compat session or an oauth2 session
+        // This is annoying to do, but we have to match on all the fields to
+        // determine whether it's a compat session or an oauth2 session
         let AppSessionLookup {
             cursor,
             compat_session_id,
@@ -676,8 +676,8 @@ mod tests {
             .chain(device2.to_scope_token().unwrap().into_iter())
             .collect();
 
-        // We're moving the clock forward by 1 minute between each session to ensure
-        // we're getting consistent ordering in lists.
+        // We're moving the clock forward by 1 minute between each session to
+        // ensure we're getting consistent ordering in lists.
         clock.advance(Duration::try_minutes(1).unwrap());
 
         let oauth_session = repo

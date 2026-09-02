@@ -254,7 +254,8 @@ mod tests {
         let token = state.token_with_scope("urn:mas:admin").await;
         let mut rng = state.rng();
 
-        // Provision two users, one compat session for each, and finish one of them
+        // Provision two users, one compat session for each, and finish one of
+        // them
         let mut repo = state.repository().await.unwrap();
         let alice = repo
             .user()

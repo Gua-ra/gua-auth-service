@@ -137,20 +137,23 @@ impl CallbackDestination {
                     // Ensure that the Location header (redirect target)
                     // includes a URL fragment (#) of some sort.
                     //
-                    // Any fragment present in the Location header URL that the server redirects to
-                    // (e.g., via a 303 response) will overwrite the client’s existing fragment,
+                    // Any fragment present in the Location header URL that the
+                    // server redirects to (e.g., via a 303
+                    // response) will overwrite the client’s existing fragment,
                     // otherwise the fragment will be preserved across the
                     // redirect (and may contain sensitive information,
                     // or confuse the downstream client).
                     //
-                    // If the redirect_uri already contains a fragment, that fragment will do the
-                    // same job, so we leave it alone — we don't want to mangle the client's
-                    // configured redirect URL by replacing it with a blank fragment.
-                    // Otherwise, set a fragment of empty string (effectively appending `#` to the
+                    // If the redirect_uri already contains a fragment, that
+                    // fragment will do the same job, so we
+                    // leave it alone — we don't want to mangle the client's
+                    // configured redirect URL by replacing it with a blank
+                    // fragment. Otherwise, set a fragment
+                    // of empty string (effectively appending `#` to the
                     // URL).
                     //
-                    // Browser behaviour is documented as part of the 'location URL' algorithm at
-                    // https://fetch.spec.whatwg.org/commit-snapshots/809904366f33a673a9489b81155ee9e3edd29c12#concept-response-location-url
+                    // Browser behaviour is documented as part of the 'location
+                    // URL' algorithm at https://fetch.spec.whatwg.org/commit-snapshots/809904366f33a673a9489b81155ee9e3edd29c12#concept-response-location-url
                     redirect_uri.set_fragment(Some(""));
                 }
 
@@ -221,9 +224,10 @@ mod tests {
         let registration: ClientRegistrationResponse = response.json();
         let client_id = registration.client_id;
 
-        // Send an authorization request with response_mode=query and prompt=none.
-        // prompt=none always fails with login_required since there is no session,
-        // which exercises the CallbackDestinationMode::Query path.
+        // Send an authorization request with response_mode=query and
+        // prompt=none. prompt=none always fails with login_required
+        // since there is no session, which exercises the
+        // CallbackDestinationMode::Query path.
 
         // Build /authorize query parameters
         let query = url::form_urlencoded::Serializer::new(String::new())

@@ -58,9 +58,9 @@ pub(crate) async fn get(
         .context("Could not find user registration")
         .map_err(InternalError::from_anyhow)?;
 
-    // If the registration is completed, we can go to the registration destination
-    // XXX: this might not be the right thing to do? Maybe an error page would be
-    // better?
+    // If the registration is completed, we can go to the registration
+    // destination XXX: this might not be the right thing to do? Maybe an
+    // error page would be better?
     if registration.completed_at.is_some() {
         let post_auth_action: Option<PostAuthAction> = registration
             .post_auth_action
@@ -129,9 +129,9 @@ pub(crate) async fn post(
         .context("Could not find user registration")
         .map_err(InternalError::from_anyhow)?;
 
-    // If the registration is completed, we can go to the registration destination
-    // XXX: this might not be the right thing to do? Maybe an error page would be
-    // better?
+    // If the registration is completed, we can go to the registration
+    // destination XXX: this might not be the right thing to do? Maybe an
+    // error page would be better?
     if registration.completed_at.is_some() {
         let post_auth_action: Option<PostAuthAction> = registration
             .post_auth_action

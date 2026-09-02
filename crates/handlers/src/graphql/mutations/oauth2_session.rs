@@ -282,7 +282,8 @@ impl OAuth2SessionMutations {
                 .await?
                 .context("Could not load user")?;
 
-            // Schedule a job to sync the devices of the user with the homeserver
+            // Schedule a job to sync the devices of the user with the
+            // homeserver
             repo.queue_job()
                 .schedule_job(&mut rng, &clock, SyncDevicesJob::new(&user))
                 .await?;

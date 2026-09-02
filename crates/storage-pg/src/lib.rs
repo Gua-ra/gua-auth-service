@@ -326,7 +326,8 @@ async fn migration_table_exists(conn: &mut PgConnection) -> Result<bool, sqlx::E
 pub async fn migrate(conn: &mut PgConnection) -> Result<(), MigrateError> {
     // Get the database name and use it to derive an advisory lock key. This
     // is the same lock key used by SQLx default migrator, so that it works even
-    // with older versions of MAS, and when running through `cargo sqlx migrate run`
+    // with older versions of MAS, and when running through `cargo sqlx migrate
+    // run`
     let database_name = sqlx::query_scalar!(r#"SELECT current_database() as "current_database!""#)
         .fetch_one(&mut *conn)
         .await
@@ -337,16 +338,17 @@ pub async fn migrate(conn: &mut PgConnection) -> Result<(), MigrateError> {
 
     // Try to acquire the migration lock in a loop.
     //
-    // The reason we do that with a `try_acquire` is because in Postgres, `CREATE
-    // INDEX CONCURRENTLY` will *not* complete whilst an advisory lock is being
-    // acquired on another connection. This then means that if we run two
-    // migration process at the same time, one of them will go through and block
-    // on concurrent index creations, because the other will get stuck trying to
-    // acquire this lock.
+    // The reason we do that with a `try_acquire` is because in Postgres,
+    // `CREATE INDEX CONCURRENTLY` will *not* complete whilst an advisory
+    // lock is being acquired on another connection. This then means that if
+    // we run two migration process at the same time, one of them will go
+    // through and block on concurrent index creations, because the other
+    // will get stuck trying to acquire this lock.
     //
-    // To avoid this, we use `try_acquire`/`pg_advisory_lock_try` in a loop, which
-    // will fail immediately if the lock is held by another connection, allowing
-    // potential 'CREATE INDEX CONCURRENTLY' statements to complete.
+    // To avoid this, we use `try_acquire`/`pg_advisory_lock_try` in a loop,
+    // which will fail immediately if the lock is held by another
+    // connection, allowing potential 'CREATE INDEX CONCURRENTLY' statements
+    // to complete.
     let mut backoff = std::time::Duration::from_millis(250);
     let mut conn = conn;
     let mut locked_connection = loop {
@@ -366,7 +368,8 @@ pub async fn migrate(conn: &mut PgConnection) -> Result<(), MigrateError> {
 
     // Creates the migration table if missing
     // We check if the table exists before calling `ensure_migrations_table` to
-    // avoid the pesky 'relation "_sqlx_migrations" already exists, skipping' notice
+    // avoid the pesky 'relation "_sqlx_migrations" already exists, skipping'
+    // notice
     if !migration_table_exists(locked_connection.as_mut()).await? {
         locked_connection.as_mut().ensure_migrations_table().await?;
     }
@@ -403,8 +406,9 @@ pub async fn migrate(conn: &mut PgConnection) -> Result<(), MigrateError> {
 pub async fn pending_migrations(
     conn: &mut PgConnection,
 ) -> Result<Vec<&'static Migration>, MigrateError> {
-    // Load the maps of available migrations, applied migrations, migrations that
-    // are allowed to be missing, alternate checksums for migrations that changed
+    // Load the maps of available migrations, applied migrations, migrations
+    // that are allowed to be missing, alternate checksums for migrations
+    // that changed
     let available_migrations = available_migrations();
     let allowed_missing = allowed_missing_migrations();
     let alternate_checksums = alternate_checksums_map();
@@ -424,7 +428,8 @@ pub async fn pending_migrations(
                 // have embedded. This might be because a migration was
                 // intentionally changed, so we check the alternate checksums
                 if let Some(alternates) = alternate_checksums.get(&applied_migration.version) {
-                    // This converts the first 16 bytes of the checksum into a u128
+                    // This converts the first 16 bytes of the checksum into a
+                    // u128
                     let Some(applied_checksum_prefix) = applied_migration
                         .checksum
                         .get(..16)

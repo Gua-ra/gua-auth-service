@@ -289,8 +289,9 @@ mod tests {
         let client_id = client_registration.client_id;
         let client_secret = client_registration.client_secret.unwrap();
 
-        // Let's provision a user and create a session for them. This part is hard to
-        // test with just HTTP requests, so we'll use the repository directly.
+        // Let's provision a user and create a session for them. This part is
+        // hard to test with just HTTP requests, so we'll use the
+        // repository directly.
         let mut repo = state.repository().await.unwrap();
 
         let user = repo
@@ -366,7 +367,8 @@ mod tests {
         let response = state.request(request).await;
         response.assert_status(StatusCode::OK);
 
-        // Try using the refresh token to get a new access token, it should fail.
+        // Try using the refresh token to get a new access token, it should
+        // fail.
         let request =
             Request::post(mas_router::OAuth2TokenEndpoint::PATH).form(serde_json::json!({
                 "grant_type": "refresh_token",

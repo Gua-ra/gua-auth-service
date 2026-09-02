@@ -551,8 +551,8 @@ impl UserMutations {
 
         let user = repo.user().lock(&state.clock(), user).await?;
 
-        // Schedule a job to provision the user so that the lock flag is propagated
-        // to Synapse
+        // Schedule a job to provision the user so that the lock flag is
+        // propagated to Synapse
         repo.queue_job()
             .schedule_job(&mut rng, &clock, ProvisionUserJob::new(&user))
             .await?;
@@ -600,8 +600,8 @@ impl UserMutations {
         let user = repo.user().reactivate(user).await?;
         let user = repo.user().unlock(user).await?;
 
-        // Schedule a job to provision the user so that the lock flag is propagated
-        // to Synapse
+        // Schedule a job to provision the user so that the lock flag is
+        // propagated to Synapse
         repo.queue_job()
             .schedule_job(&mut rng, &clock, ProvisionUserJob::new(&user))
             .await?;
@@ -736,9 +736,10 @@ impl UserMutations {
             }
 
             let Some(active_password) = repo.user_password().active(&user).await? else {
-                // The user has no current password, so can't verify against one.
-                // In the future, it may be desirable to let the user set a password without any
-                // other verification instead.
+                // The user has no current password, so can't verify against
+                // one. In the future, it may be desirable to
+                // let the user set a password without any other
+                // verification instead.
 
                 return Ok(SetPasswordPayload {
                     status: SetPasswordStatus::NoCurrentPassword,

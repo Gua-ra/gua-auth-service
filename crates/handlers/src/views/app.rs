@@ -73,8 +73,8 @@ pub async fn get(
         return Ok((cookie_jar, url_builder.redirect(&url)).into_response());
     };
 
-    // GUA FORK: the browser session must belong to the user the app is signed in
-    // as.
+    // GUA FORK: the browser session must belong to the user the app is signed
+    // in as.
     //
     // The account page is opened from inside the app in a browser context that
     // shares cookies with the system browser, so the session found here can
@@ -102,9 +102,9 @@ pub async fn get(
             "Browser session belongs to another user than the one the app named, forcing a fresh login"
         );
 
-        // End the other account's session first. Left in place, the upstream login
-        // callback for the right account would find it and stop at "linked to
-        // another account".
+        // End the other account's session first. Left in place, the upstream
+        // login callback for the right account would find it and stop
+        // at "linked to another account".
         activity_tracker
             .record_browser_session(&clock, &session)
             .await;

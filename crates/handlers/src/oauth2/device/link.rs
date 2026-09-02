@@ -126,7 +126,8 @@ async fn handle_code(
 
         if let Some(grant) = grant {
             // This is a valid code, redirect to the consent page
-            // This will in turn redirect to the login page if the user is not logged in
+            // This will in turn redirect to the login page if the user is not
+            // logged in
             let destination = url_builder.redirect(&mas_router::DeviceCodeConsent::new(grant.id));
 
             return Ok((cookie_jar, destination).into_response());

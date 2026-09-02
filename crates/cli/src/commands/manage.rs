@@ -441,7 +441,8 @@ impl Options {
                         "Could not create the device on the homeserver, aborting"
                     );
 
-                    // Schedule a device sync job to remove the potential leftover device
+                    // Schedule a device sync job to remove the potential
+                    // leftover device
                     repo.queue_job()
                         .schedule_job(&mut rng, &clock, SyncDevicesJob::new(&user))
                         .await?;
@@ -597,7 +598,8 @@ impl Options {
                     _ => info!("Ended {affected} active browser sessions"),
                 }
 
-                // Schedule a job to sync the devices of the user with the homeserver
+                // Schedule a job to sync the devices of the user with the
+                // homeserver
                 warn!("Scheduling job to sync devices for the user");
                 repo.queue_job()
                     .schedule_job(&mut rng, &clock, SyncDevicesJob::new(&user))
@@ -633,13 +635,14 @@ impl Options {
 
                 info!(%user.id, "Locking user");
 
-                // Even though the deactivation job will lock the user, we lock it here in case
-                // the worker is not running, as we don't have a good way to run a job
+                // Even though the deactivation job will lock the user, we lock
+                // it here in case the worker is not running, as
+                // we don't have a good way to run a job
                 // synchronously yet.
                 let user = repo.user().lock(&clock, user).await?;
 
-                // Schedule a job to provision the user so that the lock flag is propagated
-                // to Synapse
+                // Schedule a job to provision the user so that the lock flag is
+                // propagated to Synapse
                 repo.queue_job()
                     .schedule_job(&mut rng, &clock, ProvisionUserJob::new(&user))
                     .await?;
@@ -674,8 +677,8 @@ impl Options {
                     .await?
                     .context("User not found")?;
 
-                // Schedule a job to provision the user so that the lock flag is propagated
-                // to Synapse
+                // Schedule a job to provision the user so that the lock flag is
+                // propagated to Synapse
                 repo.queue_job()
                     .schedule_job(&mut rng, &clock, ProvisionUserJob::new(&user))
                     .await?;
@@ -728,7 +731,8 @@ impl Options {
                     return Ok(ExitCode::from(1));
                 }
 
-                // If the username is provided, check if it's available and normalize it.
+                // If the username is provided, check if it's available and
+                // normalize it.
                 let localpart = if let Some(username) = username {
                     check_and_normalize_username(&username, &mut repo, &homeserver)
                         .await?
@@ -1138,7 +1142,8 @@ impl UserCreationRequest<'_> {
         }
 
         for (provider, subject) in upstream_provider_mappings {
-            // Note that we don't pass a human_account_name here, as we don't ask for it
+            // Note that we don't pass a human_account_name here, as we don't
+            // ask for it
             let link = repo
                 .upstream_oauth_link()
                 .add(rng, clock, provider, subject, None)
