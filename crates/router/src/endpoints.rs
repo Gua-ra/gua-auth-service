@@ -255,6 +255,17 @@ impl Login {
         self
     }
 
+    /// GUA FORK: ignore any existing browser session and authenticate afresh.
+    ///
+    /// Used when the account page is opened with a login hint naming a different user
+    /// than the one the browser is signed in as, so that the requested action (an identity
+    /// reset, say) can only ever be approved by the account it belongs to.
+    #[must_use]
+    pub const fn with_force_login(mut self) -> Self {
+        self.force_login = true;
+        self
+    }
+
     /// Force a fresh authentication, ignoring any existing browser session.
     ///
     /// This is what makes an OIDC `prompt=login` request actually
@@ -561,7 +572,23 @@ pub enum AccountAction {
     SessionEnd { device_id: String },
 
     #[serde(rename = "org.matrix.cross_signing_reset")]
-    OrgMatrixCrossSigningReset,
+    OrgMatrixCrossSigningReset {
+        /// GUA FORK: the app scheme to hand control back to once the reset is approved.
+        ///
+        /// It rides inside the action so that it survives the login round trip: when the
+        /// browser session does not match the app's login hint, the user is sent through
+        /// login and back to this action, and the success page still needs to know where
+        /// to return.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        gua_return: Option<String>,
+        /// GUA FORK: the localpart of the account the app is signed in as.
+        ///
+        /// Carried inside the action for the same reason as `gua_return`: after a forced
+        /// login the account page is reached again through the post-auth action, and the
+        /// page must still be able to refuse a browser session for some other account.
+        #[serde(default, rename = "gua_user", skip_serializing_if = "Option::is_none")]
+        gua_user: Option<String>,
+    },
 }
 
 /// `GET /account/`
