@@ -4,6 +4,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
 // Please see LICENSE files in the repository root for full details.
 
+use std::sync::Arc;
+
 use axum::{
     extract::State,
     response::{Html, IntoResponse},
@@ -16,7 +18,6 @@ use mas_router::{AccountAction, PostAuthAction, UrlBuilder};
 use mas_storage::{BoxRepository, user::BrowserSessionRepository};
 use mas_templates::{AppContext, TemplateContext, Templates};
 use serde::Deserialize;
-use std::sync::Arc;
 
 use crate::{
     BoundActivityTracker, PreferredLanguage,
@@ -72,19 +73,22 @@ pub async fn get(
         return Ok((cookie_jar, url_builder.redirect(&url)).into_response());
     };
 
-    // GUA FORK: the browser session must belong to the user the app is signed in as.
+    // GUA FORK: the browser session must belong to the user the app is signed in
+    // as.
     //
-    // The account page is opened from inside the app in a browser context that shares
-    // cookies with the system browser, so the session found here can belong to a
-    // completely different account than the one asking. For an identity reset that is not
-    // a cosmetic mix-up: the page would approve the reset for the browser's user, the
-    // app's own upload would keep being refused, and the app would be left believing the
-    // reset failed while another account had just been opened up for replacement.
+    // The account page is opened from inside the app in a browser context that
+    // shares cookies with the system browser, so the session found here can
+    // belong to a completely different account than the one asking. For an
+    // identity reset that is not a cosmetic mix-up: the page would approve the
+    // reset for the browser's user, the app's own upload would keep being
+    // refused, and the app would be left believing the reset failed while
+    // another account had just been opened up for replacement.
     //
-    // When the app names its user, through the MSC4198 login hint or inside the action
-    // itself, and the session disagrees, treat the session as absent and authenticate
-    // afresh for the named user. The name is only ever used to refuse, never to grant: the
-    // action stays behind the normal owner check once a matching session exists.
+    // When the app names its user, through the MSC4198 login hint or inside the
+    // action itself, and the session disagrees, treat the session as absent and
+    // authenticate afresh for the named user. The name is only ever used to
+    // refuse, never to grant: the action stays behind the normal owner check
+    // once a matching session exists.
     let expected_user = expected_user(
         action.as_ref(),
         unstable_login_hint.as_deref(),
@@ -98,8 +102,9 @@ pub async fn get(
             "Browser session belongs to another user than the one the app named, forcing a fresh login"
         );
 
-        // End the other account's session first. Left in place, the upstream login callback
-        // for the right account would find it and stop at "linked to another account".
+        // End the other account's session first. Left in place, the upstream login
+        // callback for the right account would find it and stop at "linked to
+        // another account".
         activity_tracker
             .record_browser_session(&clock, &session)
             .await;
@@ -143,9 +148,10 @@ pub async fn get_anonymous(
 
 /// GUA FORK: which localpart, if any, the app says it is signed in as.
 ///
-/// Prefers the name carried inside the action, since that one survives a login round
-/// trip; otherwise an `mxid:` MSC4198 hint on our own homeserver. Anything else is
-/// ignored, so a foreign or malformed hint can never lock a legitimate session out.
+/// Prefers the name carried inside the action, since that one survives a login
+/// round trip; otherwise an `mxid:` MSC4198 hint on our own homeserver.
+/// Anything else is ignored, so a foreign or malformed hint can never lock a
+/// legitimate session out.
 fn expected_user(
     action: Option<&AccountAction>,
     login_hint: Option<&str>,
