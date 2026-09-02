@@ -32,6 +32,12 @@ ignore = [
     # and the fix first landed in 46.0.2. Drop this entry when we move to
     # opa-wasm 0.3.x. Review by 2026-11-30.
     "RUSTSEC-2026-0222",
+    # wasmtime: filesystem sandbox escape when a WASI preopened path or symlink
+    # carries a trailing slash. We are not affected: the only wasm we run is the
+    # policy module, through opa-wasm, with no WASI filesystem preopens at all
+    # (crates/policy/src/lib.rs). Same wasmtime pin as above; drop this entry
+    # together with it when we move to opa-wasm 0.3.x. Review by 2026-11-30.
+    "RUSTSEC-2026-0269",
 ]
 
 # Only warn about unmaintained crates that are direct dependencies of the
