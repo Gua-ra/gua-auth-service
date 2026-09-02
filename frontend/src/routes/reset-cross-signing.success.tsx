@@ -22,7 +22,11 @@ const CROSS_SIGNING_REPLACEMENT_PERIOD_MS = 10 * 60 * 1000; // 10 minutes
  * ourselves, rather than to anything the caller supplied. That is what keeps this from being an
  * open redirect.
  */
-const RETURNABLE_APP_SCHEMES = ["global.gua", "global.gua.dev"];
+const RETURNABLE_APP_SCHEMES = [
+  "global.gua", // production
+  "global.gua.dev", // the QA app on TestFlight and the Play internal track
+  "global.gua.debug", // the Android debug flavour, so a local build is not a silent dead end
+];
 
 /** Where we send the app. The path is ours; only the scheme comes from the caller. */
 const returnUrlFor = (scheme: string): string =>
