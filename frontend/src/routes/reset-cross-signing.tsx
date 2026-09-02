@@ -17,6 +17,9 @@ import PageHeading from "../components/PageHeading";
 
 const searchSchema = v.object({
   deepLink: v.optional(v.boolean()),
+  // GUA FORK: the URL scheme of the native app that sent the user here, so the success page can
+  // hand control back and the app's web sheet closes itself instead of being closed by hand.
+  guaReturn: v.optional(v.string()),
 });
 
 export const Route = createFileRoute("/reset-cross-signing")({

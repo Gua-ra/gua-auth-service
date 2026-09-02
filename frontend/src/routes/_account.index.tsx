@@ -94,6 +94,9 @@ const actionSchema = v.variant("action", [
   }),
   v.object({
     action: v.literal("org.matrix.cross_signing_reset"),
+    // GUA FORK: the native app tells us its URL scheme so the success page can hand control back
+    // to it. Only ever compared against a fixed allow-list, never redirected to as given.
+    gua_return: v.optional(v.string()),
   }),
   v.object({
     action: v.literal("org.matrix.plan_management"),
@@ -142,7 +145,7 @@ export const Route = createFileRoute("/_account/")({
       case "org.matrix.cross_signing_reset":
         throw redirect({
           to: "/reset-cross-signing",
-          search: { deepLink: true },
+          search: { deepLink: true, guaReturn: search.gua_return },
         });
       case "org.matrix.plan_management": {
         // This is an unspecced experimental value

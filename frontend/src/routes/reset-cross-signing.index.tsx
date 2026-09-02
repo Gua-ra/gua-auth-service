@@ -73,7 +73,7 @@ const ALLOW_CROSS_SIGING_RESET_MUTATION = graphql(/* GraphQL */ `
 `);
 
 function ResetCrossSigning(): React.ReactNode {
-  const { deepLink } = Route.useSearch();
+  const { deepLink, guaReturn } = Route.useSearch();
   const navigate = Route.useNavigate();
   const { t } = useTranslation();
   const {
@@ -103,7 +103,14 @@ function ResetCrossSigning(): React.ReactNode {
         }
       });
 
-      navigate({ to: "/reset-cross-signing/success", replace: true });
+      // GUA FORK: carry the search across. Omitting it does not inherit the parent's params, it
+      // clears them, so the success page saw neither deepLink nor guaReturn and could not tell an
+      // app-initiated reset from one done in an ordinary browser tab.
+      navigate({
+        to: "/reset-cross-signing/success",
+        search: { deepLink, guaReturn },
+        replace: true,
+      });
     },
   });
 
