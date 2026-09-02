@@ -58,6 +58,7 @@ use self::{graphql::ExtraRouterParameters, passwords::PasswordManager};
 mod admin;
 mod compat;
 mod graphql;
+mod gua;
 mod health;
 mod oauth2;
 pub mod passwords;
@@ -229,6 +230,11 @@ where
         .route(
             mas_router::OAuth2Introspection::route(),
             post(self::oauth2::introspection::post),
+        )
+        // GUA FORK: the app approves its own cross-signing reset with its access token.
+        .route(
+            "/api/gua/identity-reset/allow",
+            post(self::gua::identity_reset::post),
         )
         .route(
             mas_router::OAuth2Revocation::route(),
