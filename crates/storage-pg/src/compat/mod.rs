@@ -245,8 +245,8 @@ mod tests {
             .unwrap();
         assert!(login.is_exchanged());
 
-        // Now query the session list with both the unknown and SSO login session type
-        // filter
+        // Now query the session list with both the unknown and SSO login
+        // session type filter
         let all = CompatSessionFilter::new().for_user(&user);
         let sso_login = all.sso_login_only();
         let unknown = all.unknown_only();
@@ -270,8 +270,8 @@ mod tests {
         assert_eq!(list.edges[0].node.0.id, unknown_session.id);
 
         // Check that combining the two filters works
-        // At this point, there is one active SSO login session and one finished unknown
-        // session
+        // At this point, there is one active SSO login session and one finished
+        // unknown session
         assert_eq!(
             repo.compat_session()
                 .count(all.sso_login_only().active_only())
@@ -509,7 +509,8 @@ mod tests {
         assert!(refresh_token_lookup.is_valid());
         assert!(!refresh_token_lookup.is_consumed());
 
-        // Consume the first token, but to do so we need a 2nd to replace it with
+        // Consume the first token, but to do so we need a 2nd to replace it
+        // with
         let refresh_token2 = repo
             .compat_refresh_token()
             .add(

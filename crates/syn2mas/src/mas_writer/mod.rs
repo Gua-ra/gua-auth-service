@@ -128,7 +128,8 @@ impl WriterConnectionPool {
                                 Err(error)
                             }
                         };
-                        // This should always succeed in sending unless we're already shutting
+                        // This should always succeed in sending unless we're
+                        // already shutting
                         // down for some other reason.
                         let _: Result<_, _> = connection_tx.send(to_return).await;
                     }
@@ -138,8 +139,8 @@ impl WriterConnectionPool {
                 Ok(())
             }
             Some(Err(error)) => {
-                // This should always succeed in sending unless we're already shutting
-                // down for some other reason.
+                // This should always succeed in sending unless we're already
+                // shutting down for some other reason.
                 let _: Result<_, _> = self.connection_tx.send(Err(error)).await;
 
                 Err(Error::WriterConnectionPoolError)
@@ -272,11 +273,11 @@ pub struct MasNewUser {
 
 impl WriteBatch for MasNewUser {
     async fn write_batch(conn: &mut PgConnection, batch: Vec<Self>) -> Result<(), Error> {
-        // `UNNEST` is a fast way to do bulk inserts, as it lets us send multiple rows
-        // in one statement without having to change the statement
-        // SQL thus altering the query plan. See <https://github.com/launchbadge/sqlx/blob/main/FAQ.md#how-can-i-bind-an-array-to-a-values-clause-how-can-i-do-bulk-inserts>.
-        // In the future we could consider using sqlx's support for `PgCopyIn` / the
-        // `COPY FROM STDIN` statement, which is allegedly the best
+        // `UNNEST` is a fast way to do bulk inserts, as it lets us send
+        // multiple rows in one statement without having to change the
+        // statement SQL thus altering the query plan. See <https://github.com/launchbadge/sqlx/blob/main/FAQ.md#how-can-i-bind-an-array-to-a-values-clause-how-can-i-do-bulk-inserts>.
+        // In the future we could consider using sqlx's support for `PgCopyIn` /
+        // the `COPY FROM STDIN` statement, which is allegedly the best
         // for insert performance, but is less simple to encode.
         let mut user_ids: Vec<Uuid> = Vec::with_capacity(batch.len());
         let mut usernames: Vec<String> = Vec::with_capacity(batch.len());
@@ -844,8 +845,8 @@ impl MasWriter {
                 .await
                 .into_database("could not create temporary tables")?;
 
-            // Pause (temporarily drop) indices and constraints in order to improve
-            // performance of bulk data loading.
+            // Pause (temporarily drop) indices and constraints in order to
+            // improve performance of bulk data loading.
             (indices_to_restore, constraints_to_restore) =
                 Self::pause_indices(conn.as_mut()).await?;
 
@@ -895,7 +896,8 @@ impl MasWriter {
             .await
             .into_database("begin MAS transaction")?;
 
-        // Now after all the schema changes have been done, begin writer transactions
+        // Now after all the schema changes have been done, begin writer
+        // transactions
         for writer_connection in &mut writer_connections {
             query("BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;")
                 .execute(&mut *writer_connection)
@@ -954,15 +956,15 @@ impl MasWriter {
         constraints_to_restore: &[ConstraintDescription],
         progress: &Progress,
     ) -> Result<(), Error> {
-        // First restore all indices. The order is not important as far as I know.
-        // However the indices are needed before constraints.
+        // First restore all indices. The order is not important as far as I
+        // know. However the indices are needed before constraints.
         for index in indices_to_restore.iter().rev() {
             progress.rebuild_index(index.name.clone());
             constraint_pausing::restore_index(conn.as_mut(), index).await?;
         }
         // Then restore all constraints.
-        // The order here is the reverse of drop order, since some constraints may rely
-        // on other constraints to work.
+        // The order here is the reverse of drop order, since some constraints
+        // may rely on other constraints to work.
         for constraint in constraints_to_restore.iter().rev() {
             progress.rebuild_constraint(constraint.name.clone());
             constraint_pausing::restore_constraint(conn.as_mut(), constraint).await?;
@@ -988,8 +990,8 @@ impl MasWriter {
             .await
             .map_err(|errors| Error::Multiple(MultipleErrors::from(errors)))?;
 
-        // Now all the data has been migrated, finish off by restoring indices and
-        // constraints!
+        // Now all the data has been migrated, finish off by restoring indices
+        // and constraints!
         query("BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;")
             .execute(self.conn.as_mut())
             .await

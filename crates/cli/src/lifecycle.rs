@@ -131,7 +131,8 @@ impl LifecycleManager {
     pub async fn run(mut self) -> ExitCode {
         notify(&[sd_notify::NotifyState::Ready]);
 
-        // This will be `Some` if we have the watchdog enabled, and `None` if not
+        // This will be `Some` if we have the watchdog enabled, and `None` if
+        // not
         let mut watchdog_interval = {
             let mut watchdog_usec = 0;
             if sd_notify::watchdog_enabled(false, &mut watchdog_usec) {
@@ -145,8 +146,8 @@ impl LifecycleManager {
 
         // Wait for a first shutdown signal and trigger the soft shutdown
         let likely_crashed = loop {
-            // This makes a Future that will either yield the watchdog tick if enabled, or a
-            // pending Future if not
+            // This makes a Future that will either yield the watchdog tick if
+            // enabled, or a pending Future if not
             let watchdog_tick = if let Some(watchdog_interval) = &mut watchdog_interval {
                 Either::Left(watchdog_interval.tick())
             } else {
@@ -224,8 +225,8 @@ impl LifecycleManager {
 
         self.hard_shutdown_token().cancel();
 
-        // TODO: we may want to have a time out on the task tracker, in case we have
-        // really stuck tasks on it
+        // TODO: we may want to have a time out on the task tracker, in case we
+        // have really stuck tasks on it
         self.task_tracker().wait().await;
 
         tracing::info!("All tasks are done, exitting");

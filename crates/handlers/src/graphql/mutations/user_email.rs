@@ -506,7 +506,8 @@ impl UserEmailMutations {
             return Ok(RemoveEmailPayload::NotFound);
         }
 
-        // Allow non-admins to remove their email address if the site config allows it
+        // Allow non-admins to remove their email address if the site config
+        // allows it
         if !requester.is_admin() && !state.site_config().email_change_allowed {
             return Err(async_graphql::Error::new("Unauthorized"));
         }
@@ -569,8 +570,8 @@ impl UserEmailMutations {
             return Err(async_graphql::Error::new("Unauthorized"));
         }
 
-        // Allow non-admins to change their primary email address if the site config
-        // allows it
+        // Allow non-admins to change their primary email address if the site
+        // config allows it
         if !requester.is_admin() && !state.site_config().email_change_allowed {
             return Err(async_graphql::Error::new("Unauthorized"));
         }
@@ -604,7 +605,8 @@ impl UserEmailMutations {
             return Err(async_graphql::Error::new("Unauthorized"));
         };
 
-        // Allow to starting the email authentication flow if the site config allows it
+        // Allow to starting the email authentication flow if the site config
+        // allows it
         if !state.site_config().email_change_allowed {
             return Err(async_graphql::Error::new(
                 "Email changes are not allowed on this server",
@@ -635,9 +637,10 @@ impl UserEmailMutations {
         let mut repo = state.repository().await?;
 
         // Check if the email address is already in use by the same user
-        // We don't report here if the email address is already in use by another user,
-        // because we don't want to leak information about other users. We will do that
-        // only when the user enters the right verification code
+        // We don't report here if the email address is already in use by
+        // another user, because we don't want to leak information about
+        // other users. We will do that only when the user enters the
+        // right verification code
         let count = repo
             .user_email()
             .count(
@@ -716,8 +719,8 @@ impl UserEmailMutations {
             return Err(async_graphql::Error::new("Unauthorized"));
         };
 
-        // Allow to completing the email authentication flow if the site config allows
-        // it
+        // Allow to completing the email authentication flow if the site config
+        // allows it
         if !state.site_config().email_change_allowed {
             return Err(async_graphql::Error::new(
                 "Email changes are not allowed on this server",
@@ -779,8 +782,8 @@ impl UserEmailMutations {
             return Err(async_graphql::Error::new("Unauthorized"));
         };
 
-        // Allow to completing the email authentication flow if the site config allows
-        // it
+        // Allow to completing the email authentication flow if the site config
+        // allows it
         if !state.site_config().email_change_allowed {
             return Err(async_graphql::Error::new(
                 "Email changes are not allowed on this server",
@@ -820,7 +823,8 @@ impl UserEmailMutations {
             .complete_authentication_with_code(&clock, authentication, &code)
             .await?;
 
-        // Check the email is not already in use by anyone, including the current user
+        // Check the email is not already in use by anyone, including the
+        // current user
         let count = repo
             .user_email()
             .count(UserEmailFilter::new().for_email(&authentication.email))

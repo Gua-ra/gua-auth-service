@@ -685,7 +685,8 @@ mod tests {
             // There is now a time variance between the two parties...
             let mut claims = claims.clone();
 
-            // but no time variance is allowed. "iat" and "nbf" validation will fail
+            // but no time variance is allowed. "iat" and "nbf" validation will
+            // fail
             let time_options = TimeOptions::new(now).leeway(chrono::Duration::zero());
             assert!(matches!(
                 IAT.extract_required_with_options(&mut claims, &time_options),
@@ -705,7 +706,8 @@ mod tests {
             // This time, there is a two minute leeway, they all should be fine
             let mut claims = claims.clone();
 
-            // but no time variance is allowed. "iat" and "nbf" validation will fail
+            // but no time variance is allowed. "iat" and "nbf" validation will
+            // fail
             let time_options =
                 TimeOptions::new(now).leeway(chrono::Duration::microseconds(2 * 60 * 1000 * 1000));
             assert!(

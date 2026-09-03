@@ -445,13 +445,14 @@ mod tests {
 
     #[test]
     fn test_is_likely_synapse_macaroon() {
-        // This is just the prefix of a Synapse macaroon, but it's enough to make the
-        // sniffing work
+        // This is just the prefix of a Synapse macaroon, but it's enough to
+        // make the sniffing work
         assert!(is_likely_synapse_macaroon(
             "MDAxYmxvY2F0aW9uIGxpYnJlcHVzaC5uZXQKMDAx"
         ));
 
-        // This is a valid macaroon (even though Synapse did not generate this one)
+        // This is a valid macaroon (even though Synapse did not generate this
+        // one)
         assert!(is_likely_synapse_macaroon(
             "MDAxY2xvY2F0aW9uIGh0dHA6Ly9teWJhbmsvCjAwMjZpZGVudGlmaWVyIHdlIHVzZWQgb3VyIHNlY3JldCBrZXkKMDAyZnNpZ25hdHVyZSDj2eApCFJsTAA5rhURQRXZf91ovyujebNCqvD2F9BVLwo"
         ));
@@ -483,7 +484,8 @@ mod tests {
             // Check that they are all different
             assert_eq!(tokens.len(), COUNT, "All tokens are unique");
 
-            // Check that they are all valid and detected as the right token type
+            // Check that they are all valid and detected as the right token
+            // type
             for token in tokens {
                 assert_eq!(TokenType::check(&token).unwrap(), t);
             }

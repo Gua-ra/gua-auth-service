@@ -74,8 +74,9 @@ impl EnumEntry for WebEncryptionSignatureAlgorithm {
     fn key(&self) -> Option<&'static str> {
         match self.usage {
             Usage::Alg => {
-                // RFC7518 has one for signature algs and one for encryption algs. The other two
-                // RFCs are additional Elliptic curve signature algs
+                // RFC7518 has one for signature algs and one for encryption
+                // algs. The other two RFCs are additional
+                // Elliptic curve signature algs
                 if self.reference.contains("RFC7518, Section 3")
                     || self.reference.contains("RFC8037")
                     || self.reference.contains("RFC8812")

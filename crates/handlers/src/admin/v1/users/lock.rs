@@ -182,7 +182,8 @@ mod tests {
         let user = repo.user().lock(&state.clock, user).await.unwrap();
         repo.save().await.unwrap();
 
-        // Move the clock forward to make sure the locked_at timestamp doesn't change
+        // Move the clock forward to make sure the locked_at timestamp doesn't
+        // change
         state.clock.advance(Duration::try_minutes(1).unwrap());
 
         let request = Request::post(format!("/api/admin/v1/users/{}/lock", user.id))

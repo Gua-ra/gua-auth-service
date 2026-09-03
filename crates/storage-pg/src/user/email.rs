@@ -691,9 +691,9 @@ impl UserEmailRepository for PgUserEmailRepository<'_> {
         // fetched one before calling this
         let completed_at = clock.now();
 
-        // We'll assume the caller has checked that completed_at is None, so in case
-        // they haven't, the update will not affect any rows, which will raise
-        // an error
+        // We'll assume the caller has checked that completed_at is None, so in
+        // case they haven't, the update will not affect any rows, which
+        // will raise an error
         let res = sqlx::query!(
             r#"
                 UPDATE user_email_authentications
@@ -731,14 +731,14 @@ impl UserEmailRepository for PgUserEmailRepository<'_> {
         mut user_email_authentication: UserEmailAuthentication,
         upstream_oauth_authorization_session: &UpstreamOAuthAuthorizationSession,
     ) -> Result<UserEmailAuthentication, Self::Error> {
-        // We technically don't use the upstream_oauth_authorization_session here (other
-        // than recording it in the span), but this is to make sure the caller
-        // has fetched one before calling this
+        // We technically don't use the upstream_oauth_authorization_session
+        // here (other than recording it in the span), but this is to
+        // make sure the caller has fetched one before calling this
         let completed_at = clock.now();
 
-        // We'll assume the caller has checked that completed_at is None, so in case
-        // they haven't, the update will not affect any rows, which will raise
-        // an error
+        // We'll assume the caller has checked that completed_at is None, so in
+        // case they haven't, the update will not affect any rows, which
+        // will raise an error
         let res = sqlx::query!(
             r#"
                 UPDATE user_email_authentications
@@ -777,8 +777,9 @@ impl UserEmailRepository for PgUserEmailRepository<'_> {
         limit: usize,
     ) -> Result<(usize, Option<Ulid>), Self::Error> {
         // Use ULID cursor-based pagination. Since ULIDs contain a timestamp,
-        // we can efficiently delete old authentications without needing an index.
-        // `MAX(uuid)` isn't a thing in Postgres, so we aggregate on the client side.
+        // we can efficiently delete old authentications without needing an
+        // index. `MAX(uuid)` isn't a thing in Postgres, so we aggregate
+        // on the client side.
         let res = sqlx::query_scalar!(
             r#"
                 WITH

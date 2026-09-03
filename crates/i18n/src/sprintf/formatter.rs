@@ -202,25 +202,27 @@ fn to_precision(number: f64, mut placeholder: Placeholder) -> String {
         return format_placeholder!(number, &placeholder);
     };
 
-    // This treats NaN, Infinity, -Infinity and zero without any special handling
+    // This treats NaN, Infinity, -Infinity and zero without any special
+    // handling
     if !number.is_normal() {
         return format_placeholder!(number, &placeholder);
     }
 
     // This tells us how many numbers are before the decimal point
-    // This lossy cast is fine because we only care about the order of magnitude,
-    // and special cases are handled above
+    // This lossy cast is fine because we only care about the order of
+    // magnitude, and special cases are handled above
     #[expect(clippy::cast_possible_truncation)]
     let log10 = number.abs().log10().floor() as i64;
     let precision_i64 = precision.try_into().unwrap_or(i64::MAX);
     // We can fit the number in the precision, so we just format it as normal
     if log10 > 0 && log10 <= precision_i64 || number.abs() < 10.0 {
-        // We remove the number of digits before the decimal point from the precision
+        // We remove the number of digits before the decimal point from the
+        // precision
         placeholder.precision = Some(precision - 1 - log10.try_into().unwrap_or(0usize));
         format_placeholder!(number, &placeholder)
     } else {
-        // Else in scientific notation there is always one digit before the decimal
-        // point
+        // Else in scientific notation there is always one digit before the
+        // decimal point
         placeholder.precision = Some(precision - 1);
         format_placeholder!(number, "e", &placeholder)
     }
@@ -348,7 +350,8 @@ fn format_value(value: &Value, placeholder: &Placeholder) -> Result<String, Form
             if let Some(number) = number.as_f64() {
                 Ok(to_precision(number, placeholder.clone()))
             } else {
-                // This might happen if the integer is too big to be represented as a f64
+                // This might happen if the integer is too big to be represented
+                // as a f64
                 Err(FormatError::NumberIsNotANumber)
             }
         }
@@ -550,8 +553,8 @@ impl Message {
     pub fn format_(&self, arguments: &ArgumentList) -> Result<FormattedMessage<'_>, FormatError> {
         let mut parts = Vec::with_capacity(self.parts().len());
 
-        // Holds the current index of the placeholder we are formatting, which is used
-        // by non-named, non-indexed placeholders
+        // Holds the current index of the placeholder we are formatting, which
+        // is used by non-named, non-indexed placeholders
         let mut current_placeholder = 0usize;
         // Compute the total length of the formatted message
         let mut total_len = 0usize;

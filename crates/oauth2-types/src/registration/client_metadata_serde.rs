@@ -484,7 +484,8 @@ mod tests {
         "client_uri#de": "https://localhost/de"
         "###);
 
-        // Do a roundtrip, we should get the same metadata back with the same order
+        // Do a roundtrip, we should get the same metadata back with the same
+        // order
         let metadata: ClientMetadata =
             serde_json::from_value(serde_json::to_value(metadata).unwrap()).unwrap();
         let metadata = metadata.validate().unwrap();

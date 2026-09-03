@@ -133,7 +133,8 @@ impl MatrixConfig {
         Ok(match &self.secret {
             Secret::File(path) => {
                 let raw = tokio::fs::read_to_string(path).await?;
-                // Trim the secret when read from file to match Synapse's behaviour
+                // Trim the secret when read from file to match Synapse's
+                // behaviour
                 raw.trim().to_string()
             }
             Secret::Value(secret) => secret.clone(),

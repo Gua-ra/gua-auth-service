@@ -44,8 +44,8 @@ where
     ) -> std::task::Poll<Self::Output> {
         let this = self.project();
 
-        // Poll the inner future, with the span entered. This is effectively what
-        // [`tracing::Instrumented`] does.
+        // Poll the inner future, with the span entered. This is effectively
+        // what [`tracing::Instrumented`] does.
         let _guard = this.span.enter();
         let result = ready!(this.inner.poll(cx));
 

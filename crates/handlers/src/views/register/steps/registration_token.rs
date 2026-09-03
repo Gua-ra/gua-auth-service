@@ -60,7 +60,8 @@ pub(crate) async fn get(
         .context("Could not find user registration")
         .map_err(InternalError::from_anyhow)?;
 
-    // If the registration is completed, we can go to the registration destination
+    // If the registration is completed, we can go to the registration
+    // destination
     if registration.completed_at.is_some() {
         let post_auth_action: Option<PostAuthAction> = registration
             .post_auth_action
@@ -114,7 +115,8 @@ pub(crate) async fn post(
         .context("Could not find user registration")
         .map_err(InternalError::from_anyhow)?;
 
-    // If the registration is completed, we can go to the registration destination
+    // If the registration is completed, we can go to the registration
+    // destination
     if registration.completed_at.is_some() {
         let post_auth_action: Option<PostAuthAction> = registration
             .post_auth_action

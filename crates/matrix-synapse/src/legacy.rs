@@ -353,8 +353,8 @@ impl HomeserverConnection for SynapseConnection {
             );
         }
 
-        // It's annoying, but the POST endpoint doesn't let us set the display name
-        // of the device, so we have to do it manually.
+        // It's annoying, but the POST endpoint doesn't let us set the display
+        // name of the device, so we have to do it manually.
         if let Some(display_name) = initial_display_name {
             self.update_device_display_name(localpart, device_id, display_name)
                 .await?;
@@ -515,8 +515,9 @@ impl HomeserverConnection for SynapseConnection {
             );
         }
 
-        // Then, create the devices that are missing. There is no batching API to do
-        // this, so we do this sequentially, which is fine as the API is idempotent.
+        // Then, create the devices that are missing. There is no batching API
+        // to do this, so we do this sequentially, which is fine as the
+        // API is idempotent.
         for device_id in devices.difference(&existing_devices) {
             self.upsert_device(localpart, device_id, None).await?;
         }

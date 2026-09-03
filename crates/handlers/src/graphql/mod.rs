@@ -239,7 +239,8 @@ async fn get_requester(
     token: Option<&str>,
 ) -> Result<Requester, RouteError> {
     let entity = if let Some(token) = token {
-        // If we haven't enabled undocumented_oauth2_access on the listener, we bail out
+        // If we haven't enabled undocumented_oauth2_access on the listener, we
+        // bail out
         if !undocumented_oauth2_access {
             return Err(RouteError::InvalidToken);
         }

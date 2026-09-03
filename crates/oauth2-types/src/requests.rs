@@ -861,9 +861,9 @@ mod tests {
             "scope": "openid",
         });
 
-        // TODO: insert multiple scopes and test it. It's a bit tricky to test since
-        // HashSet have no guarantees regarding the ordering of items, so right
-        // now the output is unstable.
+        // TODO: insert multiple scopes and test it. It's a bit tricky to test
+        // since HashSet have no guarantees regarding the ordering of
+        // items, so right now the output is unstable.
         let scope: Option<Scope> = Some(vec![OPENID].into_iter().collect());
 
         let req = AccessTokenRequest::RefreshToken(RefreshTokenGrant {

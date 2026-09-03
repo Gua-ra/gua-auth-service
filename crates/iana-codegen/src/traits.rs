@@ -56,7 +56,8 @@ pub trait EnumEntry: DeserializeOwned + Send + Sync {
         None
     }
     fn enum_name(&self) -> String {
-        // Do the case transformation twice to have "N_A" turned to "Na" instead of "NA"
+        // Do the case transformation twice to have "N_A" turned to "Na" instead
+        // of "NA"
         self.name()
             .replace('+', "_")
             .to_case(Case::Pascal)

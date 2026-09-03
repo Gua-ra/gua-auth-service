@@ -196,7 +196,8 @@ impl RunnableJob for SyncDevicesJob {
 
         let mut devices = HashSet::new();
 
-        // Cycle through all the compat sessions of the user, and grab the devices
+        // Cycle through all the compat sessions of the user, and grab the
+        // devices
         let mut cursor = Pagination::first(5000);
         loop {
             let page = repo
@@ -221,7 +222,8 @@ impl RunnableJob for SyncDevicesJob {
             }
         }
 
-        // Cycle though all the oauth2 sessions of the user, and grab the devices
+        // Cycle though all the oauth2 sessions of the user, and grab the
+        // devices
         let mut cursor = Pagination::first(5000);
         loop {
             let page = repo
@@ -248,7 +250,8 @@ impl RunnableJob for SyncDevicesJob {
             }
         }
 
-        // Cycle through all the personal sessions of the user and get the devices
+        // Cycle through all the personal sessions of the user and get the
+        // devices
         let mut cursor = Pagination::first(5000);
         loop {
             let page = repo
@@ -283,8 +286,8 @@ impl RunnableJob for SyncDevicesJob {
             .await
             .map_err(JobError::retry)?;
 
-        // We kept the connection until now, so that we still hold the lock on the user
-        // throughout the sync
+        // We kept the connection until now, so that we still hold the lock on
+        // the user throughout the sync
         repo.save().await.map_err(JobError::retry)?;
 
         Ok(())

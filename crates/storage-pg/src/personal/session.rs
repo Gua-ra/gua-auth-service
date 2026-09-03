@@ -100,7 +100,8 @@ impl TryFrom<PersonalSessionLookup> for PersonalSession {
                 PersonalSessionOwner::OAuth2Client(Ulid::from(owner_oauth2_client_id))
             }
             _ => {
-                // should be impossible (CHECK constraint in Postgres prevents it)
+                // should be impossible (CHECK constraint in Postgres prevents
+                // it)
                 return Err(DatabaseInconsistencyError::on("personal_sessions")
                     .column("owner_user_id, owner_oauth2_client_id")
                     .row(id));
@@ -656,7 +657,8 @@ impl Filter for PersonalSessionFilter<'_> {
                         )))
                         .into()
                 } else {
-                    // If the device ID can't be encoded as a scope token, match no rows
+                    // If the device ID can't be encoded as a scope token, match
+                    // no rows
                     Expr::val(false).into()
                 }
             }))

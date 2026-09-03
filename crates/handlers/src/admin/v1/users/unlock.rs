@@ -125,8 +125,8 @@ mod tests {
             .unwrap();
         let user = repo.user().lock(&state.clock, user).await.unwrap();
 
-        // Also provision the user on the homeserver, because this endpoint will try to
-        // reactivate it
+        // Also provision the user on the homeserver, because this endpoint will
+        // try to reactivate it
         repo.queue_job()
             .schedule_job(&mut state.rng(), &state.clock, ProvisionUserJob::new(&user))
             .await

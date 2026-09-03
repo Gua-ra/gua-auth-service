@@ -103,10 +103,11 @@ where
         let level = FmtLevel::new(metadata.level(), ansi);
         write!(&mut writer, " {level} ")?;
 
-        // If there is no explicit 'name' set in the event macro, it will have the
-        // 'event {filename}:{line}' value. In this case, we want to display the target:
-        // the module from where it was emitted. In other cases, we want to
-        // display the explit name of the event we have set.
+        // If there is no explicit 'name' set in the event macro, it will have
+        // the 'event {filename}:{line}' value. In this case, we want to
+        // display the target: the module from where it was emitted. In
+        // other cases, we want to display the explit name of the event
+        // we have set.
         let style = Style::new().dim().force_styling(ansi);
         if metadata.name().starts_with("event ") {
             write!(&mut writer, "{} ", style.apply_to(TargetFmt::new(metadata)))?;
@@ -126,7 +127,8 @@ where
         let field_fromatter = DefaultFields::new();
         field_fromatter.format_fields(writer.by_ref(), event)?;
 
-        // If we have a OTEL span, we can add the trace ID to the end of the log line
+        // If we have a OTEL span, we can add the trace ID to the end of the log
+        // line
         if let Some(span) = ctx.lookup_current()
             && let Some(trace_id) = tracing::dispatcher::get_default(|dispatch| {
                 let otel_cx = get_otel_context(&mut span.extensions_mut(), dispatch)?;

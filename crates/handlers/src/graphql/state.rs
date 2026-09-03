@@ -44,10 +44,10 @@ impl ContextExt for async_graphql::Context<'_> {
     }
 
     fn mark_session_ended(&self) {
-        // Add a sentinel to the error context, so that we can know that we need to
-        // clear the session
-        // XXX: this is a bit of a hack, but the only sane way to get infos from within
-        // a mutation up to the HTTP handler
+        // Add a sentinel to the error context, so that we can know that we need
+        // to clear the session
+        // XXX: this is a bit of a hack, but the only sane way to get infos from
+        // within a mutation up to the HTTP handler
         self.add_error(ServerError::new(CLEAR_SESSION_SENTINEL, None));
     }
 

@@ -99,8 +99,8 @@ impl Config {
     ) -> Result<Config, Box<dyn std::error::Error + Send + Sync + 'static>> {
         let mut figment = figment::Figment::new();
         for file in files {
-            // TODO this is not exactly correct behaviour — Synapse does not merge anything
-            // other than the top level dict.
+            // TODO this is not exactly correct behaviour — Synapse does not
+            // merge anything other than the top level dict.
             // https://github.com/element-hq/matrix-authentication-service/pull/3805#discussion_r1922680825
             // https://github.com/element-hq/synapse/blob/develop/synapse/config/_base.py?rgh-link-date=2025-01-20T17%3A02%3A56Z#L870
             figment = figment.merge(Yaml::file(file));
@@ -361,7 +361,8 @@ mod test {
                 config_connect_options.get_username(),
                 uri_connect_options.get_username()
             );
-            // The password is not public so we can't assert it. But that's hopefully fine.
+            // The password is not public so we can't assert it. But that's
+            // hopefully fine.
             assert_eq!(
                 config_connect_options.get_database(),
                 uri_connect_options.get_database()

@@ -33,13 +33,15 @@ impl QueryBuilderExt for sea_query::SelectStatement {
         // ref: https://github.com/graphql/graphql-relay-js/issues/94#issuecomment-232410564
         // 1. Start from the greedy query: SELECT * FROM table
 
-        // 2. If the after argument is provided, add `id > parsed_cursor` to the `WHERE`
+        // 2. If the after argument is provided, add `id > parsed_cursor` to the
+        //    `WHERE`
         // clause
         if let Some(after) = pagination.after {
             self.and_where(sea_query::Expr::col(id_field.clone()).gt(Uuid::from(after)));
         }
 
-        // 3. If the before argument is provided, add `id < parsed_cursor` to the
+        // 3. If the before argument is provided, add `id < parsed_cursor` to
+        //    the
         // `WHERE` clause
         if let Some(before) = pagination.before {
             self.and_where(sea_query::Expr::col(id_field.clone()).lt(Uuid::from(before)));

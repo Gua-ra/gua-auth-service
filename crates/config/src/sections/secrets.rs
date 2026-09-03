@@ -306,7 +306,8 @@ impl SecretsConfig {
     ///
     /// Returns an error when the encryption secret could not be read from file.
     pub async fn encryption(&self) -> anyhow::Result<[u8; 32]> {
-        // Read the encryption secret either embedded in the config file or on disk
+        // Read the encryption secret either embedded in the config file or on
+        // disk
         match self.encryption {
             Encryption::Value(encryption) => Ok(encryption),
             Encryption::File(ref path) => {

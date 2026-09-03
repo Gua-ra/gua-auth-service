@@ -99,7 +99,8 @@ pub async fn handler(
         return Err(RouteError::AlreadyFinished(id));
     }
 
-    // If the session has a user associated with it, schedule a job to sync devices
+    // If the session has a user associated with it, schedule a job to sync
+    // devices
     if let Some(user_id) = session.user_id {
         tracing::info!(user.id = %user_id, "Scheduling device sync job for user");
         let job = SyncDevicesJob::new_for_id(user_id);

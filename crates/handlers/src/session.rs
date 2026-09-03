@@ -56,7 +56,8 @@ pub async fn load_session_or_fallback(
     };
 
     let Some(session) = repo.browser_session().lookup(session_id).await? else {
-        // We looked up the session, but it was not found. Still update the cookie
+        // We looked up the session, but it was not found. Still update the
+        // cookie
         let session_info = session_info.mark_session_ended();
         let cookie_jar = cookie_jar.update_session_info(&session_info);
         return Ok(SessionOrFallback::MaybeSession {
@@ -88,10 +89,10 @@ pub async fn load_session_or_fallback(
     }
 
     if session.finished_at.is_some() {
-        // The session has finished, but the browser still has the cookie. This is
-        // likely a 'remote' logout, triggered either by an admin or from the
-        // user-management UI. In this case, we show the 'account logged out'
-        // fallback.
+        // The session has finished, but the browser still has the cookie. This
+        // is likely a 'remote' logout, triggered either by an admin or
+        // from the user-management UI. In this case, we show the
+        // 'account logged out' fallback.
         let (csrf_token, cookie_jar) = cookie_jar.csrf_token(clock, rng);
         let ctx = AccountInactiveContext::new(session.user)
             .with_csrf(csrf_token.form_value())
@@ -147,7 +148,8 @@ pub(crate) async fn count_user_sessions_for_limiting(
         .count(CompatSessionFilter::new().active_only().for_user(user))
         .await? as u64;
 
-    // Only include self-owned personal sessions, not administratively-owned ones
+    // Only include self-owned personal sessions, not administratively-owned
+    // ones
     let personal = repo
         .personal_session()
         .count(

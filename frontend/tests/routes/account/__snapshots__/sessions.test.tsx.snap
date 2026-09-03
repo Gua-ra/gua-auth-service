@@ -112,7 +112,7 @@ exports[`Account sessions page > session limit > displays an error if they've hi
           class="_user_0d9d49"
         >
           <span
-            aria-label="@alice:example.com"
+            aria-label="@alice"
             class="_avatar_va14e_8 _avatar_0d9d49 _avatar-imageless_va14e_55"
             data-color="6"
             data-type="round"
@@ -130,9 +130,9 @@ exports[`Account sessions page > session limit > displays an error if they've hi
               Alice
             </p>
             <p
-              class="_typography_6v6n8_153 _font-body-md-regular_6v6n8_50 _mxid_0d9d49"
+              class="_typography_6v6n8_153 _font-body-md-regular_6v6n8_50 _handle_0d9d49"
             >
-              @alice:example.com
+              @alice
             </p>
           </div>
           <button

@@ -58,10 +58,11 @@ impl UserAgent {
 
         match segments[..] {
             ["Linux", "U", os, model, ..] | [model, os, ..] => {
-                // Most android model have a `/[build version]` suffix we don't care about
+                // Most android model have a `/[build version]` suffix we don't
+                // care about
                 let model = model.split_once('/').map_or(model, |(model, _)| model);
-                // Some android version also have `Build/[build version]` suffix we don't care
-                // about
+                // Some android version also have `Build/[build version]` suffix
+                // we don't care about
                 let model = model.strip_suffix("Build").unwrap_or(model);
                 // And let's trim any leftovers
                 let model = model.trim();

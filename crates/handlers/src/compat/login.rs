@@ -338,9 +338,9 @@ pub(crate) async fn post(
                 password,
             },
         ) => {
-            // This is to support both the (very) old and deprecated 'user' property, with
-            // the same behavior as Synapse: it takes precendence over the 'identifier' if
-            // provided
+            // This is to support both the (very) old and deprecated 'user'
+            // property, with the same behavior as Synapse: it takes
+            // precendence over the 'identifier' if provided
             let user = match (identifier, user) {
                 (Some(Identifier::User { user }), None) | (_, Some(user)) => user,
                 (Some(Identifier::Unsupported), None) => {
@@ -436,13 +436,14 @@ pub(crate) async fn post(
     // homeserver.
     //
     // In practice, this is fine, because:
-    // - the session exists after we commited the transaction, so a sync job won't
-    //   try to delete it
+    // - the session exists after we commited the transaction, so a sync job
+    //   won't try to delete it
     // - we've acquired a lock on the user before creating the session, meaning
-    //   we've made sure that sync jobs finished before we create the new session
-    // - we're in the read-commited isolation level, which means the sync will see
-    //   what we've committed and won't try to delete the session once we release
-    //   the lock
+    //   we've made sure that sync jobs finished before we create the new
+    //   session
+    // - we're in the read-commited isolation level, which means the sync will
+    //   see what we've committed and won't try to delete the session once we
+    //   release the lock
     repo.save().await?;
 
     activity_tracker
@@ -458,16 +459,16 @@ pub(crate) async fn post(
     // Now we can create the device on the homeserver, without holding the
     // transaction
     //
-    // Normally, devices get synced to the homeserver in a `SyncDevicesJob` but we
-    // want the device to be created synchronously on the homeserver, so that
-    // when we respond, the access token works completely. If the device doesn't
-    // exist on the homeserver side, token introspection from Synapse to MAS
-    // will work but Synapse will return a 401 because it doesn't see the
-    // device.
+    // Normally, devices get synced to the homeserver in a `SyncDevicesJob` but
+    // we want the device to be created synchronously on the homeserver, so
+    // that when we respond, the access token works completely. If the
+    // device doesn't exist on the homeserver side, token introspection from
+    // Synapse to MAS will work but Synapse will return a 401 because it
+    // doesn't see the device.
     //
-    // We're using an upsert so if the device already exists for some reason (like
-    // when we're replacing it, or a concurrent device sync happening) it won't
-    // have any effect.
+    // We're using an upsert so if the device already exists for some reason
+    // (like when we're replacing it, or a concurrent device sync happening)
+    // it won't have any effect.
     if let Err(err) = homeserver
         .upsert_device(
             &user.username,
@@ -476,7 +477,8 @@ pub(crate) async fn post(
         )
         .await
     {
-        // Something went wrong, let's end this session and schedule a device sync
+        // Something went wrong, let's end this session and schedule a device
+        // sync
         let mut repo = repository_factory.create().await?;
         let session = repo.compat_session().finish(&clock, session).await?;
 
@@ -537,13 +539,15 @@ async fn process_violations_for_compat_login(
                 },
             ],
         ) => {
-            // Normally, if we are seeing a `TooManySessions` violation,  we would
-            // expect `session_limit_config` to be filled in but if someone created
-            // their own policies which emit a `TooManySessions` violation that isn't
-            // based on the configured `session_limit`, we could also end up here.
+            // Normally, if we are seeing a `TooManySessions` violation,  we
+            // would expect `session_limit_config` to be filled in
+            // but if someone created their own policies which emit
+            // a `TooManySessions` violation that isn't based on the
+            // configured `session_limit`, we could also end up here.
             //
-            // If you're using the default policies in MAS, `session_limit_config` being
-            // `None` would be a programming error.
+            // If you're using the default policies in MAS,
+            // `session_limit_config` being `None` would be a
+            // programming error.
             match session_limit_config {
                 Some(session_limit_config) => {
                     let need_to_remove = usize::try_from(*need_to_remove).map_err(|err| {
@@ -553,8 +557,9 @@ async fn process_violations_for_compat_login(
                         )
                     })?;
 
-                    // When logging in with the compatibility API, there is no way for us to
-                    // display any web UI for people to remove devices, so we instead
+                    // When logging in with the compatibility API, there is no
+                    // way for us to display any web UI for
+                    // people to remove devices, so we instead
                     // automatically remove their oldest devices (when
                     // `dangerous_hard_limit_eviction` is configured).
                     if session_limit_config.dangerous_hard_limit_eviction {
@@ -965,7 +970,8 @@ async fn user_password_login(
     // any concurrent sync will read after we've committed
     repo.user().acquire_lock_for_sync(&user).await?;
 
-    // Now that the user credentials have been verified, start a new compat session
+    // Now that the user credentials have been verified, start a new compat
+    // session
     let device = if let Some(requested_device_id) = requested_device_id {
         Device::from(requested_device_id)
     } else {
@@ -1211,7 +1217,8 @@ mod tests {
 
         let user = user_with_password(&state, "alice", "password", true).await;
 
-        // Now let's try to login with the password, without asking for a refresh token.
+        // Now let's try to login with the password, without asking for a
+        // refresh token.
         let request = Request::post("/_matrix/client/v3/login").json(serde_json::json!({
             "type": "m.login.password",
             "identifier": {
@@ -1331,8 +1338,8 @@ mod tests {
         response.assert_status(StatusCode::FORBIDDEN);
         let body: serde_json::Value = response.json();
 
-        // The response should be the same as the previous one, so that we don't leak if
-        // it's the user that is invalid or the password.
+        // The response should be the same as the previous one, so that we don't
+        // leak if it's the user that is invalid or the password.
         assert_eq!(body, old_body);
 
         // Try to login to a deactivated account
@@ -1479,8 +1486,8 @@ mod tests {
         setup();
         let state = TestState::from_pool(pool).await.unwrap();
 
-        // Let's provision a user without a password. This should be enough to trigger
-        // the rate limit.
+        // Let's provision a user without a password. This should be enough to
+        // trigger the rate limit.
         let mut repo = state.repository().await.unwrap();
 
         let user = repo
@@ -1497,7 +1504,8 @@ mod tests {
 
         repo.save().await.unwrap();
 
-        // Now let's try to login with the password, without asking for a refresh token.
+        // Now let's try to login with the password, without asking for a
+        // refresh token.
         let request = Request::post("/_matrix/client/v3/login").json(serde_json::json!({
             "type": "m.login.password",
             "identifier": {
@@ -1730,8 +1738,8 @@ mod tests {
     ///
     /// Panics if the repository fails.
     async fn get_login_token(state: &TestState, user: &User) -> String {
-        // XXX: This is a bit manual, but this is what basically the SSO login flow
-        // does.
+        // XXX: This is a bit manual, but this is what basically the SSO login
+        // flow does.
         let mut repo = state.repository().await.unwrap();
 
         // Generate a token randomly
@@ -1820,15 +1828,16 @@ mod tests {
     ) -> Result<String, MatrixCompatSsoLoginError> {
         let cookies = CookieHelper::new();
 
-        // Step #1: Initiate the `m.login.sso` login flow (the browser navigates to
-        // `/login/sso/redirect/{idpId}`)
+        // Step #1: Initiate the `m.login.sso` login flow (the browser navigates
+        // to `/login/sso/redirect/{idpId}`)
         let request =
             Request::get("/_matrix/client/v3/login/sso/redirect?redirectUrl=http://test-login/")
                 .empty();
         let response = state.request(request).await;
         cookies.save_cookies(&response);
-        // We expect to be redirected to `/login` (with the typical MAS flow this will
-        // be a couple of hops -> `/complete-compat-sso/{id}` -> `/login`)
+        // We expect to be redirected to `/login` (with the typical MAS flow
+        // this will be a couple of hops -> `/complete-compat-sso/{id}`
+        // -> `/login`)
         response.assert_status(StatusCode::SEE_OTHER);
         let location = response
             .headers()
@@ -1856,7 +1865,8 @@ mod tests {
         assert_eq!(parsed_location_uri.path(), "/login");
         let login_uri = parsed_location_uri;
 
-        // Step 2: GET the /login page to obtain a CSRF token and establish cookies.
+        // Step 2: GET the /login page to obtain a CSRF token and establish
+        // cookies.
         let request = cookies.with_cookies(Request::get(login_uri.clone()).empty());
         let response = state.request(request).await;
         cookies.save_cookies(&response);
@@ -1864,8 +1874,8 @@ mod tests {
         // Collect any extra <form> data we need to submit alongside
         // `username`/`password`
         //
-        // Extract the `csrf` from the page. We're looking for `<input type="hidden"
-        // name="csrf" value="xxx">`
+        // Extract the `csrf` from the page. We're looking for `<input
+        // type="hidden" name="csrf" value="xxx">`
         let Some(csrf) = extract_csrf_token_from_page_html(response.body()) else {
             panic!(
                 "Unable to find csrf token as part of <form> on the `/login` page. \
@@ -1899,10 +1909,11 @@ mod tests {
             None => parsed_location_uri.path().to_owned(),
         };
 
-        // Step 4: Go to the consent screen, `GET /complete-compat-sso/{id}` with the
-        // browser session cookie. -> 200: consent page (user must approve the
-        // login) -> 403: policy rejected (e.g. could be a generic policy
-        // rejection or more specifically device limit reached)
+        // Step 4: Go to the consent screen, `GET /complete-compat-sso/{id}`
+        // with the browser session cookie. -> 200: consent page (user
+        // must approve the login) -> 403: policy rejected (e.g. could
+        // be a generic policy rejection or more specifically device
+        // limit reached)
         let request = cookies.with_cookies(Request::get(&complete_sso_path).empty());
         let response = state.request(request).await;
         cookies.save_cookies(&response);
@@ -1912,9 +1923,10 @@ mod tests {
             StatusCode::FORBIDDEN => {
                 // Detect whether this is the "device limit reached" page
                 //
-                // FIXME: Ideally, we'd use something like `getByRole('heading', { name:
-                // 'Device limit reached'})` instead to determine what kind of page
-                // we're looking at but we don't have the `testing-library` utilities on
+                // FIXME: Ideally, we'd use something like `getByRole('heading',
+                // { name: 'Device limit reached'})` instead to
+                // determine what kind of page we're looking at
+                // but we don't have the `testing-library` utilities on
                 // the Rust side here.
                 let page_type = if response
                     .body()
@@ -1948,8 +1960,8 @@ mod tests {
         //
         // Collect any extra <form> data we need to submit
         //
-        // Extract the `csrf` from the page. We're looking for `<input type="hidden"
-        // name="csrf" value="xxx">`
+        // Extract the `csrf` from the page. We're looking for `<input
+        // type="hidden" name="csrf" value="xxx">`
         let Some(csrf) = extract_csrf_token_from_page_html(response.body()) else {
             panic!(
                 "Unable to find csrf token as part of <form> on the consent page. \
@@ -1962,8 +1974,8 @@ mod tests {
         );
         let response = state.request(request).await;
         cookies.save_cookies(&response);
-        // We expect to be redirected to the `redirectUrl` (from the first step) with a
-        // `?loginToken=xxx` query parameter.
+        // We expect to be redirected to the `redirectUrl` (from the first step)
+        // with a `?loginToken=xxx` query parameter.
         response.assert_status(StatusCode::SEE_OTHER);
         let location = response
             .headers()
@@ -2039,16 +2051,16 @@ mod tests {
 
         let _user = user_with_password(&state, "alice", "password", false).await;
 
-        // Keep logging in to add more sessions, up to the `soft_limit`. We use the
-        // interactive SSO login and exchange each loginToken to create an actual compat
-        // session that counts toward the limit.
+        // Keep logging in to add more sessions, up to the `soft_limit`. We use
+        // the interactive SSO login and exchange each loginToken to
+        // create an actual compat session that counts toward the limit.
         for _ in 0..session_limit_config.soft_limit.get() {
             let login_token = matrix_compat_sso_login(&state, "alice", "password")
                 .await
                 .expect("Should be able to login without issue when under the session limit");
 
-            // Exchange the `loginToken` for an access token. This is what actually
-            // creates the session.
+            // Exchange the `loginToken` for an access token. This is what
+            // actually creates the session.
             let request = Request::post("/_matrix/client/v3/login").json(serde_json::json!({
                 "type": "m.login.token",
                 "token": login_token,
@@ -2213,8 +2225,8 @@ mod tests {
             .session_limit
             .as_ref()
             .expect("Expected `session_limit` configured for this test");
-        // Make sure this is configured as its the main differentiator we're trying to
-        // test
+        // Make sure this is configured as its the main differentiator we're
+        // trying to test
         session_limit_config.max_session_threshold.as_ref().expect("Expected `session_limit.max_session_threshold` to be configured at this point in the test");
 
         let _user = user_with_password(&state, "alice", "password", false).await;
@@ -2225,8 +2237,8 @@ mod tests {
                 .await
                 .expect("Should be able to login without issue when under the session limit");
 
-            // Exchange the `loginToken` for an access token. This is what actually
-            // creates the session.
+            // Exchange the `loginToken` for an access token. This is what
+            // actually creates the session.
             let request = Request::post("/_matrix/client/v3/login").json(serde_json::json!({
                 "type": "m.login.token",
                 "token": login_token,
@@ -2274,8 +2286,8 @@ mod tests {
             .session_limit
             .as_ref()
             .expect("Expected `session_limit` configured for this test");
-        // Make sure this is configured as its the main differentiator we're trying to
-        // test
+        // Make sure this is configured as its the main differentiator we're
+        // trying to test
         session_limit_config.max_session_threshold.as_ref().expect("Expected `session_limit.max_session_threshold` to be configured at this point in the test");
 
         let _user = user_with_password(&state, "alice", "password", false).await;
@@ -2342,8 +2354,8 @@ mod tests {
                 .await
                 .expect("Should be able to login without issue when under the session limit");
 
-            // Exchange the `loginToken` for an access token. This is what actually
-            // creates the session.
+            // Exchange the `loginToken` for an access token. This is what
+            // actually creates the session.
             let request = Request::post("/_matrix/client/v3/login").json(serde_json::json!({
                 "type": "m.login.token",
                 "token": login_token,
@@ -2367,12 +2379,12 @@ mod tests {
             .session_limit
             .as_ref()
             .expect("Expected `session_limit` to be configured at this point in the test");
-        // Make sure this is configured as its the main differentiator we're trying to
-        // test
+        // Make sure this is configured as its the main differentiator we're
+        // trying to test
         session_limit_config.max_session_threshold.as_ref().expect("Expected `session_limit.max_session_threshold` to be configured at this point in the test");
 
-        // Since we're already above `max_session_threshold`, the `session_limit` won't
-        // stop us from adding another session.
+        // Since we're already above `max_session_threshold`, the
+        // `session_limit` won't stop us from adding another session.
         let login_token = matrix_compat_sso_login(&state, "alice", "password")
             .await
             .expect("Should be able to login since we're past the `max_session_threshold`");
@@ -2443,12 +2455,12 @@ mod tests {
             .session_limit
             .as_ref()
             .expect("Expected `session_limit` to be configured at this point in the test");
-        // Make sure this is configured as its the main differentiator we're trying to
-        // test
+        // Make sure this is configured as its the main differentiator we're
+        // trying to test
         session_limit_config.max_session_threshold.as_ref().expect("Expected `session_limit.max_session_threshold` to be configured at this point in the test");
 
-        // Since we're already above `max_session_threshold`, the `session_limit` won't
-        // stop us from adding another session.
+        // Since we're already above `max_session_threshold`, the
+        // `session_limit` won't stop us from adding another session.
         let request = Request::post("/_matrix/client/v3/login")
             .json(serde_json::json!(password_login_json.clone()));
         let response = state.request(request.clone()).await;
@@ -2522,21 +2534,23 @@ mod tests {
             let device_id = do_login().await;
             login_device_ids.push(device_id);
 
-            // Advance time so it appears like each login happens a day after each other
+            // Advance time so it appears like each login happens a day after
+            // each other
             state.clock.advance(Duration::days(1));
         }
         let time_after_past_logins = state.clock.now();
 
-        // Jump to "current time" (anything > INACTIVE_SESSION_THRESHOLD) which will
-        // make all of those past logins to be considered "inactive" at this point.
+        // Jump to "current time" (anything > INACTIVE_SESSION_THRESHOLD) which
+        // will make all of those past logins to be considered
+        // "inactive" at this point.
         state.clock.advance(INACTIVE_SESSION_THRESHOLD.mul(2));
         assert!(
             state.clock.now() - time_after_past_logins > INACTIVE_SESSION_THRESHOLD,
             "Expected 'current time' login to happen > INACTIVE_SESSION_THRESHOLD from when the past logins happened"
         );
 
-        // Sanity check that the past compat sessions have `last_active_at` set. This is
-        // important as `last_active_at` starts out null.
+        // Sanity check that the past compat sessions have `last_active_at` set.
+        // This is important as `last_active_at` starts out null.
         let mut repo = state.repository().await.unwrap();
         let compat_session_page = repo
             .compat_session()
@@ -2559,13 +2573,14 @@ mod tests {
 
         // Now the user wants to login in the "current time".
         //
-        // One more login will drop one of our old sessions to make room for the new
-        // login
+        // One more login will drop one of our old sessions to make room for the
+        // new login
         let device_id = do_login().await;
         login_device_ids.push(device_id);
 
-        // Ensure we still only have two sessions (`session_limit_config.hard_limit`).
-        // We're sanity checking across all session types.
+        // Ensure we still only have two sessions
+        // (`session_limit_config.hard_limit`). We're sanity checking
+        // across all session types.
         let session_counts = count_user_sessions_for_limiting(&mut repo, &user)
             .await
             .unwrap();
@@ -2655,8 +2670,9 @@ mod tests {
 
         let mut login_device_ids: Vec<String> = Vec::new();
 
-        // Keep logging in to add more sessions, up to the `hard_limit`. Then one more
-        // login will drop one of our old sessions to make room for the new login
+        // Keep logging in to add more sessions, up to the `hard_limit`. Then
+        // one more login will drop one of our old sessions to make room
+        // for the new login
         #[expect(clippy::range_plus_one)]
         for _ in 0..(session_limit_config.hard_limit.get() + 1) {
             let request = Request::post("/_matrix/client/v3/login").json(serde_json::json!({
@@ -2681,22 +2697,24 @@ mod tests {
             };
             login_device_ids.push(device_id);
 
-            // This test doesn't really care if `last_active_at` is filled in. Ideally,
-            // we would explicitly test both scenarios (null and filled in) but either
-            // is fine.
+            // This test doesn't really care if `last_active_at` is filled in.
+            // Ideally, we would explicitly test both scenarios
+            // (null and filled in) but either is fine.
             //
             // state.activity_tracker.flush().await;
 
-            // Advance time so that each session ID sorts deterministically after each
-            // other (ULID includes timestamp). We would have flaky tests without this.
+            // Advance time so that each session ID sorts deterministically
+            // after each other (ULID includes timestamp). We would
+            // have flaky tests without this.
             state
                 .clock
                 // Each login comes after the next.
                 .advance(Duration::seconds(1));
         }
 
-        // Ensure we still only have two sessions (`session_limit_config.hard_limit`).
-        // We're sanity checking across all session types.
+        // Ensure we still only have two sessions
+        // (`session_limit_config.hard_limit`). We're sanity checking
+        // across all session types.
         let mut repo = state.repository().await.unwrap();
         let session_counts = count_user_sessions_for_limiting(&mut repo, &user)
             .await

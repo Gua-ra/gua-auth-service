@@ -82,8 +82,8 @@ impl<T> MaybeTlsStream<T> {
     pub fn tls_info(&self) -> Option<TlsStreamInfo> {
         let conn = self.get_tls_connection()?;
 
-        // SAFETY: we're getting the protocol version and cipher suite *after* the
-        // handshake, so this should never lead to a panic
+        // SAFETY: we're getting the protocol version and cipher suite *after*
+        // the handshake, so this should never lead to a panic
         let protocol_version = conn
             .protocol_version()
             .expect("TLS handshake is not done yet");

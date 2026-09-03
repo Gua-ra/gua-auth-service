@@ -148,7 +148,8 @@ impl<S: Send + Sync> FromRequestParts<S> for Pagination {
     ) -> Result<Self, Self::Rejection> {
         let params = Query::<PaginationParams>::from_request_parts(parts, state).await?;
 
-        // Figure out the direction and the count out of the first and last parameters
+        // Figure out the direction and the count out of the first and last
+        // parameters
         let (direction, count) = match (params.first, params.last) {
             // Make sure we don't specify both first and last
             (Some(_), Some(_)) => return Err(PaginationRejection::FirstAndLast),

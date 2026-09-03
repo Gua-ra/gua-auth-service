@@ -204,16 +204,17 @@ pub(crate) async fn handler(
         return Err(RouteError::MissingFormParams);
     }
 
-    // The `Form` extractor will use the body of the request for POST requests and
-    // the query parameters for GET requests. We need to then look at the method do
-    // make sure it matches the expected `response_mode`
+    // The `Form` extractor will use the body of the request for POST requests
+    // and the query parameters for GET requests. We need to then look at
+    // the method do make sure it matches the expected `response_mode`
     match (provider.response_mode, method) {
         (Some(UpstreamOAuthProviderResponseMode::FormPost) | None, Method::POST) => {
-            // We set the cookies with a `Same-Site` policy set to `Lax`, so because this is
-            // usually a cross-site form POST, we need to render a form with the
-            // same values, which posts back to the same URL. However, there are
-            // other valid reasons for the cookie to be missing, so to track whether we did
-            // this POST ourselves, we set a flag.
+            // We set the cookies with a `Same-Site` policy set to `Lax`, so
+            // because this is usually a cross-site form POST, we
+            // need to render a form with the same values, which
+            // posts back to the same URL. However, there are
+            // other valid reasons for the cookie to be missing, so to track
+            // whether we did this POST ourselves, we set a flag.
             if sessions_cookie.is_empty() && !params.did_mas_repost_to_itself {
                 let params = Params {
                     did_mas_repost_to_itself: true,

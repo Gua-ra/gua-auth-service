@@ -147,8 +147,8 @@ where
         // Increment the in-flight request count.
         let guard = InFlightGuard::new(self.counter.clone(), attributes);
 
-        // Call the inner service, and return a future that decrements the in-flight
-        // when dropped.
+        // Call the inner service, and return a future that decrements the
+        // in-flight when dropped.
         let inner = self.inner.call(req);
         InFlightFuture { guard, inner }
     }

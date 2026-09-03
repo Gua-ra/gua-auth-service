@@ -262,8 +262,8 @@ async fn test_user_repo_find_by_username(pool: PgPool) {
         Some(alice)
     );
 
-    // In case there are multiple users with the same username, we should return the
-    // one that matches the exact casing
+    // In case there are multiple users with the same username, we should return
+    // the one that matches the exact casing
     assert_eq!(
         repo.user().find_by_username("Bob").await.unwrap(),
         Some(bob1)
@@ -798,8 +798,8 @@ async fn test_user_session(pool: PgPool) {
         .await
         .unwrap();
 
-    // This will match all authorization sessions, which matches exactly that one
-    // authorization session
+    // This will match all authorization sessions, which matches exactly that
+    // one authorization session
     let upstream_oauth_session_filter = UpstreamOAuthSessionFilter::new();
     let filter =
         BrowserSessionFilter::new().linked_to_upstream_sessions_only(upstream_oauth_session_filter);

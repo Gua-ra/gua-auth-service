@@ -146,7 +146,8 @@ impl ConfigurationSection for RateLimitingConfig {
         let error_on_limiter =
             |limiter: &RateLimiterConfiguration| -> Option<figment::error::Error> {
                 let recip = limiter.per_second.recip();
-                // period must be at least 1 nanosecond according to the governor library
+                // period must be at least 1 nanosecond according to the
+                // governor library
                 if recip < 1.0e-9 || !recip.is_finite() {
                     return Some(figment::error::Error::custom(
                         "`per_second` must be a number that is more than zero and less than 1_000_000_000 (1e9)",

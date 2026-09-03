@@ -153,8 +153,8 @@ where
         let token = TypedHeader::<Authorization<Bearer>>::from_request_parts(parts, state)
             .await
             .map_err(|e| {
-                // We map to two differentsson of errors depending on whether the header is
-                // missing or invalid
+                // We map to two differentsson of errors depending on whether
+                // the header is missing or invalid
                 if e.is_missing() {
                     Rejection::MissingAuthorizationHeader
                 } else {
@@ -265,8 +265,8 @@ where
                     }
                 }
                 CallerSession::PersonalSession(_) => {
-                    // For personal sessions: check that the actor is valid enough
-                    // to be an actor.
+                    // For personal sessions: check that the actor is valid
+                    // enough to be an actor.
                     if !user.is_valid_actor() {
                         return Err(Rejection::UserLocked);
                     }

@@ -463,7 +463,8 @@ impl UpstreamOAuthLinkRepository for PgUpstreamOAuthLinkRepository<'_> {
     ) -> Result<(usize, Option<Ulid>), Self::Error> {
         // Use ULID cursor-based pagination for orphaned links only.
         // We only delete links that have no user associated with them.
-        // `MAX(uuid)` isn't a thing in Postgres, so we aggregate on the client side.
+        // `MAX(uuid)` isn't a thing in Postgres, so we aggregate on the client
+        // side.
         let res = sqlx::query_scalar!(
             r#"
                 WITH
