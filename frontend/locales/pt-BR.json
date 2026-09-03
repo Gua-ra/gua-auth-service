@@ -43,12 +43,12 @@
         "alert_description": "Esta conta será apagada permanentemente e você perderá o acesso a todas as suas mensagens.",
         "alert_title": "Você está prestes a perder todos os seus dados",
         "button": "Excluir conta",
-        "dialog_description": "<text>Confirme que você deseja excluir sua conta:</text>\n<profile />\n<list>\n<item>Você não poderá reativar sua conta</item>\n<item>Você não poderá mais entrar</item>\n<item>Ninguém poderá reutilizar seu nome de usuário (MXID), nem mesmo você</item>\n<item>Você sairá de todas as salas e mensagens diretas em que está</item>\n<item>Você será removido do servidor de identidade e ninguém poderá encontrar você pelo seu e-mail ou número de telefone</item>\n</list>\n<text>Suas mensagens antigas continuarão visíveis para as pessoas que as receberam. Você quer ocultar as mensagens que enviou das pessoas que entrarem nas salas no futuro?</text>",
+        "dialog_description": "<text>Confirme que você deseja excluir sua conta:</text>\n<profile />\n<list>\n<item>Você não poderá reativar sua conta</item>\n<item>Você não poderá mais entrar</item>\n<item>Ninguém poderá usar seu nome de usuário novamente</item>\n<item>Você será removido de todas as conversas e bate-papos</item>\n<item>Seu e-mail e número de telefone serão desvinculados, e as pessoas não poderão te encontrar por eles</item>\n</list>\n<text>Suas mensagens antigas continuarão visíveis para quem as recebeu. Você deseja ocultar suas mensagens de quem entrar nas conversas no futuro?</text>",
         "dialog_title": "Excluir esta conta?",
         "erase_checkbox_label": "Sim, ocultar todas as minhas mensagens de quem entrar depois",
         "incorrect_password": "Senha incorreta, tente novamente",
-        "mxid_label": "Confirme seu ID do Matrix ({{ mxid }})",
-        "mxid_mismatch": "Este valor não corresponde ao seu ID do Matrix",
+        "mxid_label": "Confirme seu nome de usuário ({{ localpart }})",
+        "mxid_mismatch": "Este nome de usuário não confere",
         "password_label": "Digite sua senha para continuar"
       },
       "edit_profile": {

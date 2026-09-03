@@ -11,9 +11,8 @@
     "submit": "Odeslat"
   },
   "app": {
-    "human_name": "Matrix Authentication Service",
-    "name": "matrix-authentication-service",
-    "technical_description": "Dokument o zjišťování služby OpenID Connect: <a class=\"cpd-link\" data-kind=\"primary\" href=\"%(discovery_url)s\">%(discovery_url)s</a>"
+    "human_name": "Gua",
+    "name": "Gua"
   },
   "branding": {
     "privacy_policy": {
@@ -29,7 +28,6 @@
     "display_name": "Zobrazované Jméno",
     "email_address": "E-mailová adresa",
     "loading": "Načítání…",
-    "mxid": "Matrix ID",
     "password": "Heslo",
     "password_confirm": "Potvrďte heslo",
     "username": "Uživatelské jméno"
@@ -40,11 +38,9 @@
   "mas": {
     "account": {
       "deactivated": {
-        "description": "Tento účet (<em>%(mxid)s</em>) byl smazán. Pokud to není očekávané, obraťte se na správce serveru.",
         "heading": "Účet smazán"
       },
       "locked": {
-        "description": "Tento účet (<em>%(mxid)s</em>) byl uzamčen. Pokud to není očekávané, obraťte se na správce serveru.",
         "heading": "Účet uzamčen"
       },
       "logged_out": {
@@ -102,7 +98,6 @@
         "description": "Odepřeli jste přístup k %(client_name)s. Toto okno můžete zavřít.",
         "heading": "Přístup odepřen"
       },
-      "description": "<strong>Další zařízení</strong> chce propojit %(client_name)s (<span>%(client_uri)s</span>) s vaším účtem <span>%(server_name)s</span>. Ujistěte se, že toto zařízení poznáváte.",
       "grant_access": "Udělit přístup",
       "granted": {
         "description": "Udělili jste přístup k %(client_name)s. Toto okno můžete zavřít.",
@@ -131,7 +126,6 @@
         "copy_link": "Zkopírujte následující odkaz a vložte jej do prohlížeče a vytvořte nové heslo:",
         "create_new_password": "Vytvořit nové heslo",
         "fallback": "Nefunguje vám tlačítko?",
-        "headline": "Požádali jste o obnovení hesla pro svůj %(server_name)s účet.",
         "subject": "Obnovit heslo k účtu (%(mxid)s)",
         "you_can_ignore": "Pokud jste nepožádali o nové heslo, můžete tento e-mail ignorovat. Vaše aktuální heslo bude i nadále fungovat."
       },
@@ -160,9 +154,7 @@
       "username_too_long": "Uživatelské jméno je příliš dlouhé",
       "username_too_short": "Uživatelské jméno je příliš krátké"
     },
-    "legacy_consent": {
-      "this_will_setup": "Tím se nastaví <span>%(client_name)s</span> s vaším účtem <span>%(server_name)s</span>."
-    },
+    "legacy_consent": {},
     "login": {
       "call_to_register": "Ještě nemáte účet?",
       "continue_with_provider": "Pokračovat s %(provider)s",
@@ -242,7 +234,6 @@
       "terms_of_service": "Souhlasím s podmínkami <a href=\"%s\" data-kind=\"primary\" class=\"cpd-link\"></a>"
     },
     "registration_token": {
-      "description": "Zadejte registrační token poskytnutý správcem domovského serveru.",
       "field": "Registrační token",
       "headline": "Registrační token"
     },
@@ -275,7 +266,6 @@
         "forced_email": "Použije následující e-mailovou adresu",
         "forced_localpart": "Použije následující uživatelské jméno",
         "import_data": {
-          "description": "Potvrďte informace, které budou propojeny s vaším novým účtem %(server_name)s.",
           "heading": "Importujte svá data"
         },
         "imported_from_upstream": "Importováno z vašeho upstream účtu",

@@ -294,7 +294,7 @@ export type RemoveEmailMutationVariables = Exact<{
 
 export type RemoveEmailMutation = { removeEmail: { status: RemoveEmailStatus, user: { id: string } | null } };
 
-export type UserGreeting_UserFragment = { id: string, matrix: { mxid: string, displayName: string | null } } & { ' $fragmentName'?: 'UserGreeting_UserFragment' };
+export type UserGreeting_UserFragment = { id: string, username: string, matrix: { mxid: string, displayName: string | null } } & { ' $fragmentName'?: 'UserGreeting_UserFragment' };
 
 export type UserGreeting_SiteConfigFragment = { displayNameChangeAllowed: boolean } & { ' $fragmentName'?: 'UserGreeting_SiteConfigFragment' };
 
@@ -869,6 +869,7 @@ export const UserEmail_EmailFragmentDoc = new TypedDocumentString(`
 export const UserGreeting_UserFragmentDoc = new TypedDocumentString(`
     fragment UserGreeting_user on User {
   id
+  username
   matrix {
     mxid
     displayName
@@ -1319,6 +1320,7 @@ export const CurrentUserGreetingDocument = new TypedDocumentString(`
 }
     fragment UserGreeting_user on User {
   id
+  username
   matrix {
     mxid
     displayName

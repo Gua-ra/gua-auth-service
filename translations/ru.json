@@ -11,9 +11,8 @@
     "submit": "Отправить"
   },
   "app": {
-    "human_name": "Matrix Authentication Service",
-    "name": "matrix-authentication-service",
-    "technical_description": "OpenID Connect документ обнаружения: <a class=\"cpd-link\" data-kind=\"primary\" href=\"%(discovery_url)s\"> %(discovery_url)s </a>"
+    "human_name": "Gua",
+    "name": "Gua"
   },
   "branding": {
     "privacy_policy": {
@@ -29,7 +28,6 @@
     "display_name": "Отображаемое имя",
     "email_address": "Электронная почта",
     "loading": "Загрузка…",
-    "mxid": "Matrix ID",
     "password": "Пароль",
     "password_confirm": "Подтверждение пароля",
     "username": "Псевдоним"
@@ -40,11 +38,9 @@
   "mas": {
     "account": {
       "deactivated": {
-        "description": "Эта учетная запись (<em>%(mxid)s</em>) была удалена. Если этого не произошло, обратитесь к администратору сервера.",
         "heading": "Аккаунт удален"
       },
       "locked": {
-        "description": "Эта учетная запись (<em>%(mxid)s</em>) была заблокирована. Если этого не произошло, обратитесь к администратору сервера.",
         "heading": "Аккаунт заблокирован"
       },
       "logged_out": {
@@ -121,7 +117,6 @@
         "copy_link": "Скопируйте следующую ссылку и вставьте ее в браузер, чтобы создать новый пароль:",
         "create_new_password": "Создайте новый пароль",
         "fallback": "Не работает кнопка?",
-        "headline": "Вы запросили сброс пароля для своей учетной записи на %(server_name)s.",
         "subject": "Сброс пароля учетной записи (%(mxid)s)",
         "you_can_ignore": "Если вы не запрашивали сброс пароля, можете проигнорировать это письмо. Ваш текущий пароль продолжит работать."
       },
@@ -150,9 +145,7 @@
       "username_too_long": "Имя пользователя слишком длинное",
       "username_too_short": "Имя пользователя слишком короткое"
     },
-    "legacy_consent": {
-      "this_will_setup": "Это свяжет <span>%(client_name)s</span> с вашей учётной записью на <span>%(server_name)s</span>"
-    },
+    "legacy_consent": {},
     "login": {
       "call_to_register": "Ещё нет аккаунта?",
       "continue_with_provider": "Продолжить с %(provider)s",
@@ -227,7 +220,6 @@
       "terms_of_service": "Я соглашаюсь с <a href=\"%s\" data-kind=\"primary\" class=\"cpd-link\">Правилами и положениями</a>"
     },
     "registration_token": {
-      "description": "Введите токен регистрации, предоставленный администратором сервера.",
       "field": "Токен регистрации",
       "headline": "Токен регистрации"
     },
@@ -260,7 +252,6 @@
         "forced_email": "Будет использоваться следующий адрес электронной почты",
         "forced_localpart": "Будет использоваться следующее имя пользователя",
         "import_data": {
-          "description": "Подтвердите информацию, которая будет привязана к вашей новой учетной записи на %(server_name)s.",
           "heading": "Импортируйте данные"
         },
         "imported_from_upstream": "Импортировано из учётной записи",

@@ -42,7 +42,7 @@ Please see LICENSE files in the repository root for full details.
         </h1>
 
         <p class="text [&>span]:whitespace-nowrap [&>span]:text-[var(--cpd-color-text-link-external)]">
-          {{ _("mas.device_consent.description", client_name=client_display_name, client_uri=client_display_uri, server_name=branding.server_name) }}
+          {{ _("mas.device_consent.description", client_name=client_display_name) }}
         </p>
       </div>
 
@@ -50,7 +50,8 @@ Please see LICENSE files in the repository root for full details.
         <div class="avatar-placeholder" data-color="{{ matrix_user.mxid | id_color_hash }}">{{ initial }}</div>
         <div class="flex flex-col">
           <div class="text-primary cpd-text-body-lg-semibold">{{ matrix_user.display_name or current_session.user.username }}</div>
-          <div class="text-secondary cpd-text-body-md-regular">{{ matrix_user.mxid }}</div>
+          {# GUA FORK: the handle only, never the homeserver. #}
+          <div class="text-secondary cpd-text-body-md-regular">@{{ current_session.user.username }}</div>
         </div>
       </section>
 
