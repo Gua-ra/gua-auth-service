@@ -90,7 +90,8 @@ pub(crate) async fn get(
     }
 
     if !site_config.password_registration_enabled {
-        // If password-based registration is disabled, redirect to the login page here
+        // If password-based registration is disabled, redirect to the login
+        // page here
         return Ok(url_builder
             .redirect(&mas_router::Login::from(query.action.post_auth_action))
             .into_response());
@@ -198,15 +199,17 @@ pub(crate) async fn post(
                 "Homeserver denied username provided by user"
             );
 
-            // We defer adding the error on the field, until we know whether we had another
-            // error from the policy, to avoid showing both
+            // We defer adding the error on the field, until we know whether we
+            // had another error from the policy, to avoid showing
+            // both
             homeserver_denied_username = true;
         }
 
         if let Some(email) = &email {
-            // Note that we don't check here if the email is already taken here, as
-            // we don't want to leak the information about other users. Instead, we will
-            // show an error message once the user confirmed their email address.
+            // Note that we don't check here if the email is already taken here,
+            // as we don't want to leak the information about other
+            // users. Instead, we will show an error message once
+            // the user confirmed their email address.
             if email.is_empty() {
                 state.add_error_on_field(RegisterFormField::Email, FieldError::Required);
             } else if Address::from_str(email).is_err() {
@@ -268,8 +271,9 @@ pub(crate) async fn post(
                     },
                 ),
                 Some("username") => {
-                    // If the homeserver denied the username, but we also had an error on the policy
-                    // side, we don't want to show both, so we reset the state here
+                    // If the homeserver denied the username, but we also had an
+                    // error on the policy side, we don't
+                    // want to show both, so we reset the state here
                     homeserver_denied_username = false;
                     state.add_error_on_field(
                         RegisterFormField::Username,
@@ -294,7 +298,8 @@ pub(crate) async fn post(
         }
 
         if homeserver_denied_username {
-            // XXX: we may want to return different errors like "this username is reserved"
+            // XXX: we may want to return different errors like "this username
+            // is reserved"
             state.add_error_on_field(RegisterFormField::Username, FieldError::Exists);
         }
 
@@ -520,7 +525,8 @@ mod tests {
         response.assert_status(StatusCode::SEE_OTHER);
         let location = response.headers().get(LOCATION).unwrap();
 
-        // The handler redirects with the ID as the second to last portion of the path
+        // The handler redirects with the ID as the second to last portion of
+        // the path
         let id = location
             .to_str()
             .unwrap()
@@ -777,7 +783,8 @@ mod tests {
         response.assert_status(StatusCode::SEE_OTHER);
         let location = response.headers().get(LOCATION).unwrap();
 
-        // The handler redirects with the ID as the second to last portion of the path
+        // The handler redirects with the ID as the second to last portion of
+        // the path
         let id = location
             .to_str()
             .unwrap()
@@ -792,8 +799,8 @@ mod tests {
         let registration = repo.user_registration().lookup(id).await.unwrap().unwrap();
         assert_eq!(registration.username, "alice".to_owned());
         assert!(registration.password.is_some());
-        // Email authentication should be None when email is not required and not
-        // provided
+        // Email authentication should be None when email is not required and
+        // not provided
         assert!(registration.email_authentication_id.is_none());
     }
 
@@ -847,7 +854,8 @@ mod tests {
         response.assert_status(StatusCode::SEE_OTHER);
         let location = response.headers().get(LOCATION).unwrap();
 
-        // The handler redirects with the ID as the second to last portion of the path
+        // The handler redirects with the ID as the second to last portion of
+        // the path
         let id = location
             .to_str()
             .unwrap()

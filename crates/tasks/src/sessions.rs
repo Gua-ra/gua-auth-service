@@ -83,8 +83,9 @@ impl RunnableJob for ExpireInactiveOAuthSessionsJob {
         let mut users_synced = HashSet::new();
 
         // This delay is used to space out the device sync jobs
-        // We add 10 seconds between each device sync, meaning that it will spread out
-        // the syncs over ~16 minutes max if we get a full batch of 100 users
+        // We add 10 seconds between each device sync, meaning that it will
+        // spread out the syncs over ~16 minutes max if we get a full
+        // batch of 100 users
         let mut delay = Duration::minutes(1);
 
         let filter = OAuth2SessionFilter::new()
@@ -148,8 +149,9 @@ impl RunnableJob for ExpireInactiveCompatSessionsJob {
         let mut users_synced = HashSet::new();
 
         // This delay is used to space out the device sync jobs
-        // We add 10 seconds between each device sync, meaning that it will spread out
-        // the syncs over ~16 minutes max if we get a full batch of 100 users
+        // We add 10 seconds between each device sync, meaning that it will
+        // spread out the syncs over ~16 minutes max if we get a full
+        // batch of 100 users
         let mut delay = Duration::minutes(1);
 
         let filter = CompatSessionFilter::new()

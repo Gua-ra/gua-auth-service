@@ -125,7 +125,8 @@ impl Options {
             &config.secrets.encryption().await?,
         );
 
-        // Load and compile the WASM policies (and fallback to the default embedded one)
+        // Load and compile the WASM policies (and fallback to the default
+        // embedded one)
         info!("Loading and compiling the policy module");
         let policy_factory =
             policy_factory_from_config(&config.policy, &config.matrix, &config.experimental)
@@ -214,8 +215,8 @@ impl Options {
         let trusted_proxies = config.http.trusted_proxies.clone();
 
         // Build a rate limiter.
-        // This should not raise an error here as the config should already have been
-        // validated.
+        // This should not raise an error here as the config should already have
+        // been validated.
         let limiter = Limiter::new(&config.rate_limiting)
             .context("rate-limiting configuration is not valid")?;
 

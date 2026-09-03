@@ -153,8 +153,9 @@ pub(crate) async fn get(
             let maybe_session = session_info.load_active_session(&mut repo).await?;
             let prompt = params.auth.prompt.as_deref().unwrap_or_default();
 
-            // Check if the request/request_uri/registration params are used. If so, reply
-            // with the right error since we don't support them.
+            // Check if the request/request_uri/registration params are used. If
+            // so, reply with the right error since we don't support
+            // them.
             if params.auth.request.is_some() {
                 return Ok(callback_destination.go(
                     &templates,
@@ -171,8 +172,8 @@ pub(crate) async fn get(
                 )?);
             }
 
-            // Check if the client asked for a `token` response type, and bail out if it's
-            // the case, since we don't support them
+            // Check if the client asked for a `token` response type, and bail
+            // out if it's the case, since we don't support them
             if response_type.has_token() {
                 return Ok(callback_destination.go(
                     &templates,
@@ -181,8 +182,8 @@ pub(crate) async fn get(
                 )?);
             }
 
-            // If the client asked for a `id_token` response type, we must check if it can
-            // use the `implicit` grant type
+            // If the client asked for a `id_token` response type, we must check
+            // if it can use the `implicit` grant type
             if response_type.has_id_token() && !client.grant_types.contains(&GrantType::Implicit) {
                 return Ok(callback_destination.go(
                     &templates,
@@ -232,8 +233,8 @@ pub(crate) async fn get(
 
                 Some(AuthorizationCode { code, pkce })
             } else {
-                // If the request had PKCE params but no code asked, it should get back with an
-                // error
+                // If the request had PKCE params but no code asked, it should
+                // get back with an error
                 if params.pkce.is_some() {
                     return Ok(callback_destination.go(
                         &templates,
@@ -266,7 +267,8 @@ pub(crate) async fn get(
 
             let res = match maybe_session {
                 None if prompt.contains(&Prompt::Create) => {
-                    // Client asked for a registration, show the registration prompt
+                    // Client asked for a registration, show the registration
+                    // prompt
                     repo.save().await?;
 
                     url_builder
@@ -275,7 +277,8 @@ pub(crate) async fn get(
                 }
 
                 None => {
-                    // Other cases where we don't have a session, ask for a login
+                    // Other cases where we don't have a session, ask for a
+                    // login
                     repo.save().await?;
 
                     let mut url = mas_router::Login::and_then(continue_grant);
@@ -292,17 +295,23 @@ pub(crate) async fn get(
                 Some(_user_session)
                     if prompt.contains(&Prompt::Login) || prompt.contains(&Prompt::Create) =>
                 {
-                    // The client demanded a fresh authentication (`prompt=login`) OR a new
-                    // account (`prompt=create`). Even though a browser session exists, we
-                    // must NOT silently reuse it: OIDC says honor `prompt=login`, and for
-                    // `prompt=create` reusing the session is exactly the sign-out bug (the
-                    // app signs out locally but MAS's session lingers — MAS has no
-                    // RP-initiated logout to clear it — so a different phone number would
-                    // resume the OLD account). Route back through login with `force_login`
-                    // so the login page does NOT reuse the existing session and instead
-                    // starts a brand-new authentication (for Gua, re-running the upstream
-                    // phone+OTP, which creates-or-matches the account by the number entered).
-                    // Carry the login_hint so the new flow can be pre-filled, mirroring the
+                    // The client demanded a fresh authentication
+                    // (`prompt=login`) OR a new
+                    // account (`prompt=create`). Even though a browser session
+                    // exists, we must NOT silently reuse
+                    // it: OIDC says honor `prompt=login`, and for
+                    // `prompt=create` reusing the session is exactly the
+                    // sign-out bug (the app signs out
+                    // locally but MAS's session lingers — MAS has no
+                    // RP-initiated logout to clear it — so a different phone
+                    // number would resume the OLD account).
+                    // Route back through login with `force_login`
+                    // so the login page does NOT reuse the existing session and
+                    // instead starts a brand-new
+                    // authentication (for Gua, re-running the upstream
+                    // phone+OTP, which creates-or-matches the account by the
+                    // number entered). Carry the login_hint
+                    // so the new flow can be pre-filled, mirroring the
                     // `None =>` arm.
                     repo.save().await?;
 
@@ -318,8 +327,9 @@ pub(crate) async fn get(
                 }
 
                 Some(user_session) => {
-                    // A browser session exists and the client did not demand a fresh auth
-                    // (no prompt=login/create — those are handled above). Reuse the session
+                    // A browser session exists and the client did not demand a
+                    // fresh auth (no prompt=login/create —
+                    // those are handled above). Reuse the session
                     // and go straight to consent.
                     repo.save().await?;
 

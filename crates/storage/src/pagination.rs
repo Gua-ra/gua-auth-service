@@ -134,7 +134,8 @@ impl<C> Pagination<C> {
         let (has_previous_page, has_next_page) = match self.direction {
             PaginationDirection::Forward => (false, is_full),
             PaginationDirection::Backward => {
-                // 6. If the last argument is provided, I reverse the order of the results
+                // 6. If the last argument is provided, I reverse the order of
+                //    the results
                 nodes.reverse();
                 (is_full, false)
             }

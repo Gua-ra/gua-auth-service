@@ -188,8 +188,8 @@ struct RouteResponse {
 fn host_is_public_suffix(url: &Url) -> bool {
     let host = url.host_str().unwrap_or_default().as_bytes();
     let Some(suffix) = psl::List.suffix(host) else {
-        // There is no suffix, which is the case for empty hosts, like with custom
-        // schemes
+        // There is no suffix, which is the case for empty hosts, like with
+        // custom schemes
         return false;
     };
 
@@ -321,12 +321,13 @@ pub(crate) async fn post(
     // If the client doesn't have a secret, we may be able to deduplicate it. To
     // do so, we hash the client metadata, and look for it in the database
     let (digest_hash, existing_client) = if client_secret.is_none() {
-        // XXX: One interesting caveat is that we hash *before* saving to the database.
-        // It means it takes into account fields that we don't care about *yet*.
+        // XXX: One interesting caveat is that we hash *before* saving to the
+        // database. It means it takes into account fields that we don't
+        // care about *yet*.
         //
         // This means that if later we start supporting a particular field, we
-        // will still serve the 'old' client_id, without updating the client in the
-        // database
+        // will still serve the 'old' client_id, without updating the client in
+        // the database
         let hash = sha2::Sha256::digest(body_json);
         let hash = hex::encode(hash);
         let client = repo.oauth2_client().find_by_metadata_digest(&hash).await?;
@@ -529,8 +530,8 @@ mod tests {
         setup();
         let state = TestState::from_pool(pool).await.unwrap();
 
-        // A successful registration with no authentication should not return a client
-        // secret
+        // A successful registration with no authentication should not return a
+        // client secret
         let request =
             Request::post(mas_router::OAuth2RegistrationEndpoint::PATH).json(serde_json::json!({
                 "client_uri": "https://example.com/",
@@ -545,8 +546,8 @@ mod tests {
         let response: ClientRegistrationResponse = response.json();
         assert!(response.client_secret.is_none());
 
-        // A successful registration with client_secret based authentication should
-        // return a client secret
+        // A successful registration with client_secret based authentication
+        // should return a client secret
         let request =
             Request::post(mas_router::OAuth2RegistrationEndpoint::PATH).json(serde_json::json!({
                 "client_uri": "https://example.com/",
@@ -609,7 +610,8 @@ mod tests {
         let response: ClientRegistrationResponse = response.json();
         assert_eq!(response.client_id, client_id);
 
-        // Doing that with a client that has a client_secret should not deduplicate
+        // Doing that with a client that has a client_secret should not
+        // deduplicate
         let request =
             Request::post(mas_router::OAuth2RegistrationEndpoint::PATH).json(serde_json::json!({
                 "client_uri": "https://example.com/",
@@ -645,8 +647,8 @@ mod tests {
         .await
         .unwrap();
 
-        // Registering a client that requests device_code grant should be accepted, but
-        // the device_code grant type should be dropped
+        // Registering a client that requests device_code grant should be
+        // accepted, but the device_code grant type should be dropped
         let request =
             Request::post(mas_router::OAuth2RegistrationEndpoint::PATH).json(serde_json::json!({
                 "client_uri": "https://example.com/",

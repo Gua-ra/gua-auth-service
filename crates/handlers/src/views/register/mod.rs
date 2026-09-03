@@ -52,8 +52,8 @@ pub(crate) async fn get(
 
     let providers = repo.upstream_oauth_provider().all_enabled().await?;
 
-    // If password-based login is disabled, and there is only one upstream provider,
-    // we can directly start an authorization flow
+    // If password-based login is disabled, and there is only one upstream
+    // provider, we can directly start an authorization flow
     if !site_config.password_registration_enabled && providers.len() == 1 {
         let provider = providers.into_iter().next().unwrap();
 

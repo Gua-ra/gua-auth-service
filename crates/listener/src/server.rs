@@ -302,8 +302,8 @@ pub async fn run_servers<S, B>(
     B::Data: Send,
     B::Error: std::error::Error + Send + Sync + 'static,
 {
-    // This guard on the shutdown token is to ensure that if this task crashes for
-    // any reason, the server will shut down
+    // This guard on the shutdown token is to ensure that if this task crashes
+    // for any reason, the server will shut down
     let _guard = soft_shutdown_token.clone().drop_guard();
 
     // Create a stream of accepted connections out of the listeners

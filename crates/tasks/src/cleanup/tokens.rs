@@ -28,13 +28,15 @@ impl RunnableJob for CleanupRevokedOAuthAccessTokensJob {
         let until = state.clock.now() - chrono::Duration::hours(1);
         let mut total = 0;
 
-        // Run until we get cancelled. We don't schedule a retry if we get cancelled, as
-        // this is a scheduled job and it will end up being rescheduled later anyway.
+        // Run until we get cancelled. We don't schedule a retry if we get
+        // cancelled, as this is a scheduled job and it will end up
+        // being rescheduled later anyway.
         let mut since = None;
         while !context.cancellation_token.is_cancelled() {
             let mut repo = state.repository().await.map_err(JobError::retry)?;
 
-            // This returns the number of deleted tokens, and the last revoked_at timestamp
+            // This returns the number of deleted tokens, and the last
+            // revoked_at timestamp
             let (count, last_revoked_at) = repo
                 .oauth2_access_token()
                 .cleanup_revoked(since, until, BATCH_SIZE)
@@ -62,7 +64,8 @@ impl RunnableJob for CleanupRevokedOAuthAccessTokensJob {
     }
 
     fn timeout(&self) -> Option<Duration> {
-        // This job runs every hour, so having it running it for 10 minutes is fine
+        // This job runs every hour, so having it running it for 10 minutes is
+        // fine
         Some(Duration::from_secs(10 * 60))
     }
 }
@@ -81,13 +84,15 @@ impl RunnableJob for CleanupExpiredOAuthAccessTokensJob {
         let until = state.clock.now() - chrono::Duration::days(30);
         let mut total = 0;
 
-        // Run until we get cancelled. We don't schedule a retry if we get cancelled, as
-        // this is a scheduled job and it will end up being rescheduled later anyway.
+        // Run until we get cancelled. We don't schedule a retry if we get
+        // cancelled, as this is a scheduled job and it will end up
+        // being rescheduled later anyway.
         let mut since = None;
         while !context.cancellation_token.is_cancelled() {
             let mut repo = state.repository().await.map_err(JobError::retry)?;
 
-            // This returns the number of deleted tokens, and the last expires_at timestamp
+            // This returns the number of deleted tokens, and the last
+            // expires_at timestamp
             let (count, last_expires_at) = repo
                 .oauth2_access_token()
                 .cleanup_expired(since, until, BATCH_SIZE)
@@ -127,13 +132,15 @@ impl RunnableJob for CleanupRevokedOAuthRefreshTokensJob {
         let until = state.clock.now() - chrono::Duration::hours(1);
         let mut total = 0;
 
-        // Run until we get cancelled. We don't schedule a retry if we get cancelled, as
-        // this is a scheduled job and it will end up being rescheduled later anyway.
+        // Run until we get cancelled. We don't schedule a retry if we get
+        // cancelled, as this is a scheduled job and it will end up
+        // being rescheduled later anyway.
         let mut since = None;
         while !context.cancellation_token.is_cancelled() {
             let mut repo = state.repository().await.map_err(JobError::retry)?;
 
-            // This returns the number of deleted tokens, and the last revoked_at timestamp
+            // This returns the number of deleted tokens, and the last
+            // revoked_at timestamp
             let (count, last_revoked_at) = repo
                 .oauth2_refresh_token()
                 .cleanup_revoked(since, until, BATCH_SIZE)
@@ -161,7 +168,8 @@ impl RunnableJob for CleanupRevokedOAuthRefreshTokensJob {
     }
 
     fn timeout(&self) -> Option<Duration> {
-        // This job runs every hour, so having it running it for 10 minutes is fine
+        // This job runs every hour, so having it running it for 10 minutes is
+        // fine
         Some(Duration::from_secs(10 * 60))
     }
 }
@@ -174,13 +182,15 @@ impl RunnableJob for CleanupConsumedOAuthRefreshTokensJob {
         let until = state.clock.now() - chrono::Duration::hours(1);
         let mut total = 0;
 
-        // Run until we get cancelled. We don't schedule a retry if we get cancelled, as
-        // this is a scheduled job and it will end up being rescheduled later anyway.
+        // Run until we get cancelled. We don't schedule a retry if we get
+        // cancelled, as this is a scheduled job and it will end up
+        // being rescheduled later anyway.
         let mut since = None;
         while !context.cancellation_token.is_cancelled() {
             let mut repo = state.repository().await.map_err(JobError::retry)?;
 
-            // This returns the number of deleted tokens, and the last consumed_at timestamp
+            // This returns the number of deleted tokens, and the last
+            // consumed_at timestamp
             let (count, last_consumed_at) = repo
                 .oauth2_refresh_token()
                 .cleanup_consumed(since, until, BATCH_SIZE)
@@ -208,7 +218,8 @@ impl RunnableJob for CleanupConsumedOAuthRefreshTokensJob {
     }
 
     fn timeout(&self) -> Option<Duration> {
-        // This job runs every hour, so having it running it for 10 minutes is fine
+        // This job runs every hour, so having it running it for 10 minutes is
+        // fine
         Some(Duration::from_secs(10 * 60))
     }
 }

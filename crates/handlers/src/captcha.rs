@@ -232,8 +232,8 @@ impl Form {
             ));
         }
 
-        // If the response is successful, we should have both the hostname and the
-        // challenge_ts
+        // If the response is successful, we should have both the hostname and
+        // the challenge_ts
         let Some(hostname) = response.hostname else {
             return Err(Error::InvalidResponse);
         };

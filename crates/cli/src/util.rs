@@ -394,8 +394,9 @@ pub async fn database_pool_from_config(config: &DatabaseConfig) -> Result<PgPool
         .max_lifetime(config.max_lifetime)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                // Unlisten from all channels, as we might be connected via a connection pooler
-                // that doesn't clean up LISTEN/NOTIFY state when reusing connections.
+                // Unlisten from all channels, as we might be connected via a
+                // connection pooler that doesn't clean up
+                // LISTEN/NOTIFY state when reusing connections.
                 conn.execute("UNLISTEN *;").await?;
 
                 Ok(())

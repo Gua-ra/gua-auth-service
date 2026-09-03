@@ -458,8 +458,8 @@ mod tests {
         let scope2 = Scope::from_iter([OPENID, PROFILE]);
 
         // Create two sessions for each user, one with each client
-        // We're moving the clock forward by 1 minute between each session to ensure
-        // we're getting consistent ordering in lists.
+        // We're moving the clock forward by 1 minute between each session to
+        // ensure we're getting consistent ordering in lists.
         let session11 = repo
             .oauth2_session()
             .add_from_browser_session(&mut rng, &clock, &client1, &user1_session, scope.clone())
@@ -645,7 +645,8 @@ mod tests {
 
         assert_eq!(repo.oauth2_session().count(filter).await.unwrap(), 1);
 
-        // Try the scope filter. We should get all sessions with the "openid" scope
+        // Try the scope filter. We should get all sessions with the "openid"
+        // scope
         let scope = Scope::from_iter([OPENID]);
         let filter = OAuth2SessionFilter::new().with_scope(&scope);
         let list = repo

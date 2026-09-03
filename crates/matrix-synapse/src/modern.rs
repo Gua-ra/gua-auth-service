@@ -202,8 +202,8 @@ impl HomeserverConnection for SynapseConnection {
         err(Debug),
     )]
     async fn is_localpart_available(&self, localpart: &str) -> Result<bool, anyhow::Error> {
-        // Synapse will give us an error if the localpart is not ASCII, so we bail out
-        // early
+        // Synapse will give us an error if the localpart is not ASCII, so we
+        // bail out early
         if !localpart.is_ascii() {
             return Ok(false);
         }

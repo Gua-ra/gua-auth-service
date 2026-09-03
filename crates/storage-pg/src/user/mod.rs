@@ -57,8 +57,8 @@ impl<'c> PgUserRepository<'c> {
 }
 
 mod priv_ {
-    // The enum_def macro generates a public enum, which we don't want, because it
-    // triggers the missing docs warning
+    // The enum_def macro generates a public enum, which we don't want, because
+    // it triggers the missing docs warning
     #![allow(missing_docs)]
 
     use chrono::{DateTime, Utc};
@@ -183,9 +183,9 @@ impl UserRepository for PgUserRepository<'_> {
         err,
     )]
     async fn find_by_username(&mut self, username: &str) -> Result<Option<User>, Self::Error> {
-        // We may have multiple users with the same username, but with a different
-        // casing. In this case, we want to return the one which matches the exact
-        // casing
+        // We may have multiple users with the same username, but with a
+        // different casing. In this case, we want to return the one
+        // which matches the exact casing
         let res = sqlx::query_as!(
             UserLookup,
             r#"
@@ -211,8 +211,9 @@ impl UserRepository for PgUserRepository<'_> {
             // …or none.
             [] => Ok(None),
             list => {
-                // If there are multiple users with the same username, we want to
-                // return the one which matches the exact casing
+                // If there are multiple users with the same username, we want
+                // to return the one which matches the exact
+                // casing
                 if let Some(user) = list.iter().find(|user| user.username == username) {
                     Ok(Some(user.clone().into()))
                 } else {
@@ -257,8 +258,8 @@ impl UserRepository for PgUserRepository<'_> {
         .execute(&mut *self.conn)
         .await?;
 
-        // If the user already exists, want to return an error but not poison the
-        // transaction
+        // If the user already exists, want to return an error but not poison
+        // the transaction
         DatabaseError::ensure_affected_rows(&res, 1)?;
 
         Ok(User {
@@ -586,17 +587,18 @@ impl UserRepository for PgUserRepository<'_> {
         err,
     )]
     async fn acquire_lock_for_sync(&mut self, user: &User) -> Result<(), Self::Error> {
-        // XXX: this lock isn't stictly scoped to users, but as we don't use many
-        // postgres advisory locks, it's fine for now. Later on, we could use row-level
-        // locks to make sure we don't get into trouble
+        // XXX: this lock isn't stictly scoped to users, but as we don't use
+        // many postgres advisory locks, it's fine for now. Later on, we
+        // could use row-level locks to make sure we don't get into
+        // trouble
 
         // Convert the user ID to a u128 and grab the lower 64 bits
-        // As this includes 64bit of the random part of the ULID, it should be random
-        // enough to not collide
+        // As this includes 64bit of the random part of the ULID, it should be
+        // random enough to not collide
         let lock_id = (u128::from(user.id) & 0xffff_ffff_ffff_ffff) as i64;
 
-        // Use a PG advisory lock, which will be released when the transaction is
-        // committed or rolled back
+        // Use a PG advisory lock, which will be released when the transaction
+        // is committed or rolled back
         sqlx::query!(
             r#"
                 SELECT pg_advisory_xact_lock($1)

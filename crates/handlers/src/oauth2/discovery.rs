@@ -142,8 +142,8 @@ pub(crate) async fn get(
     let prompt_values_supported = Some({
         let mut v = vec![Prompt::Login];
         // Advertise for prompt=create if password registration is enabled
-        // TODO: we may want to be able to forward that to upstream providers if they
-        // support it
+        // TODO: we may want to be able to forward that to upstream providers if
+        // they support it
         if site_config.password_registration_enabled {
             v.push(Prompt::Create);
         }

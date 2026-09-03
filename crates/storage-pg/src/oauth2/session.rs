@@ -151,7 +151,8 @@ impl Filter for OAuth2SessionFilter<'_> {
                         )))
                         .into()
                 } else {
-                    // If the device ID can't be encoded as a scope token, match no rows
+                    // If the device ID can't be encoded as a scope token, match
+                    // no rows
                     Expr::val(false).into()
                 }
             }))

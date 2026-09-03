@@ -172,9 +172,9 @@ async fn send_traced(
         let span = tracing::Span::current();
         let result = client.execute(request).await;
 
-        // XXX: We *could* loose this if the future is dropped before this, but let's
-        // not worry about it for now. Ideally we would use a `Drop` guard to decrement
-        // the counter
+        // XXX: We *could* loose this if the future is dropped before this, but
+        // let's not worry about it for now. Ideally we would use a
+        // `Drop` guard to decrement the counter
         HTTP_REQUESTS_IN_FLIGHT.add(-1, &metrics_labels);
 
         let duration = start.elapsed().as_millis().try_into().unwrap_or(u64::MAX);

@@ -162,7 +162,8 @@ impl QueueJobRepository for PgQueueJobRepository<'_> {
         .execute(&mut *self.conn)
         .await?;
 
-        // If there was a schedule name supplied, update the queue_schedules table
+        // If there was a schedule name supplied, update the queue_schedules
+        // table
         if let Some(schedule_name) = schedule_name {
             let span = tracing::info_span!(
                 "db.queue_job.schedule_later.update_schedules",
@@ -465,7 +466,8 @@ impl QueueJobRepository for PgQueueJobRepository<'_> {
     ) -> Result<(usize, Option<Ulid>), Self::Error> {
         // Use ULID cursor-based pagination for completed and failed jobs.
         // We delete both completed and failed jobs in the same batch.
-        // `MAX(uuid)` isn't a thing in Postgres, so we aggregate on the client side.
+        // `MAX(uuid)` isn't a thing in Postgres, so we aggregate on the client
+        // side.
         let res = sqlx::query_scalar!(
             r#"
                 WITH to_delete AS (

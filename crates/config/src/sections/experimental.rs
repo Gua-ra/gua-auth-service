@@ -215,10 +215,10 @@ impl SessionLimitConfig {
     fn validate(&self) -> Result<(), Box<figment::error::Error>> {
         // We assume the `hard_limit` is >= the `soft_limit`
         //
-        // Why? The UI only shows the soft_limit to users. If hard_limit were smaller
-        // than soft_limit, users could hit the hard_limit without ever reaching the
-        // visible soft_limit threshold — making the actual limit invisible and the
-        // failure confusing.
+        // Why? The UI only shows the soft_limit to users. If hard_limit were
+        // smaller than soft_limit, users could hit the hard_limit
+        // without ever reaching the visible soft_limit threshold —
+        // making the actual limit invisible and the failure confusing.
         if self.hard_limit < self.soft_limit {
             return Err(figment::error::Error::from(
                 "Session `hard_limit` must be greater than or equal to the user-facing `soft_limit`.",

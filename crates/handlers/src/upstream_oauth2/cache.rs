@@ -297,8 +297,8 @@ impl MetadataCache {
 
 #[cfg(test)]
 mod tests {
-    // XXX: sadly, we can't test HTTPS requests with wiremock, so we can only test
-    // 'insecure' discovery
+    // XXX: sadly, we can't test HTTPS requests with wiremock, so we can only
+    // test 'insecure' discovery
 
     use mas_data_model::{
         Clock, UpstreamOAuthProviderClaimsImports, UpstreamOAuthProviderOnBackchannelLogout,
@@ -364,7 +364,8 @@ mod tests {
             .unwrap();
         calls += 0;
 
-        // A secure discovery should call but fail because the issuer is insecure
+        // A secure discovery should call but fail because the issuer is
+        // insecure
         cache
             .get(&http_client, &mock_server.uri(), true)
             .await
@@ -499,7 +500,8 @@ mod tests {
             calls += 1;
         }
 
-        // Getting endpoints when discovery is disabled only works for overriden ones
+        // Getting endpoints when discovery is disabled only works for overriden
+        // ones
         {
             let provider = UpstreamOAuthProvider {
                 discovery_mode: UpstreamOAuthProviderDiscoveryMode::Disabled,

@@ -34,9 +34,9 @@ impl UserQuery {
             return Ok(None);
         }
 
-        // We could avoid the database lookup if the requester is the user we're looking
-        // for but that would make the code more complex and we're not very
-        // concerned about performance yet
+        // We could avoid the database lookup if the requester is the user we're
+        // looking for but that would make the code more complex and
+        // we're not very concerned about performance yet
         let state = ctx.state();
         let mut repo = state.repository().await?;
         let user = repo.user().lookup(id).await?;

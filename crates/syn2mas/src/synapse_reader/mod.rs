@@ -302,8 +302,9 @@ impl<'conn> SynapseReader<'conn> {
             .into_database("set transaction")?;
 
         let lock_type = if dry_run {
-            // We expect dry runs to be done alongside Synapse running, so we don't want to
-            // interfere with Synapse's database access in that case.
+            // We expect dry runs to be done alongside Synapse running, so we
+            // don't want to interfere with Synapse's database
+            // access in that case.
             "ACCESS SHARE"
         } else {
             "EXCLUSIVE"
@@ -339,11 +340,12 @@ impl<'conn> SynapseReader<'conn> {
     ///
     /// - An underlying database error
     pub async fn count_rows(&mut self) -> Result<SynapseRowCounts, Error> {
-        // We don't get to filter out application service users by using this estimate,
-        // which is a shame, but on a large database this is way faster.
-        // On matrix.org, counting users and devices properly takes around 1m10s,
-        // which is unnecessary extra downtime during the migration, just to
-        // show a more accurate progress bar and size a hash map accurately.
+        // We don't get to filter out application service users by using this
+        // estimate, which is a shame, but on a large database this is
+        // way faster. On matrix.org, counting users and devices
+        // properly takes around 1m10s, which is unnecessary extra
+        // downtime during the migration, just to show a more accurate
+        // progress bar and size a hash map accurately.
         let users = sqlx::query_scalar::<_, i64>(
             "
             SELECT reltuples::bigint AS estimate FROM pg_class WHERE oid = 'users'::regclass;

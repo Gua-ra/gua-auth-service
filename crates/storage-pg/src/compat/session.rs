@@ -224,8 +224,9 @@ impl Filter for CompatSessionFilter<'_> {
                 }
             }))
             .add_option(self.auth_type().map(|auth_type| {
-                // In in the SELECT to list sessions, we can rely on the JOINed table, whereas
-                // in other queries we need to do a subquery
+                // In in the SELECT to list sessions, we can rely on the JOINed
+                // table, whereas in other queries we need to do
+                // a subquery
                 if has_joins {
                     if auth_type.is_sso_login() {
                         Expr::col((CompatSsoLogins::Table, CompatSsoLogins::CompatSsoLoginId))

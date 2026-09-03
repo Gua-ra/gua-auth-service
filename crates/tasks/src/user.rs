@@ -130,8 +130,9 @@ impl RunnableJob for DeactivateUserJob {
             "Removed all unsupported third-party IDs for user"
         );
 
-        // Before calling back to the homeserver, commit the changes to the database, as
-        // we want the user to be locked out as soon as possible
+        // Before calling back to the homeserver, commit the changes to the
+        // database, as we want the user to be locked out as soon as
+        // possible
         repo.save().await.map_err(JobError::retry)?;
 
         info!("Deactivating user {} on homeserver", user.username);

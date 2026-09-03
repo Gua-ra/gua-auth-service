@@ -444,7 +444,8 @@ where
                 None,
             ) => {
                 if let Some(client_id_from_form) = client_id_from_form {
-                    // If the client_id was in the body, verify it matches with the header
+                    // If the client_id was in the body, verify it matches with
+                    // the header
                     if client_id != client_id_from_form {
                         return Err(ClientAuthorizationError::ClientIdMismatch {
                             credential: client_id,
@@ -490,7 +491,8 @@ where
                 };
 
                 if let Some(client_id_from_form) = client_id_from_form {
-                    // If the client_id was in the body, verify it matches the one in the JWT
+                    // If the client_id was in the body, verify it matches the
+                    // one in the JWT
                     if client_id != client_id_from_form {
                         return Err(ClientAuthorizationError::ClientIdMismatch {
                             credential: client_id,

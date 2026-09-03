@@ -141,8 +141,9 @@ impl Manifest {
         let mut entries = BTreeSet::new();
         let main_asset = self.find_imported_chunks(entry, &mut entries)?;
 
-        // Remove the main asset from the set of imported entries. We had it mainly to
-        // deduplicate the list of assets, but we don't want to include it twice
+        // Remove the main asset from the set of imported entries. We had it
+        // mainly to deduplicate the list of assets, but we don't want
+        // to include it twice
         entries.remove(&main_asset);
 
         Ok((main_asset, entries))

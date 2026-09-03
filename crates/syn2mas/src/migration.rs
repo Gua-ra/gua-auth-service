@@ -225,8 +225,8 @@ async fn migrate_users(
 
     let (tx, mut rx) = tokio::sync::mpsc::channel::<SynapseUser>(100 * 1024);
 
-    // create a new RNG seeded from the passed RNG so that we can move it into the
-    // spawned task
+    // create a new RNG seeded from the passed RNG so that we can move it into
+    // the spawned task
     let mut rng = rand_chacha::ChaChaRng::from_rng(rng).expect("failed to seed rng");
     let task = tokio::spawn(
         async move {
@@ -234,8 +234,9 @@ async fn migrate_users(
             let mut password_buffer = MasWriteBuffer::new(&mas);
 
             while let Some(user) = rx.recv().await {
-                // Handling an edge case: some AS users may have invalid localparts containing
-                // extra `:` characters. These users are ignored and a warning is logged.
+                // Handling an edge case: some AS users may have invalid
+                // localparts containing extra `:` characters.
+                // These users are ignored and a warning is logged.
                 if user.appservice_id.is_some()
                     && user
                         .name
@@ -265,8 +266,9 @@ async fn migrate_users(
 
                     progress_counter.increment_skipped();
 
-                    // Special case for appservice users: we don't insert them into the database
-                    // We just record the user's information in the state and continue
+                    // Special case for appservice users: we don't insert them
+                    // into the database We just record the
+                    // user's information in the state and continue
                     state.users.insert(
                         CompactString::new(&mas_user.username),
                         UserInfo {
@@ -314,8 +316,8 @@ async fn migrate_users(
         .instrument(tracing::info_span!("ingest_task")),
     );
 
-    // In case this has an error, we still want to join the task, so we look at the
-    // error later
+    // In case this has an error, we still want to join the task, so we look at
+    // the error later
     let res = synapse
         .read_users()
         .map_err(|e| e.into_synapse("reading users"))
@@ -350,8 +352,8 @@ async fn migrate_threepids(
 
     let (tx, mut rx) = tokio::sync::mpsc::channel::<SynapseThreepid>(100 * 1024);
 
-    // create a new RNG seeded from the passed RNG so that we can move it into the
-    // spawned task
+    // create a new RNG seeded from the passed RNG so that we can move it into
+    // the spawned task
     let mut rng = rand_chacha::ChaChaRng::from_rng(rng).expect("failed to seed rng");
     let task = tokio::spawn(
         async move {
@@ -431,8 +433,8 @@ async fn migrate_threepids(
         .instrument(tracing::info_span!("ingest_task")),
     );
 
-    // In case this has an error, we still want to join the task, so we look at the
-    // error later
+    // In case this has an error, we still want to join the task, so we look at
+    // the error later
     let res = synapse
         .read_threepids()
         .map_err(|e| e.into_synapse("reading threepids"))
@@ -468,8 +470,8 @@ async fn migrate_external_ids(
 
     let (tx, mut rx) = tokio::sync::mpsc::channel::<SynapseExternalId>(100 * 1024);
 
-    // create a new RNG seeded from the passed RNG so that we can move it into the
-    // spawned task
+    // create a new RNG seeded from the passed RNG so that we can move it into
+    // the spawned task
     let mut rng = rand_chacha::ChaChaRng::from_rng(rng).expect("failed to seed rng");
     let task = tokio::spawn(
         async move {
@@ -509,8 +511,9 @@ async fn migrate_external_ids(
                     });
                 };
 
-                // To save having to store user creation times, extract it from the ULID
-                // This gives millisecond precision — good enough.
+                // To save having to store user creation times, extract it from
+                // the ULID This gives millisecond precision —
+                // good enough.
                 let user_created_ts = Ulid::from(mas_user_id.get()).datetime();
 
                 let link_id: Uuid =
@@ -543,8 +546,8 @@ async fn migrate_external_ids(
         .instrument(tracing::info_span!("ingest_task")),
     );
 
-    // In case this has an error, we still want to join the task, so we look at the
-    // error later
+    // In case this has an error, we still want to join the task, so we look at
+    // the error later
     let res = synapse
         .read_user_external_ids()
         .map_err(|e| e.into_synapse("reading external ID"))
@@ -587,8 +590,8 @@ async fn migrate_devices(
 
     let (tx, mut rx) = tokio::sync::mpsc::channel(100 * 1024);
 
-    // create a new RNG seeded from the passed RNG so that we can move it into the
-    // spawned task
+    // create a new RNG seeded from the passed RNG so that we can move it into
+    // the spawned task
     let mut rng = rand_chacha::ChaChaRng::from_rng(rng).expect("failed to seed rng");
     let task = tokio::spawn(
         async move {
@@ -635,11 +638,12 @@ async fn migrate_devices(
                 Ulid::with_source(&mut rng).into());
                 let created_at = Ulid::from(session_id).datetime().into();
 
-                // As we're using a real IP type in the MAS database, it is possible
-                // that we encounter invalid IP addresses in the Synapse database.
+                // As we're using a real IP type in the MAS database, it is
+                // possible that we encounter invalid IP
+                // addresses in the Synapse database.
                 // In that case, we should ignore them, but still log a warning.
-                // One special case: Synapse will record '-' as IP in some cases, we don't want
-                // to log about those
+                // One special case: Synapse will record '-' as IP in some
+                // cases, we don't want to log about those
                 let last_active_ip = ip.filter(|ip| ip != "-").and_then(|ip| {
                     ip.parse()
                         .map_err(|e| {
@@ -685,8 +689,8 @@ async fn migrate_devices(
         .instrument(tracing::info_span!("ingest_task")),
     );
 
-    // In case this has an error, we still want to join the task, so we look at the
-    // error later
+    // In case this has an error, we still want to join the task, so we look at
+    // the error later
     let res = synapse
         .read_devices()
         .map_err(|e| e.into_synapse("reading devices"))
@@ -725,8 +729,8 @@ async fn migrate_unrefreshable_access_tokens(
     let (tx, mut rx) = tokio::sync::mpsc::channel(100 * 1024);
 
     let now = clock.now();
-    // create a new RNG seeded from the passed RNG so that we can move it into the
-    // spawned task
+    // create a new RNG seeded from the passed RNG so that we can move it into
+    // the spawned task
     let mut rng = rand_chacha::ChaChaRng::from_rng(rng).expect("failed to seed rng");
     let task = tokio::spawn(
         async move {
@@ -765,13 +769,14 @@ async fn migrate_unrefreshable_access_tokens(
                     continue;
                 }
 
-                // It's not always accurate, but last_validated is *often* the creation time of
-                // the device If we don't have one, then use the current time as a
-                // fallback.
+                // It's not always accurate, but last_validated is *often* the
+                // creation time of the device If we don't have
+                // one, then use the current time as a fallback.
                 let created_at = last_validated.map_or_else(|| now, DateTime::from);
 
                 let session_id = if let Some(device_id) = device_id {
-                    // Use the existing device_id if this is the second token for a device
+                    // Use the existing device_id if this is the second token
+                    // for a device
                     *state
                         .devices_to_compat_sessions
                         .entry((mas_user_id, CompactString::new(&device_id)))
@@ -779,8 +784,9 @@ async fn migrate_unrefreshable_access_tokens(
                             Uuid::from(Ulid::from_datetime_with_source(created_at.into(), &mut rng))
                         })
                 } else {
-                    // If this is a deviceless access token, create a deviceless compat session
-                    // for it (since otherwise we won't create one whilst migrating devices)
+                    // If this is a deviceless access token, create a deviceless
+                    // compat session for it (since
+                    // otherwise we won't create one whilst migrating devices)
                     let deviceless_session_id =
                         Uuid::from(Ulid::from_datetime_with_source(created_at.into(), &mut rng));
 
@@ -838,8 +844,8 @@ async fn migrate_unrefreshable_access_tokens(
         .instrument(tracing::info_span!("ingest_task")),
     );
 
-    // In case this has an error, we still want to join the task, so we look at the
-    // error later
+    // In case this has an error, we still want to join the task, so we look at
+    // the error later
     let res = synapse
         .read_unrefreshable_access_tokens()
         .map_err(|e| e.into_synapse("reading tokens"))
@@ -877,8 +883,8 @@ async fn migrate_refreshable_token_pairs(
 
     let (tx, mut rx) = tokio::sync::mpsc::channel::<SynapseRefreshableTokenPair>(100 * 1024);
 
-    // create a new RNG seeded from the passed RNG so that we can move it into the
-    // spawned task
+    // create a new RNG seeded from the passed RNG so that we can move it into
+    // the spawned task
     let mut rng = rand_chacha::ChaChaRng::from_rng(rng).expect("failed to seed rng");
     let now = clock.now();
     let task = tokio::spawn(
@@ -920,12 +926,13 @@ async fn migrate_refreshable_token_pairs(
                     continue;
                 }
 
-                // It's not always accurate, but last_validated is *often* the creation time of
-                // the device If we don't have one, then use the current time as a
-                // fallback.
+                // It's not always accurate, but last_validated is *often* the
+                // creation time of the device If we don't have
+                // one, then use the current time as a fallback.
                 let created_at = last_validated.map_or_else(|| now, DateTime::from);
 
-                // Use the existing device_id if this is the second token for a device
+                // Use the existing device_id if this is the second token for a
+                // device
                 let session_id = *state
                     .devices_to_compat_sessions
                     .entry((mas_user_id, CompactString::new(&device_id)))
@@ -982,8 +989,8 @@ async fn migrate_refreshable_token_pairs(
         .instrument(tracing::info_span!("ingest_task")),
     );
 
-    // In case this has an error, we still want to join the task, so we look at the
-    // error later
+    // In case this has an error, we still want to join the task, so we look at
+    // the error later
     let res = synapse
         .read_refreshable_token_pairs()
         .map_err(|e| e.into_synapse("reading refresh token pairs"))

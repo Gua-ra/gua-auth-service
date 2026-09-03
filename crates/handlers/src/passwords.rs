@@ -169,13 +169,13 @@ impl PasswordManager {
     ) -> Result<(SchemeVersion, String), anyhow::Error> {
         let inner = self.get_inner()?;
 
-        // Seed a future-local RNG so the RNG passed in parameters doesn't have to be
-        // 'static
+        // Seed a future-local RNG so the RNG passed in parameters doesn't have
+        // to be 'static
         let rng = rand_chacha::ChaChaRng::from_rng(rng)?;
         let span = tracing::Span::current();
 
-        // `inner` is being moved in the blocking task, so we need to copy the version
-        // first
+        // `inner` is being moved in the blocking task, so we need to copy the
+        // version first
         let version = inner.current_version;
 
         let hashed = tokio::task::spawn_blocking(move || {
@@ -238,8 +238,8 @@ impl PasswordManager {
     ) -> Result<PasswordVerificationResult<Option<(SchemeVersion, String)>>, anyhow::Error> {
         let inner = self.get_inner()?;
 
-        // If the current scheme isn't the default one, we also hash with the default
-        // one so that
+        // If the current scheme isn't the default one, we also hash with the
+        // default one so that
         let new_hash_fut: OptionFuture<_> = (scheme != inner.current_version)
             .then(|| self.hash(rng, password.clone()))
             .into();
@@ -632,9 +632,10 @@ mod tests {
 
     #[tokio::test]
     async fn hash_verify_and_upgrade() {
-        // Tests the whole password manager, by hashing a password and upgrading it
-        // after changing the hashing schemes. The salt generation is done with a seeded
-        // RNG, so that we can do stable snapshots of hashed passwords
+        // Tests the whole password manager, by hashing a password and upgrading
+        // it after changing the hashing schemes. The salt generation is
+        // done with a seeded RNG, so that we can do stable snapshots of
+        // hashed passwords
         let mut rng = rand_chacha::ChaChaRng::seed_from_u64(42);
         let password = Zeroizing::new("hunter2".to_owned());
         let wrong_password = Zeroizing::new("wrong-password".to_owned());

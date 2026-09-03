@@ -58,7 +58,8 @@ pub trait ConfigurationSectionExt: ConfigurationSection + Default {
         figment: &Figment,
     ) -> Result<Self, Box<dyn std::error::Error + Send + Sync + 'static>> {
         let this: Self = if let Some(path) = Self::PATH {
-            // If the configuration section is not present, we return the default value
+            // If the configuration section is not present, we return the
+            // default value
             if !figment.contains(path) {
                 return Ok(Self::default());
             }

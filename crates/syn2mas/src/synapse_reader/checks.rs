@@ -329,7 +329,8 @@ pub async fn synapse_database_check(
                 continue;
             };
 
-            // Matching by `synapse_idp_id` is the same as what we'll do for the migration
+            // Matching by `synapse_idp_id` is the same as what we'll do for the
+            // migration
             let matching_mas = mas_oauth2.providers.iter().find(|mas_provider| {
                 mas_provider.synapse_idp_id.as_ref() == Some(&row.auth_provider)
             });

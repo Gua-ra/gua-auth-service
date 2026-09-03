@@ -86,9 +86,9 @@ where
         // Get the `opentelemetry` context out of the `tracing` span.
         let context = Span::current().context();
 
-        // Inject the trace context into the request. The block is there to ensure that
-        // the injector is dropped before calling the inner service, to avoid borrowing
-        // issues.
+        // Inject the trace context into the request. The block is there to
+        // ensure that the injector is dropped before calling the inner
+        // service, to avoid borrowing issues.
         {
             let mut injector = req.as_injector();
             opentelemetry::global::get_text_map_propagator(|propagator| {

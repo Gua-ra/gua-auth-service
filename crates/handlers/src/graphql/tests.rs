@@ -528,9 +528,9 @@ async fn test_oauth2_client_credentials(pool: PgPool) {
         })
     );
 
-    // XXX: we don't run the task worker here, so even though the addUser mutation
-    // should have scheduled a job to provision the user, it won't run in the test,
-    // so we need to do it manually
+    // XXX: we don't run the task worker here, so even though the addUser
+    // mutation should have scheduled a job to provision the user, it won't
+    // run in the test, so we need to do it manually
     state
         .homeserver_connection
         .provision_user(&ProvisionRequest::new("alice", user_id, false))

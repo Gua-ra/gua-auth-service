@@ -96,8 +96,9 @@ mod tests {
         assert_eq!("A", sprintf!("%c", 65).unwrap());
         assert_eq!("2", sprintf!("%d", 2).unwrap());
         assert_eq!("2", sprintf!("%i", 2).unwrap());
-        //assert_eq!("2", sprintf!("%d", "2").unwrap()); -- We don't convert on the fly
-        //assert_eq!("2", sprintf!("%i", "2").unwrap()); -- We don't convert on the fly
+        //assert_eq!("2", sprintf!("%d", "2").unwrap()); -- We don't convert on
+        // the fly assert_eq!("2", sprintf!("%i", "2").unwrap()); -- We
+        // don't convert on the fly
         assert_eq!(
             r#"{"foo":"bar"}"#,
             sprintf!("%j", serde_json::json!({"foo": "bar"})).unwrap()

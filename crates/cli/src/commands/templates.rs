@@ -122,7 +122,8 @@ impl Options {
                             template.rsplit_once('.').unwrap_or((template, "txt"));
                         let template_filename_base = template_filename_base.replace('/', "_");
 
-                        // Make a string like `-index=0-browser-session=0-locale=fr`
+                        // Make a string like
+                        // `-index=0-browser-session=0-locale=fr`
                         let sample_suffix = {
                             let mut s = String::new();
                             for (k, v) in &sample_identifier.components {

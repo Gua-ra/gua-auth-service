@@ -642,7 +642,8 @@ impl User {
                             .await?
                             .filter(|u| requester.is_owner_or_admin(u))
                         else {
-                            // If we couldn't find the session or if the requester can't access it,
+                            // If we couldn't find the session or if the
+                            // requester can't access it,
                             // return an empty list
                             return Ok(Connection::with_additional_fields(
                                 false,
@@ -821,9 +822,10 @@ impl UserRecoveryTicket {
 
     /// The username associated with this ticket
     pub async fn username(&self, ctx: &Context<'_>) -> Result<String, async_graphql::Error> {
-        // We could expose the UserEmail, then the User, but this is unauthenticated, so
-        // we don't want to risk leaking too many objects. Instead, we just give the
-        // username as a property of the UserRecoveryTicket
+        // We could expose the UserEmail, then the User, but this is
+        // unauthenticated, so we don't want to risk leaking too many
+        // objects. Instead, we just give the username as a property of
+        // the UserRecoveryTicket
         let state = ctx.state();
         let mut repo = state.repository().await?;
         let user_email = repo
@@ -844,9 +846,10 @@ impl UserRecoveryTicket {
 
     /// The email address associated with this ticket
     pub async fn email(&self, ctx: &Context<'_>) -> Result<String, async_graphql::Error> {
-        // We could expose the UserEmail directly, but this is unauthenticated, so we
-        // don't want to risk leaking too many objects. Instead, we just give
-        // the email as a property of the UserRecoveryTicket
+        // We could expose the UserEmail directly, but this is unauthenticated,
+        // so we don't want to risk leaking too many objects. Instead,
+        // we just give the email as a property of the
+        // UserRecoveryTicket
         let state = ctx.state();
         let mut repo = state.repository().await?;
         let user_email = repo
