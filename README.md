@@ -8,6 +8,14 @@ See the [Documentation](https://element-hq.github.io/matrix-authentication-servi
 
 You can learn more about Matrix and next-generation auth at [areweoidcyet.com](https://areweoidcyet.com/).
 
+> **Gua fork status.** This repository is Gua's fork of MAS, deployed as one instance per homeserver.
+>
+> **Current implementation:** this instance holds no login credentials of its own and delegates every authentication upstream to identity-service.
+>
+> **Target architecture:** under [ADM-001 L2](https://github.com/Gua-ra/gua-resolver/blob/main/docs/decisions/ADM-001-identifier-binding-placement-trust.md) the homeserver bundle, of which this is the authentication component, is the authority for login. Local authentication methods, including passkeys verified by the homeserver, are tracked in ADM-001 O11 and in [Phase 7 of the migration plan](https://github.com/Gua-ra/gua-resolver/blob/main/docs/migrations/gua-resolver-migration-plan.md). None of that is implemented here yet.
+>
+> The plain-language overview is the [Gua identity and federation guide](https://github.com/Gua-ra/gua-resolver/blob/main/docs/architecture/gua-identity-and-federation.md).
+
 ## 🚀 Getting started
 
 This component is developed and maintained by [Element](https://element.io). It gets shipped as part of the **Element Server Suite (ESS)** which provides the official means of deployment.
