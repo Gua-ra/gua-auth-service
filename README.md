@@ -8,13 +8,13 @@ See the [Documentation](https://element-hq.github.io/matrix-authentication-servi
 
 You can learn more about Matrix and next-generation auth at [areweoidcyet.com](https://areweoidcyet.com/).
 
-> **Gua fork status.** This repository is Gua's fork of MAS, deployed as one instance per homeserver.
+> **Gua fork status.** This repository is Gua's fork of MAS. Gua runs one instance of it next to each homeserver. Build and run it the same way as upstream MAS; see "Standalone installation and configuration" below.
 >
-> **CURRENT IMPLEMENTATION:** this instance holds no login credentials of its own and delegates every authentication upstream to identity-service.
+> **CURRENT IMPLEMENTATION:** this instance holds no login credentials of its own. It delegates all authentication upstream to identity-service.
 >
-> **TARGET ARCHITECTURE:** under [ADM-001 L2](https://github.com/Gua-ra/gua-resolver/blob/main/docs/decisions/ADM-001-identifier-binding-placement-trust.md) the homeserver bundle, of which this is the authentication component, is the authority for login. Local authentication methods, including passkeys verified by the homeserver, are tracked in ADM-001 O11 and in [Phase 7 of the migration plan](https://github.com/Gua-ra/gua-resolver/blob/main/docs/migrations/gua-resolver-migration-plan.md). None of that is implemented here yet.
+> **TARGET ARCHITECTURE:** this component, the homeserver's own auth service, becomes the authority for login. Local login methods, including passkeys verified by the homeserver, are not implemented here yet. That work is tracked in [ADM-001](https://github.com/Gua-ra/gua-resolver/blob/main/docs/decisions/ADM-001-identifier-binding-placement-trust.md) and in [Phase 7 of the migration plan](https://github.com/Gua-ra/gua-resolver/blob/main/docs/migrations/gua-resolver-migration-plan.md).
 >
-> The plain-language overview is the [Gua identity and federation guide](https://github.com/Gua-ra/gua-resolver/blob/main/docs/architecture/gua-identity-and-federation.md).
+> For a plain-language overview, read the [Gua identity and federation guide](https://github.com/Gua-ra/gua-resolver/blob/main/docs/architecture/gua-identity-and-federation.md).
 
 ## 🚀 Getting started
 
