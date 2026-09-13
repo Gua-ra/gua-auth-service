@@ -32,6 +32,15 @@ pub struct Params {
     code: Option<String>,
 }
 
+/// GUA FORK: the MSC4198 login hint the app adds to the link URL, naming the
+/// account it is signed in as. Kept out of [`Params`] so it never ends up in
+/// the form state.
+#[derive(Deserialize)]
+pub(crate) struct HintParams {
+    #[serde(rename = "org.matrix.msc4198.login_hint")]
+    unstable_login_hint: Option<String>,
+}
+
 #[tracing::instrument(name = "handlers.oauth2.device.link.get", skip_all)]
 pub(crate) async fn get(
     mut rng: BoxRng,
@@ -43,6 +52,7 @@ pub(crate) async fn get(
     State(site_config): State<SiteConfig>,
     cookie_jar: CookieJar,
     Query(mut query): Query<Params>,
+    Query(hint): Query<HintParams>,
 ) -> Result<Response, InternalError> {
     if !site_config.device_code_grant_enabled {
         return Err(InternalError::from_anyhow(anyhow::anyhow!(
@@ -64,6 +74,7 @@ pub(crate) async fn get(
         &url_builder,
         cookie_jar,
         query,
+        hint.unstable_login_hint,
     )
     .await
 }
@@ -78,6 +89,7 @@ pub(crate) async fn post(
     State(url_builder): State<UrlBuilder>,
     State(site_config): State<SiteConfig>,
     cookie_jar: CookieJar,
+    Query(hint): Query<HintParams>,
     Form(form): Form<ProtectedForm<Params>>,
 ) -> Result<Response, InternalError> {
     if !site_config.device_code_grant_enabled {
@@ -97,6 +109,7 @@ pub(crate) async fn post(
         &url_builder,
         cookie_jar,
         form,
+        hint.unstable_login_hint,
     )
     .await
 }
@@ -110,6 +123,7 @@ async fn handle_code(
     url_builder: &UrlBuilder,
     cookie_jar: CookieJar,
     params: Params,
+    login_hint: Option<String>,
 ) -> Result<Response, InternalError> {
     let mut form_state = FormState::from_form(&params);
 
@@ -128,7 +142,11 @@ async fn handle_code(
             // This is a valid code, redirect to the consent page
             // This will in turn redirect to the login page if the user is not
             // logged in
-            let destination = url_builder.redirect(&mas_router::DeviceCodeConsent::new(grant.id));
+            // GUA FORK: pass the app's login hint along, so the consent page
+            // can refuse a browser session of another account.
+            let destination = url_builder.redirect(
+                &mas_router::DeviceCodeConsent::new(grant.id).with_login_hint(login_hint),
+            );
 
             return Ok((cookie_jar, destination).into_response());
         }

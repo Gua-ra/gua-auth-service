@@ -16,6 +16,18 @@ use mas_storage::{
 };
 use ulid::Ulid;
 
+/// The localpart an `mxid:` MSC4198 login hint names on our own homeserver.
+///
+/// Anything else (a foreign homeserver, an email, an empty localpart) yields
+/// `None`, so a hint we cannot check is never used to refuse a session.
+pub(crate) fn hinted_localpart(login_hint: Option<&str>, homeserver: &str) -> Option<String> {
+    let mxid = login_hint?.strip_prefix("mxid:")?;
+    let localpart = mxid
+        .strip_prefix('@')?
+        .strip_suffix(&format!(":{homeserver}"))?;
+    (!localpart.is_empty()).then(|| localpart.to_owned())
+}
+
 /// Finish the browser session an OAuth 2.0 or compatibility session was
 /// created from, once nothing else still uses it.
 ///
@@ -72,4 +84,28 @@ pub(crate) async fn finish_browser_session_if_unused(
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::hinted_localpart;
+
+    const HS: &str = "example.com";
+
+    #[test]
+    fn reads_the_localpart_of_an_mxid_hint_on_our_homeserver() {
+        assert_eq!(
+            hinted_localpart(Some("mxid:@bob:example.com"), HS).as_deref(),
+            Some("bob")
+        );
+    }
+
+    #[test]
+    fn ignores_hints_it_cannot_check() {
+        assert_eq!(hinted_localpart(Some("mxid:@bob:other.org"), HS), None);
+        assert_eq!(hinted_localpart(Some("bob@example.com"), HS), None);
+        assert_eq!(hinted_localpart(Some("mxid:@:example.com"), HS), None);
+        assert_eq!(hinted_localpart(Some("mxid:bob:example.com"), HS), None);
+        assert_eq!(hinted_localpart(None, HS), None);
+    }
 }

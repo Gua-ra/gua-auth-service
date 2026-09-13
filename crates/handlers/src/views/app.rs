@@ -165,11 +165,7 @@ fn expected_user(
     {
         return Some(user.clone());
     }
-    let mxid = login_hint?.strip_prefix("mxid:")?;
-    let localpart = mxid
-        .strip_prefix('@')?
-        .strip_suffix(&format!(":{homeserver}"))?;
-    (!localpart.is_empty()).then(|| localpart.to_owned())
+    crate::gua::sessions::hinted_localpart(login_hint, homeserver)
 }
 
 #[cfg(test)]

@@ -894,12 +894,30 @@ impl Route for DeviceCodeLink {
 #[derive(Default, Serialize, Deserialize, Debug, Clone)]
 pub struct DeviceCodeConsent {
     id: Ulid,
+    query: DeviceCodeConsentQuery,
+}
+
+/// GUA FORK: query parameters of the device code consent page.
+#[derive(Default, Serialize, Deserialize, Debug, Clone)]
+pub struct DeviceCodeConsentQuery {
+    /// The MSC4198 login hint naming the account the app linking the new
+    /// device is signed in as.
+    #[serde(
+        rename = "org.matrix.msc4198.login_hint",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub login_hint: Option<String>,
 }
 
 impl Route for DeviceCodeConsent {
-    type Query = ();
+    type Query = DeviceCodeConsentQuery;
     fn route() -> &'static str {
         "/device/{device_code_id}"
+    }
+
+    fn query(&self) -> Option<&Self::Query> {
+        Some(&self.query)
     }
 
     fn path(&self) -> std::borrow::Cow<'static, str> {
@@ -910,7 +928,18 @@ impl Route for DeviceCodeConsent {
 impl DeviceCodeConsent {
     #[must_use]
     pub fn new(id: Ulid) -> Self {
-        Self { id }
+        Self {
+            id,
+            query: DeviceCodeConsentQuery::default(),
+        }
+    }
+
+    /// GUA FORK: carry the app's MSC4198 login hint to the consent page, so it
+    /// can refuse a browser session that belongs to another account.
+    #[must_use]
+    pub fn with_login_hint(mut self, login_hint: Option<String>) -> Self {
+        self.query.login_hint = login_hint;
+        self
     }
 }
 
@@ -1036,4 +1065,33 @@ pub struct ApiDocCallback;
 
 impl SimpleRoute for ApiDocCallback {
     const PATH: &'static str = "/api/doc/oauth2-callback";
+}
+
+#[cfg(test)]
+mod tests {
+    use ulid::Ulid;
+
+    use super::{DeviceCodeConsent, Route};
+
+    #[test]
+    fn device_code_consent_carries_the_login_hint_only_when_set() {
+        let id = Ulid::nil();
+
+        assert_eq!(
+            DeviceCodeConsent::new(id).path_and_query(),
+            format!("/device/{id}")
+        );
+        assert_eq!(
+            DeviceCodeConsent::new(id)
+                .with_login_hint(None)
+                .path_and_query(),
+            format!("/device/{id}")
+        );
+        assert_eq!(
+            DeviceCodeConsent::new(id)
+                .with_login_hint(Some("mxid:@bob:example.com".to_owned()))
+                .path_and_query(),
+            format!("/device/{id}?org.matrix.msc4198.login_hint=mxid%3A%40bob%3Aexample.com")
+        );
+    }
 }
