@@ -18,6 +18,15 @@ pub enum PostAuthAction {
     },
     ContinueDeviceCodeGrant {
         id: Ulid,
+        /// GUA FORK: the MSC4198 login hint the app put on the consent page,
+        /// naming the account it is signed in as.
+        ///
+        /// It rides inside the action so that it survives the login round
+        /// trip: the consent page is reached again through this action, and
+        /// must still be able to refuse a browser session for another account
+        /// (one the upstream provider signed in again, say).
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        gua_login_hint: Option<String>,
     },
     ContinueCompatSsoLogin {
         id: Ulid,
@@ -40,7 +49,23 @@ impl PostAuthAction {
 
     #[must_use]
     pub const fn continue_device_code_grant(id: Ulid) -> Self {
-        PostAuthAction::ContinueDeviceCodeGrant { id }
+        PostAuthAction::ContinueDeviceCodeGrant {
+            id,
+            gua_login_hint: None,
+        }
+    }
+
+    /// GUA FORK: continue a device code grant, carrying the app's login hint
+    /// back to the consent page once the user has signed in.
+    #[must_use]
+    pub const fn continue_device_code_grant_with_hint(
+        id: Ulid,
+        login_hint: Option<String>,
+    ) -> Self {
+        PostAuthAction::ContinueDeviceCodeGrant {
+            id,
+            gua_login_hint: login_hint,
+        }
     }
 
     #[must_use]
@@ -61,9 +86,8 @@ impl PostAuthAction {
     pub fn go_next(&self, url_builder: &UrlBuilder) -> axum::response::Redirect {
         match self {
             Self::ContinueAuthorizationGrant { id } => url_builder.redirect(&Consent(*id)),
-            Self::ContinueDeviceCodeGrant { id } => {
-                url_builder.redirect(&DeviceCodeConsent::new(*id))
-            }
+            Self::ContinueDeviceCodeGrant { id, gua_login_hint } => url_builder
+                .redirect(&DeviceCodeConsent::new(*id).with_login_hint(gua_login_hint.clone())),
             Self::ContinueCompatSsoLogin { id } => {
                 url_builder.redirect(&CompatLoginSsoComplete::new(*id, None))
             }
@@ -1069,9 +1093,11 @@ impl SimpleRoute for ApiDocCallback {
 
 #[cfg(test)]
 mod tests {
+    use axum::response::IntoResponse as _;
     use ulid::Ulid;
 
-    use super::{DeviceCodeConsent, Route};
+    use super::{DeviceCodeConsent, Login, PostAuthAction, Route};
+    use crate::UrlBuilder;
 
     #[test]
     fn device_code_consent_carries_the_login_hint_only_when_set() {
@@ -1092,6 +1118,49 @@ mod tests {
                 .with_login_hint(Some("mxid:@bob:example.com".to_owned()))
                 .path_and_query(),
             format!("/device/{id}?org.matrix.msc4198.login_hint=mxid%3A%40bob%3Aexample.com")
+        );
+    }
+
+    #[test]
+    fn device_code_grant_login_brings_the_hint_back_to_the_consent_page() {
+        let id = Ulid::nil();
+        let hint = "mxid:@bob:example.com";
+        let login = Login::and_then(PostAuthAction::continue_device_code_grant_with_hint(
+            id,
+            Some(hint.to_owned()),
+        ))
+        .with_login_hint(hint.to_owned())
+        .with_force_login();
+
+        // The action survives being carried in the login URL.
+        let path_and_query = login.path_and_query();
+        let (_, query) = path_and_query.split_once('?').unwrap();
+        let parsed: Login = serde_urlencoded::from_str(query).unwrap();
+        let Some(PostAuthAction::ContinueDeviceCodeGrant {
+            id: parsed_id,
+            gua_login_hint,
+        }) = parsed.post_auth_action()
+        else {
+            panic!("unexpected post auth action: {parsed:?}");
+        };
+        assert_eq!(*parsed_id, id);
+        assert_eq!(gua_login_hint.as_deref(), Some(hint));
+
+        // And once signed in, the consent page gets the hint again.
+        let url_builder = UrlBuilder::new("https://example.com/".parse().unwrap(), None, None);
+        let response = parsed.go_next(&url_builder).into_response();
+        assert_eq!(
+            response.headers().get("location").unwrap(),
+            &format!("/device/{id}?org.matrix.msc4198.login_hint=mxid%3A%40bob%3Aexample.com")
+        );
+
+        // Without a hint nothing new appears in either URL.
+        let login = Login::and_continue_device_code_grant(id);
+        assert!(!login.path_and_query().contains("gua_login_hint"));
+        let response = login.go_next(&url_builder).into_response();
+        assert_eq!(
+            response.headers().get("location").unwrap(),
+            &format!("/device/{id}")
         );
     }
 }
