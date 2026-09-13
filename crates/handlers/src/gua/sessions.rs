@@ -10,11 +10,22 @@
 //! let a later sign-in, device link or approval continue as that account.
 //! These are the pieces the handlers share to enforce that.
 
-use mas_data_model::{BrowserSession, Clock};
+use mas_data_model::{BrowserSession, Clock, User};
 use mas_storage::{
-    BoxRepository, RepositoryError, compat::CompatSessionFilter, oauth2::OAuth2SessionFilter,
+    BoxRepository, RepositoryError,
+    compat::CompatSessionFilter,
+    oauth2::OAuth2SessionFilter,
+    queue::{QueueJobRepositoryExt as _, SyncDevicesJob},
+    user::BrowserSessionFilter,
 };
+use rand::RngCore;
+use serde_json::Value;
 use ulid::Ulid;
+
+/// ID token claim the identity service sets, only on the sign-in that
+/// completes an account recovery, to ask for every other session of the
+/// account to be ended.
+pub(crate) const END_OTHER_SESSIONS_CLAIM: &str = "gua_end_other_sessions";
 
 /// The localpart an `mxid:` MSC4198 login hint names on our own homeserver.
 ///
@@ -26,6 +37,15 @@ pub(crate) fn hinted_localpart(login_hint: Option<&str>, homeserver: &str) -> Op
         .strip_prefix('@')?
         .strip_suffix(&format!(":{homeserver}"))?;
     (!localpart.is_empty()).then(|| localpart.to_owned())
+}
+
+/// Whether verified upstream ID token claims ask to end the account's other
+/// sessions. Only a JSON `true` counts.
+pub(crate) fn claims_end_other_sessions(id_token_claims: Option<&Value>) -> bool {
+    id_token_claims
+        .and_then(|claims| claims.get(END_OTHER_SESSIONS_CLAIM))
+        .and_then(Value::as_bool)
+        .unwrap_or(false)
 }
 
 /// Finish the browser session an OAuth 2.0 or compatibility session was
@@ -86,9 +106,56 @@ pub(crate) async fn finish_browser_session_if_unused(
     Ok(())
 }
 
+/// End every active OAuth 2.0, compatibility and browser session of a user,
+/// and schedule a device sync so the homeserver drops the devices too.
+///
+/// Used when a sign-in completes an account recovery: whoever held the
+/// account's other sessions must not keep them.
+pub(crate) async fn end_all_sessions_of_user(
+    repo: &mut BoxRepository,
+    rng: &mut (dyn RngCore + Send),
+    clock: &dyn Clock,
+    user: &User,
+) -> Result<(), RepositoryError> {
+    let oauth2_sessions = repo
+        .oauth2_session()
+        .finish_bulk(
+            clock,
+            OAuth2SessionFilter::new().for_user(user).active_only(),
+        )
+        .await?;
+    let compat_sessions = repo
+        .compat_session()
+        .finish_bulk(
+            clock,
+            CompatSessionFilter::new().for_user(user).active_only(),
+        )
+        .await?;
+    let browser_sessions = repo
+        .browser_session()
+        .finish_bulk(
+            clock,
+            BrowserSessionFilter::new().for_user(user).active_only(),
+        )
+        .await?;
+
+    repo.queue_job()
+        .schedule_job(rng, clock, SyncDevicesJob::new(user))
+        .await?;
+
+    tracing::info!(
+        user.id = %user.id,
+        "Account recovery sign-in: finished {oauth2_sessions} OAuth 2.0 sessions, {compat_sessions} compatibility sessions and {browser_sessions} browser sessions"
+    );
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
-    use super::hinted_localpart;
+    use serde_json::json;
+
+    use super::{claims_end_other_sessions, hinted_localpart};
 
     const HS: &str = "example.com";
 
@@ -107,5 +174,24 @@ mod tests {
         assert_eq!(hinted_localpart(Some("mxid:@:example.com"), HS), None);
         assert_eq!(hinted_localpart(Some("mxid:bob:example.com"), HS), None);
         assert_eq!(hinted_localpart(None, HS), None);
+    }
+
+    #[test]
+    fn only_a_true_claim_ends_other_sessions() {
+        assert!(claims_end_other_sessions(Some(
+            &json!({ "sub": "a", "gua_end_other_sessions": true })
+        )));
+
+        assert!(!claims_end_other_sessions(None));
+        assert!(!claims_end_other_sessions(Some(&json!({ "sub": "a" }))));
+        assert!(!claims_end_other_sessions(Some(
+            &json!({ "gua_end_other_sessions": false })
+        )));
+        assert!(!claims_end_other_sessions(Some(
+            &json!({ "gua_end_other_sessions": "true" })
+        )));
+        assert!(!claims_end_other_sessions(Some(
+            &json!({ "gua_end_other_sessions": 1 })
+        )));
     }
 }
