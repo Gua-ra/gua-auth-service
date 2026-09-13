@@ -239,8 +239,19 @@ pub(crate) async fn post(
             .await?;
     }
 
+    // GUA FORK: remember which browser session this one was started from
+    // before ending it.
+    let user_session_id = session.user_session_id;
+
     // Now that we checked everything, we can end the session.
     repo.oauth2_session().finish(&clock, session).await?;
+
+    // GUA FORK: signing out of an app ends the browser session behind it too,
+    // unless that browser session still backs another active session. Left in
+    // place, the next sign-in in the same browser would silently continue as
+    // this account instead of the one being signed in.
+    crate::gua::sessions::finish_browser_session_if_unused(&mut repo, &clock, user_session_id)
+        .await?;
 
     repo.save().await?;
 
@@ -467,5 +478,182 @@ mod tests {
         response.assert_status(StatusCode::OK);
 
         assert!(!state.is_access_token_valid(&access_token).await);
+    }
+
+    /// GUA FORK: register a confidential client able to revoke its tokens.
+    async fn register_client(state: &TestState) -> (String, String) {
+        let request =
+            Request::post(mas_router::OAuth2RegistrationEndpoint::PATH).json(serde_json::json!({
+                "client_uri": "https://example.com/",
+                "redirect_uris": ["https://example.com/callback"],
+                "token_endpoint_auth_method": "client_secret_post",
+                "response_types": ["code"],
+                "grant_types": ["authorization_code", "refresh_token"],
+            }));
+
+        let response = state.request(request).await;
+        response.assert_status(StatusCode::CREATED);
+
+        let client_registration: ClientRegistrationResponse = response.json();
+        (
+            client_registration.client_id,
+            client_registration.client_secret.unwrap(),
+        )
+    }
+
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_gua_revoke_ends_the_browser_session_behind_the_last_session(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+        let (client_id, client_secret) = register_client(&state).await;
+
+        let mut repo = state.repository().await.unwrap();
+        let user = repo
+            .user()
+            .add(&mut state.rng(), &state.clock, "alice".to_owned())
+            .await
+            .unwrap();
+        let browser_session = repo
+            .browser_session()
+            .add(&mut state.rng(), &state.clock, &user, None)
+            .await
+            .unwrap();
+        let client = repo
+            .oauth2_client()
+            .find_by_client_id(&client_id)
+            .await
+            .unwrap()
+            .unwrap();
+        let session = repo
+            .oauth2_session()
+            .add_from_browser_session(
+                &mut state.rng(),
+                &state.clock,
+                &client,
+                &browser_session,
+                Scope::from_iter([OPENID]),
+            )
+            .await
+            .unwrap();
+        let (AccessToken { access_token, .. }, _) = generate_token_pair(
+            &mut state.rng(),
+            &state.clock,
+            &mut repo,
+            &session,
+            Duration::microseconds(5 * 60 * 1000 * 1000),
+        )
+        .await
+        .unwrap();
+        repo.save().await.unwrap();
+
+        let request = Request::post(mas_router::OAuth2Revocation::PATH).form(serde_json::json!({
+            "token": access_token,
+            "token_type_hint": "access_token",
+            "client_id": client_id,
+            "client_secret": client_secret,
+        }));
+        let response = state.request(request).await;
+        response.assert_status(StatusCode::OK);
+
+        // Signing out of the app ended the browser session too, so the next
+        // sign-in in that browser cannot continue as alice.
+        let mut repo = state.repository().await.unwrap();
+        let browser_session = repo
+            .browser_session()
+            .lookup(browser_session.id)
+            .await
+            .unwrap()
+            .unwrap();
+        assert!(browser_session.finished_at.is_some());
+    }
+
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_gua_revoke_keeps_a_browser_session_another_session_still_uses(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+        let (client_id, client_secret) = register_client(&state).await;
+
+        let mut repo = state.repository().await.unwrap();
+        let user = repo
+            .user()
+            .add(&mut state.rng(), &state.clock, "alice".to_owned())
+            .await
+            .unwrap();
+        let browser_session = repo
+            .browser_session()
+            .add(&mut state.rng(), &state.clock, &user, None)
+            .await
+            .unwrap();
+        let client = repo
+            .oauth2_client()
+            .find_by_client_id(&client_id)
+            .await
+            .unwrap()
+            .unwrap();
+
+        let mut access_tokens = Vec::new();
+        for _ in 0..2 {
+            let session = repo
+                .oauth2_session()
+                .add_from_browser_session(
+                    &mut state.rng(),
+                    &state.clock,
+                    &client,
+                    &browser_session,
+                    Scope::from_iter([OPENID]),
+                )
+                .await
+                .unwrap();
+            let (AccessToken { access_token, .. }, _) = generate_token_pair(
+                &mut state.rng(),
+                &state.clock,
+                &mut repo,
+                &session,
+                Duration::microseconds(5 * 60 * 1000 * 1000),
+            )
+            .await
+            .unwrap();
+            access_tokens.push(access_token);
+        }
+        repo.save().await.unwrap();
+
+        let revoke = |token: String| {
+            Request::post(mas_router::OAuth2Revocation::PATH).form(serde_json::json!({
+                "token": token,
+                "token_type_hint": "access_token",
+                "client_id": client_id,
+                "client_secret": client_secret,
+            }))
+        };
+
+        // Revoking the first session keeps the browser session: the second
+        // one was started from it and is still active.
+        let response = state.request(revoke(access_tokens[0].clone())).await;
+        response.assert_status(StatusCode::OK);
+
+        let mut repo = state.repository().await.unwrap();
+        let reloaded = repo
+            .browser_session()
+            .lookup(browser_session.id)
+            .await
+            .unwrap()
+            .unwrap();
+        assert!(reloaded.finished_at.is_none());
+        repo.cancel().await.unwrap();
+
+        assert!(state.is_access_token_valid(&access_tokens[1]).await);
+
+        // Revoking the last one ends it.
+        let response = state.request(revoke(access_tokens[1].clone())).await;
+        response.assert_status(StatusCode::OK);
+
+        let mut repo = state.repository().await.unwrap();
+        let reloaded = repo
+            .browser_session()
+            .lookup(browser_session.id)
+            .await
+            .unwrap()
+            .unwrap();
+        assert!(reloaded.finished_at.is_some());
     }
 }

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
 // Please see LICENSE files in the repository root for full details.
 
-//! GUA FORK: first-party endpoints used by the Gua apps.
+//! GUA FORK: first-party endpoints and session rules used by the Gua apps.
 
 pub mod identity_reset;
+pub(crate) mod sessions;

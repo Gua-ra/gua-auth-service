@@ -117,8 +117,19 @@ pub(crate) async fn post(
         // XXX: this is probably not the right error
         .ok_or(RouteError::InvalidAuthorization)?;
 
+    // GUA FORK: remember which browser session this one was started from
+    // before ending it.
+    let user_session_id = session.user_session_id;
+
     // This will make the access token invalid
     repo.compat_session().finish(&clock, session).await?;
+
+    // GUA FORK: signing out ends the browser session behind this session too,
+    // unless that browser session still backs another active session. Left in
+    // place, the next sign-in in the same browser would silently continue as
+    // this account instead of the one being signed in.
+    crate::gua::sessions::finish_browser_session_if_unused(&mut repo, &clock, user_session_id)
+        .await?;
 
     // Schedule a job to sync the devices of the user with the homeserver
     //
@@ -137,4 +148,98 @@ pub(crate) async fn post(
     LOGOUT_COUNTER.add(1, &[KeyValue::new(RESULT, "success")]);
 
     Ok(Json(serde_json::json!({})))
+}
+
+#[cfg(test)]
+mod tests {
+    use hyper::Request;
+    use mas_data_model::{BrowserSession, Device, TokenType, User};
+    use sqlx::PgPool;
+
+    use crate::test_utils::{RequestBuilderExt, ResponseExt, TestState, setup};
+
+    /// GUA FORK: start a compatibility session from a browser session, as an
+    /// SSO login does, and return its access token.
+    async fn add_compat_session(
+        state: &TestState,
+        user: &User,
+        browser_session: &BrowserSession,
+    ) -> String {
+        let mut rng = state.rng();
+        let mut repo = state.repository().await.unwrap();
+        let device = Device::generate(&mut rng);
+        let session = repo
+            .compat_session()
+            .add(
+                &mut rng,
+                &state.clock,
+                user,
+                device,
+                Some(browser_session),
+                false,
+                None,
+            )
+            .await
+            .unwrap();
+        let token = TokenType::CompatAccessToken.generate(&mut rng);
+        repo.compat_access_token()
+            .add(&mut rng, &state.clock, &session, token.clone(), None)
+            .await
+            .unwrap();
+        repo.save().await.unwrap();
+        token
+    }
+
+    async fn browser_session_finished(state: &TestState, browser_session: &BrowserSession) -> bool {
+        let mut repo = state.repository().await.unwrap();
+        let finished = repo
+            .browser_session()
+            .lookup(browser_session.id)
+            .await
+            .unwrap()
+            .unwrap()
+            .finished_at
+            .is_some();
+        repo.cancel().await.unwrap();
+        finished
+    }
+
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_gua_logout_ends_the_browser_session_behind_the_last_session(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+        let mut rng = state.rng();
+
+        let mut repo = state.repository().await.unwrap();
+        let user = repo
+            .user()
+            .add(&mut rng, &state.clock, "alice".to_owned())
+            .await
+            .unwrap();
+        let browser_session = repo
+            .browser_session()
+            .add(&mut rng, &state.clock, &user, None)
+            .await
+            .unwrap();
+        repo.save().await.unwrap();
+
+        let first = add_compat_session(&state, &user, &browser_session).await;
+        let second = add_compat_session(&state, &user, &browser_session).await;
+
+        // Another session still uses the browser session: keep it.
+        let request = Request::post("/_matrix/client/v3/logout")
+            .bearer(&first)
+            .empty();
+        let response = state.request(request).await;
+        response.assert_status(hyper::StatusCode::OK);
+        assert!(!browser_session_finished(&state, &browser_session).await);
+
+        // The last one is gone: end it.
+        let request = Request::post("/_matrix/client/v3/logout")
+            .bearer(&second)
+            .empty();
+        let response = state.request(request).await;
+        response.assert_status(hyper::StatusCode::OK);
+        assert!(browser_session_finished(&state, &browser_session).await);
+    }
 }
