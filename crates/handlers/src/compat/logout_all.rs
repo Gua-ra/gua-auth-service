@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
 // Please see LICENSE files in the repository root for full details.
 
-use std::sync::LazyLock;
+use std::{collections::BTreeSet, sync::LazyLock};
 
 use axum::{Json, response::IntoResponse};
 use axum_extra::typed_header::TypedHeader;
@@ -12,7 +12,7 @@ use hyper::StatusCode;
 use mas_axum_utils::record_error;
 use mas_data_model::{BoxClock, BoxRng, Clock, TokenType};
 use mas_storage::{
-    BoxRepository, RepositoryAccess,
+    BoxRepository, Pagination, RepositoryAccess,
     compat::{CompatAccessTokenRepository, CompatSessionFilter, CompatSessionRepository},
     queue::{QueueJobRepositoryExt as _, SyncDevicesJob},
 };
@@ -181,23 +181,42 @@ pub(crate) async fn post(
         return Err(RouteError::NotSupported);
     }
 
-    // GUA FORK: remember which browser session the calling session was started
-    // from before ending it.
-    let user_session_id = session.user_session_id;
-
     let filter = CompatSessionFilter::new().for_user(&user).active_only();
+
+    // GUA FORK: remember which browser sessions the sessions about to be ended
+    // were started from, the calling session's included.
+    let mut user_session_ids = BTreeSet::new();
+    let mut cursor = Pagination::first(1000);
+    loop {
+        let page = repo.compat_session().list(filter, cursor).await?;
+        for edge in page.edges {
+            let (compat_session, _) = edge.node;
+            user_session_ids.extend(compat_session.user_session_id);
+            cursor = cursor.after(edge.cursor);
+        }
+        if !page.has_next_page {
+            break;
+        }
+    }
+
     let affected_sessions = repo.compat_session().finish_bulk(&clock, filter).await?;
     info!(
         "Logged out {affected_sessions} sessions for user {user_id}",
         user_id = user.id
     );
 
-    // GUA FORK: signing out ends the calling session's browser session too,
-    // unless that browser session still backs another active session. Left in
-    // place, the next sign-in in the same browser would silently continue as
-    // this account instead of the one being signed in.
-    crate::gua::sessions::finish_browser_session_if_unused(&mut repo, &clock, user_session_id)
+    // GUA FORK: signing out ends the browser sessions behind the ended
+    // sessions too, unless one still backs another active session. Left in
+    // place, the next sign-in in any of those browsers would silently continue
+    // as this account instead of the one being signed in.
+    for user_session_id in user_session_ids {
+        crate::gua::sessions::finish_browser_session_if_unused(
+            &mut repo,
+            &clock,
+            Some(user_session_id),
+        )
         .await?;
+    }
 
     // Schedule a job to sync the devices of the user with the homeserver
     repo.queue_job()
@@ -267,7 +286,7 @@ mod tests {
     }
 
     #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
-    async fn test_gua_logout_all_ends_the_callers_browser_session(pool: PgPool) {
+    async fn test_gua_logout_all_ends_the_browser_sessions_behind_the_ended_sessions(pool: PgPool) {
         setup();
         let state = TestState::from_pool(pool).await.unwrap();
         let mut rng = state.rng();
@@ -300,6 +319,9 @@ mod tests {
         response.assert_status(hyper::StatusCode::OK);
 
         assert!(browser_session_finished(&state, &lone).await);
+        // The other browser's session was ended too, so its browser session
+        // goes with it.
+        assert!(browser_session_finished(&state, &shared).await);
 
         // A browser session that still backs an OAuth 2.0 session is kept.
         let request =
