@@ -38,6 +38,15 @@ pub enum PostAuthAction {
     ManageAccount {
         #[serde(flatten)]
         action: Option<AccountAction>,
+        /// GUA FORK: the MSC4198 login hint the app put on the account page,
+        /// naming the account it is signed in as.
+        ///
+        /// It rides inside the action so that it survives the login round
+        /// trip: the account page is reached again through this action, and
+        /// must still be able to refuse a browser session for another account
+        /// (one the upstream provider signed in again, say).
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        gua_login_hint: Option<String>,
     },
 }
 
@@ -80,7 +89,23 @@ impl PostAuthAction {
 
     #[must_use]
     pub const fn manage_account(action: Option<AccountAction>) -> Self {
-        PostAuthAction::ManageAccount { action }
+        PostAuthAction::ManageAccount {
+            action,
+            gua_login_hint: None,
+        }
+    }
+
+    /// GUA FORK: manage the account, carrying the app's login hint back to the
+    /// account page once the user has signed in.
+    #[must_use]
+    pub const fn manage_account_with_hint(
+        action: Option<AccountAction>,
+        login_hint: Option<String>,
+    ) -> Self {
+        PostAuthAction::ManageAccount {
+            action,
+            gua_login_hint: login_hint,
+        }
     }
 
     pub fn go_next(&self, url_builder: &UrlBuilder) -> axum::response::Redirect {
@@ -93,8 +118,12 @@ impl PostAuthAction {
             }
             Self::ChangePassword => url_builder.redirect(&AccountPasswordChange),
             Self::LinkUpstream { id } => url_builder.redirect(&UpstreamOAuth2Link::new(*id)),
-            Self::ManageAccount { action } => url_builder.redirect(&Account {
+            Self::ManageAccount {
+                action,
+                gua_login_hint,
+            } => url_builder.redirect(&Account {
                 action: action.clone(),
+                login_hint: gua_login_hint.clone(),
             }),
         }
     }
@@ -620,20 +649,30 @@ pub enum AccountAction {
 }
 
 /// `GET /account/`
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, Serialize)]
 pub struct Account {
+    #[serde(flatten)]
     action: Option<AccountAction>,
+
+    /// GUA FORK: the MSC4198 login hint naming the account the app is signed
+    /// in as, so the account page can refuse a browser session that belongs
+    /// to another account.
+    #[serde(
+        rename = "org.matrix.msc4198.login_hint",
+        skip_serializing_if = "Option::is_none"
+    )]
+    login_hint: Option<String>,
 }
 
 impl Route for Account {
-    type Query = AccountAction;
+    type Query = Self;
 
     fn route() -> &'static str {
         "/account/"
     }
 
     fn query(&self) -> Option<&Self::Query> {
-        self.action.as_ref()
+        Some(self)
     }
 }
 
@@ -1096,7 +1135,7 @@ mod tests {
     use axum::response::IntoResponse as _;
     use ulid::Ulid;
 
-    use super::{DeviceCodeConsent, Login, PostAuthAction, Route};
+    use super::{Account, AccountAction, DeviceCodeConsent, Login, PostAuthAction, Route};
     use crate::UrlBuilder;
 
     #[test]
@@ -1162,5 +1201,122 @@ mod tests {
             response.headers().get("location").unwrap(),
             &format!("/device/{id}")
         );
+    }
+
+    #[test]
+    fn account_page_carries_the_login_hint_only_when_set() {
+        assert_eq!(Account::default().path_and_query(), "/account/");
+        assert_eq!(
+            Account {
+                action: Some(AccountAction::OrgMatrixProfile),
+                login_hint: None,
+            }
+            .path_and_query(),
+            "/account/?action=org.matrix.profile"
+        );
+        assert_eq!(
+            Account {
+                action: None,
+                login_hint: Some("mxid:@bob:example.com".to_owned()),
+            }
+            .path_and_query(),
+            "/account/?org.matrix.msc4198.login_hint=mxid%3A%40bob%3Aexample.com"
+        );
+        assert_eq!(
+            Account {
+                action: Some(AccountAction::OrgMatrixDeviceView {
+                    device_id: "ABCDEF".to_owned(),
+                }),
+                login_hint: Some("mxid:@bob:example.com".to_owned()),
+            }
+            .path_and_query(),
+            "/account/?action=org.matrix.device_view&device_id=ABCDEF\
+             &org.matrix.msc4198.login_hint=mxid%3A%40bob%3Aexample.com"
+        );
+    }
+
+    #[test]
+    fn manage_account_login_brings_the_hint_back_to_the_account_page() {
+        let hint = "mxid:@bob:example.com";
+        let url_builder = UrlBuilder::new("https://example.com/".parse().unwrap(), None, None);
+
+        for (action, account_query) in [
+            (None, String::new()),
+            (
+                Some(AccountAction::OrgMatrixDeviceView {
+                    device_id: "ABCDEF".to_owned(),
+                }),
+                "action=org.matrix.device_view&device_id=ABCDEF&".to_owned(),
+            ),
+            (
+                Some(AccountAction::OrgMatrixCrossSigningReset {
+                    gua_return: None,
+                    gua_user: Some("bob".to_owned()),
+                }),
+                "action=org.matrix.cross_signing_reset&gua_user=bob&".to_owned(),
+            ),
+        ] {
+            let login = Login::and_then(PostAuthAction::manage_account_with_hint(
+                action,
+                Some(hint.to_owned()),
+            ))
+            .with_login_hint(hint.to_owned())
+            .with_force_login();
+
+            // The action survives being carried in the login URL.
+            let path_and_query = login.path_and_query();
+            let (_, query) = path_and_query.split_once('?').unwrap();
+            let parsed: Login = serde_urlencoded::from_str(query).unwrap();
+            let Some(PostAuthAction::ManageAccount { gua_login_hint, .. }) =
+                parsed.post_auth_action()
+            else {
+                panic!("unexpected post auth action: {parsed:?}");
+            };
+            assert_eq!(gua_login_hint.as_deref(), Some(hint));
+
+            // And once signed in, the account page gets the hint again, next to
+            // the action.
+            let response = parsed.go_next(&url_builder).into_response();
+            assert_eq!(
+                response.headers().get("location").unwrap(),
+                &format!(
+                    "/account/?{account_query}\
+                     org.matrix.msc4198.login_hint=mxid%3A%40bob%3Aexample.com"
+                )
+            );
+        }
+
+        // Without a hint nothing new appears in either URL.
+        let login = Login::and_then(PostAuthAction::manage_account(Some(
+            AccountAction::OrgMatrixProfile,
+        )));
+        assert!(!login.path_and_query().contains("login_hint"));
+        let response = login.go_next(&url_builder).into_response();
+        assert_eq!(
+            response.headers().get("location").unwrap(),
+            "/account/?action=org.matrix.profile"
+        );
+    }
+
+    #[test]
+    fn manage_account_login_urls_from_before_the_hint_still_parse() {
+        let parsed: Login =
+            serde_urlencoded::from_str("kind=manage_account&action=org.matrix.profile").unwrap();
+        let Some(PostAuthAction::ManageAccount {
+            action: Some(AccountAction::OrgMatrixProfile),
+            gua_login_hint: None,
+        }) = parsed.post_auth_action()
+        else {
+            panic!("unexpected post auth action: {parsed:?}");
+        };
+
+        let parsed: Login = serde_urlencoded::from_str("kind=manage_account").unwrap();
+        let Some(PostAuthAction::ManageAccount {
+            action: None,
+            gua_login_hint: None,
+        }) = parsed.post_auth_action()
+        else {
+            panic!("unexpected post auth action: {parsed:?}");
+        };
     }
 }
