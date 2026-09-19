@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
 // Please see LICENSE files in the repository root for full details.
 
-use std::sync::LazyLock;
+use std::{collections::BTreeSet, sync::LazyLock};
 
 use axum::{Json, response::IntoResponse};
 use axum_extra::typed_header::TypedHeader;
@@ -12,7 +12,7 @@ use hyper::StatusCode;
 use mas_axum_utils::record_error;
 use mas_data_model::{BoxClock, BoxRng, Clock, TokenType};
 use mas_storage::{
-    BoxRepository, RepositoryAccess,
+    BoxRepository, Pagination, RepositoryAccess,
     compat::{CompatAccessTokenRepository, CompatSessionFilter, CompatSessionRepository},
     queue::{QueueJobRepositoryExt as _, SyncDevicesJob},
 };
@@ -182,11 +182,41 @@ pub(crate) async fn post(
     }
 
     let filter = CompatSessionFilter::new().for_user(&user).active_only();
+
+    // GUA FORK: remember which browser sessions the sessions about to be ended
+    // were started from, the calling session's included.
+    let mut user_session_ids = BTreeSet::new();
+    let mut cursor = Pagination::first(1000);
+    loop {
+        let page = repo.compat_session().list(filter, cursor).await?;
+        for edge in page.edges {
+            let (compat_session, _) = edge.node;
+            user_session_ids.extend(compat_session.user_session_id);
+            cursor = cursor.after(edge.cursor);
+        }
+        if !page.has_next_page {
+            break;
+        }
+    }
+
     let affected_sessions = repo.compat_session().finish_bulk(&clock, filter).await?;
     info!(
         "Logged out {affected_sessions} sessions for user {user_id}",
         user_id = user.id
     );
+
+    // GUA FORK: signing out ends the browser sessions behind the ended
+    // sessions too, unless one still backs another active session. Left in
+    // place, the next sign-in in any of those browsers would silently continue
+    // as this account instead of the one being signed in.
+    for user_session_id in user_session_ids {
+        crate::gua::sessions::finish_browser_session_if_unused(
+            &mut repo,
+            &clock,
+            Some(user_session_id),
+        )
+        .await?;
+    }
 
     // Schedule a job to sync the devices of the user with the homeserver
     repo.queue_job()
@@ -198,4 +228,146 @@ pub(crate) async fn post(
     LOGOUT_ALL_COUNTER.add(1, &[KeyValue::new(RESULT, "success")]);
 
     Ok(Json(serde_json::json!({})))
+}
+
+#[cfg(test)]
+mod tests {
+    use hyper::Request;
+    use mas_data_model::{BrowserSession, Device, TokenType};
+    use mas_router::SimpleRoute;
+    use oauth2_types::{
+        registration::ClientRegistrationResponse,
+        scope::{OPENID, Scope},
+    };
+    use sqlx::PgPool;
+
+    use crate::test_utils::{RequestBuilderExt, ResponseExt, TestState, setup};
+
+    async fn browser_session_finished(state: &TestState, browser_session: &BrowserSession) -> bool {
+        let mut repo = state.repository().await.unwrap();
+        let finished = repo
+            .browser_session()
+            .lookup(browser_session.id)
+            .await
+            .unwrap()
+            .unwrap()
+            .finished_at
+            .is_some();
+        repo.cancel().await.unwrap();
+        finished
+    }
+
+    /// GUA FORK: start a compatibility session from a browser session, as an
+    /// SSO login does, and return its access token.
+    async fn add_compat_session(state: &TestState, browser_session: &BrowserSession) -> String {
+        let mut rng = state.rng();
+        let mut repo = state.repository().await.unwrap();
+        let device = Device::generate(&mut rng);
+        let session = repo
+            .compat_session()
+            .add(
+                &mut rng,
+                &state.clock,
+                &browser_session.user,
+                device,
+                Some(browser_session),
+                false,
+                None,
+            )
+            .await
+            .unwrap();
+        let token = TokenType::CompatAccessToken.generate(&mut rng);
+        repo.compat_access_token()
+            .add(&mut rng, &state.clock, &session, token.clone(), None)
+            .await
+            .unwrap();
+        repo.save().await.unwrap();
+        token
+    }
+
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_gua_logout_all_ends_the_browser_sessions_behind_the_ended_sessions(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+        let mut rng = state.rng();
+
+        let mut repo = state.repository().await.unwrap();
+        let user = repo
+            .user()
+            .add(&mut rng, &state.clock, "alice".to_owned())
+            .await
+            .unwrap();
+        let lone = repo
+            .browser_session()
+            .add(&mut rng, &state.clock, &user, None)
+            .await
+            .unwrap();
+        let shared = repo
+            .browser_session()
+            .add(&mut rng, &state.clock, &user, None)
+            .await
+            .unwrap();
+        repo.save().await.unwrap();
+
+        let token = add_compat_session(&state, &lone).await;
+        let _other = add_compat_session(&state, &shared).await;
+
+        let request = Request::post("/_matrix/client/v3/logout/all")
+            .bearer(&token)
+            .json(serde_json::json!({ "io.element.only_compat_is_fine": true }));
+        let response = state.request(request).await;
+        response.assert_status(hyper::StatusCode::OK);
+
+        assert!(browser_session_finished(&state, &lone).await);
+        // The other browser's session was ended too, so its browser session
+        // goes with it.
+        assert!(browser_session_finished(&state, &shared).await);
+
+        // A browser session that still backs an OAuth 2.0 session is kept.
+        let request =
+            Request::post(mas_router::OAuth2RegistrationEndpoint::PATH).json(serde_json::json!({
+                "client_uri": "https://example.com/",
+                "redirect_uris": ["https://example.com/callback"],
+                "token_endpoint_auth_method": "client_secret_post",
+                "response_types": ["code"],
+                "grant_types": ["authorization_code"],
+            }));
+        let response = state.request(request).await;
+        response.assert_status(hyper::StatusCode::CREATED);
+        let ClientRegistrationResponse { client_id, .. } = response.json();
+
+        let mut repo = state.repository().await.unwrap();
+        let user = repo.user().lookup(user.id).await.unwrap().unwrap();
+        let busy = repo
+            .browser_session()
+            .add(&mut rng, &state.clock, &user, None)
+            .await
+            .unwrap();
+        let client = repo
+            .oauth2_client()
+            .find_by_client_id(&client_id)
+            .await
+            .unwrap()
+            .unwrap();
+        repo.oauth2_session()
+            .add_from_browser_session(
+                &mut rng,
+                &state.clock,
+                &client,
+                &busy,
+                Scope::from_iter([OPENID]),
+            )
+            .await
+            .unwrap();
+        repo.save().await.unwrap();
+
+        let token = add_compat_session(&state, &busy).await;
+        let request = Request::post("/_matrix/client/v3/logout/all")
+            .bearer(&token)
+            .json(serde_json::json!({ "io.element.only_compat_is_fine": true }));
+        let response = state.request(request).await;
+        response.assert_status(hyper::StatusCode::OK);
+
+        assert!(!browser_session_finished(&state, &busy).await);
+    }
 }

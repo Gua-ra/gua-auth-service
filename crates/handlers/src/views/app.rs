@@ -64,7 +64,12 @@ pub async fn get(
 
     // TODO: keep the full path, not just the action
     let Some(session) = maybe_session else {
-        let mut url = mas_router::Login::and_then(PostAuthAction::manage_account(action));
+        // GUA FORK: keep the app's login hint through the login, so the
+        // account check below still runs once the user is back.
+        let mut url = mas_router::Login::and_then(PostAuthAction::manage_account_with_hint(
+            action,
+            unstable_login_hint.clone(),
+        ));
 
         if let Some(login_hint) = unstable_login_hint {
             url = url.with_login_hint(login_hint);
@@ -113,11 +118,18 @@ pub async fn get(
         let (session_info, cookie_jar) = cookie_jar.session_info();
         let cookie_jar = cookie_jar.update_session_info(&session_info.mark_session_ended());
 
+        // The hint also rides inside the post-auth action, so this check runs
+        // again after the login. Otherwise an upstream provider that silently
+        // signs the other account in again would bring the browser back here
+        // without a hint, and that account would land on its account page.
         let login_hint = unstable_login_hint
             .unwrap_or_else(|| format!("mxid:@{expected}:{}", homeserver.homeserver()));
-        let url = mas_router::Login::and_then(PostAuthAction::manage_account(action))
-            .with_login_hint(login_hint)
-            .with_force_login();
+        let url = mas_router::Login::and_then(PostAuthAction::manage_account_with_hint(
+            action,
+            Some(login_hint.clone()),
+        ))
+        .with_login_hint(login_hint)
+        .with_force_login();
         return Ok((cookie_jar, url_builder.redirect(&url)).into_response());
     }
 
@@ -165,18 +177,20 @@ fn expected_user(
     {
         return Some(user.clone());
     }
-    let mxid = login_hint?.strip_prefix("mxid:")?;
-    let localpart = mxid
-        .strip_prefix('@')?
-        .strip_suffix(&format!(":{homeserver}"))?;
-    (!localpart.is_empty()).then(|| localpart.to_owned())
+    crate::gua::sessions::hinted_localpart(login_hint, homeserver)
 }
 
 #[cfg(test)]
 mod tests {
-    use mas_router::AccountAction;
+    use axum::response::IntoResponse as _;
+    use hyper::{Request, StatusCode, header::LOCATION};
+    use mas_axum_utils::SessionInfoExt;
+    use mas_data_model::{BrowserSession, User};
+    use mas_router::{AccountAction, PostAuthAction};
+    use sqlx::PgPool;
 
     use super::expected_user;
+    use crate::test_utils::{CookieHelper, RequestBuilderExt, ResponseExt, TestState, setup};
 
     const HS: &str = "example.com";
 
@@ -211,5 +225,225 @@ mod tests {
             gua_user: Some(String::new()),
         };
         assert_eq!(expected_user(Some(&empty), None, HS), None);
+    }
+
+    /// GUA FORK: the account page for the profile action, as an app opens it.
+    fn account_path(hint: Option<&str>) -> String {
+        let mut path = "/account/?action=org.matrix.profile".to_owned();
+        if let Some(hint) = hint {
+            let hint =
+                serde_urlencoded::to_string([("org.matrix.msc4198.login_hint", hint)]).unwrap();
+            path = format!("{path}&{hint}");
+        }
+        path
+    }
+
+    fn login_for_account(hint: &str) -> mas_router::Login {
+        mas_router::Login::and_then(PostAuthAction::manage_account_with_hint(
+            Some(AccountAction::OrgMatrixProfile),
+            Some(hint.to_owned()),
+        ))
+        .with_login_hint(hint.to_owned())
+    }
+
+    /// GUA FORK: where the login page sends the browser once signed in, for
+    /// a login URL the account page redirected to.
+    fn after_login(state: &TestState, login_url: &str) -> String {
+        let (_, query) = login_url.split_once('?').unwrap();
+        let login: mas_router::Login = serde_urlencoded::from_str(query).unwrap();
+        login
+            .go_next(&state.url_builder)
+            .into_response()
+            .headers()
+            .get(LOCATION)
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_owned()
+    }
+
+    async fn signed_in_browser(
+        state: &TestState,
+        username: &str,
+    ) -> (User, BrowserSession, CookieHelper) {
+        let mut rng = state.rng();
+        let mut repo = state.repository().await.unwrap();
+        let user = repo
+            .user()
+            .add(&mut rng, &state.clock, username.to_owned())
+            .await
+            .unwrap();
+        let browser_session = repo
+            .browser_session()
+            .add(&mut rng, &state.clock, &user, None)
+            .await
+            .unwrap();
+        repo.save().await.unwrap();
+
+        let cookies = CookieHelper::new();
+        cookies.import(state.cookie_jar().set_session(&browser_session));
+
+        (user, browser_session, cookies)
+    }
+
+    async fn is_finished(state: &TestState, browser_session: &BrowserSession) -> bool {
+        let mut repo = state.repository().await.unwrap();
+        let finished = repo
+            .browser_session()
+            .lookup(browser_session.id)
+            .await
+            .unwrap()
+            .unwrap()
+            .finished_at
+            .is_some();
+        repo.cancel().await.unwrap();
+        finished
+    }
+
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_gua_account_page_checks_the_account_again_after_the_login(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+        let mut rng = state.rng();
+        let (alice, alice_session, cookies) = signed_in_browser(&state, "alice").await;
+        let hint = "mxid:@bob:example.com";
+
+        let request = Request::get(account_path(Some(hint))).empty();
+        let response = state.request(cookies.with_cookies(request)).await;
+        response.assert_status(StatusCode::SEE_OTHER);
+        let login_url = response
+            .headers()
+            .get(LOCATION)
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_owned();
+        assert_eq!(
+            login_url,
+            state
+                .url_builder
+                .relative_url_for(&login_for_account(hint).with_force_login())
+        );
+        assert!(is_finished(&state, &alice_session).await);
+
+        // The login brings the browser back to the account page with the hint.
+        let next = after_login(&state, &login_url);
+        assert_eq!(next, account_path(Some(hint)));
+
+        // The upstream provider signed alice in again instead of bob: she
+        // still does not get the account page.
+        let mut repo = state.repository().await.unwrap();
+        let again = repo
+            .browser_session()
+            .add(&mut rng, &state.clock, &alice, None)
+            .await
+            .unwrap();
+        repo.save().await.unwrap();
+        let cookies = CookieHelper::new();
+        cookies.import(state.cookie_jar().set_session(&again));
+
+        let request = Request::get(next).empty();
+        let response = state.request(cookies.with_cookies(request)).await;
+        response.assert_status(StatusCode::SEE_OTHER);
+        assert_eq!(
+            response.headers().get(LOCATION).unwrap().to_str().unwrap(),
+            login_url
+        );
+        assert!(is_finished(&state, &again).await);
+    }
+
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_gua_account_page_without_a_session_keeps_the_hint(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+        let hint = "mxid:@bob:example.com";
+
+        let request = Request::get(account_path(Some(hint))).empty();
+        let response = state.request(request).await;
+        response.assert_status(StatusCode::SEE_OTHER);
+        let login_url = response.headers().get(LOCATION).unwrap().to_str().unwrap();
+        assert_eq!(
+            login_url,
+            state.url_builder.relative_url_for(&login_for_account(hint))
+        );
+        assert_eq!(after_login(&state, login_url), account_path(Some(hint)));
+
+        // Without a hint the login and the way back stay as they were.
+        let request = Request::get(account_path(None)).empty();
+        let response = state.request(request).await;
+        response.assert_status(StatusCode::SEE_OTHER);
+        let login_url = response.headers().get(LOCATION).unwrap().to_str().unwrap();
+        let login = mas_router::Login::and_then(PostAuthAction::manage_account(Some(
+            AccountAction::OrgMatrixProfile,
+        )));
+        assert_eq!(login_url, state.url_builder.relative_url_for(&login));
+        assert_eq!(after_login(&state, login_url), account_path(None));
+    }
+
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_gua_account_page_with_a_matching_or_absent_hint_is_unchanged(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+        let (_, alice_session, cookies) = signed_in_browser(&state, "alice").await;
+
+        // Hints that name alice, or that cannot be checked, change nothing.
+        for hint in [
+            None,
+            Some("mxid:@alice:example.com"),
+            Some("mxid:@bob:other.example"),
+            Some("bob@example.com"),
+        ] {
+            let request = Request::get(account_path(hint)).empty();
+            let response = state.request(cookies.with_cookies(request)).await;
+            cookies.save_cookies(&response);
+            response.assert_status(StatusCode::OK);
+            assert!(!is_finished(&state, &alice_session).await);
+        }
+    }
+
+    #[test]
+    fn manage_account_actions_stored_before_the_hint_still_parse() {
+        // Post-auth actions are also kept as JSON, in the upstream sessions
+        // cookie and in pending registrations.
+        let action: PostAuthAction = serde_json::from_value(serde_json::json!({
+            "kind": "manage_account",
+            "action": "org.matrix.cross_signing_reset",
+            "gua_user": "alice",
+        }))
+        .unwrap();
+        let PostAuthAction::ManageAccount {
+            action:
+                Some(AccountAction::OrgMatrixCrossSigningReset {
+                    gua_user: Some(user),
+                    ..
+                }),
+            gua_login_hint: None,
+        } = &action
+        else {
+            panic!("unexpected post auth action: {action:?}");
+        };
+        assert_eq!(user, "alice");
+
+        // And one with the hint round-trips through JSON.
+        let action = PostAuthAction::manage_account_with_hint(
+            None,
+            Some("mxid:@alice:example.com".to_owned()),
+        );
+        let json = serde_json::to_value(&action).unwrap();
+        assert_eq!(
+            json,
+            serde_json::json!({
+                "kind": "manage_account",
+                "gua_login_hint": "mxid:@alice:example.com",
+            })
+        );
+        let PostAuthAction::ManageAccount {
+            action: None,
+            gua_login_hint: Some(hint),
+        } = serde_json::from_value(json).unwrap()
+        else {
+            panic!("unexpected post auth action");
+        };
+        assert_eq!(hint, "mxid:@alice:example.com");
     }
 }

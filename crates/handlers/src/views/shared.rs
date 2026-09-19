@@ -64,7 +64,7 @@ impl OptionalPostAuthAction {
                 PostAuthContextInner::ContinueAuthorizationGrant { grant }
             }
 
-            PostAuthAction::ContinueDeviceCodeGrant { id } => {
+            PostAuthAction::ContinueDeviceCodeGrant { id, .. } => {
                 let Some(grant) = repo.oauth2_device_code_grant().lookup(id).await? else {
                     warn!(%id, "Failed to load device code grant, it was likely deleted or is an invalid ID");
                     return Ok(None);

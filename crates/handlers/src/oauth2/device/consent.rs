@@ -12,16 +12,16 @@ use axum::{
     extract::{Path, State},
     response::{Html, IntoResponse, Response},
 };
-use axum_extra::TypedHeader;
+use axum_extra::{TypedHeader, extract::Query};
 use mas_axum_utils::{
-    InternalError,
+    InternalError, SessionInfoExt,
     cookies::CookieJar,
     csrf::{CsrfExt, ProtectedForm},
 };
-use mas_data_model::{BoxClock, BoxRng, MatrixUser};
+use mas_data_model::{BoxClock, BoxRng, BrowserSession, Clock, MatrixUser};
 use mas_matrix::HomeserverConnection;
 use mas_policy::Policy;
-use mas_router::UrlBuilder;
+use mas_router::{DeviceCodeConsentQuery, PostAuthAction, UrlBuilder};
 use mas_storage::BoxRepository;
 use mas_templates::{DeviceConsentContext, PolicyViolationContext, TemplateContext, Templates};
 use serde::Deserialize;
@@ -49,6 +49,69 @@ pub(crate) struct ConsentForm {
     confirm_device: Option<String>,
 }
 
+/// GUA FORK: the localpart the app named, when it is not the browser
+/// session's user.
+///
+/// The app linking a new device opens this page in a browser that can share
+/// cookies with an earlier sign-in. Without this check the consent would be
+/// given by whoever that browser is signed in as, and the new device would
+/// join their account instead of the app's. This mirrors the account page
+/// guard in `views/app.rs`: the hint is only ever used to refuse a session,
+/// never to grant one, and a hint that cannot be checked (absent, foreign,
+/// malformed) leaves the page unchanged.
+fn other_account_named(
+    query: &DeviceCodeConsentQuery,
+    session: &BrowserSession,
+    homeserver: &dyn HomeserverConnection,
+) -> Option<String> {
+    crate::gua::sessions::hinted_localpart(query.login_hint.as_deref(), homeserver.homeserver())
+        .filter(|expected| *expected != session.user.username)
+}
+
+/// GUA FORK: end the browser session of another account and send the browser
+/// to sign in afresh, as the named account, for this device code grant.
+async fn end_session_and_login_as(
+    mut repo: BoxRepository,
+    clock: &dyn Clock,
+    url_builder: &UrlBuilder,
+    homeserver: &dyn HomeserverConnection,
+    cookie_jar: CookieJar,
+    session: BrowserSession,
+    grant_id: Ulid,
+    login_hint: Option<String>,
+    expected: &str,
+) -> Result<Response, InternalError> {
+    tracing::info!(
+        expected = %expected,
+        browser_session.id = %session.id,
+        oauth2_device_code.id = %grant_id,
+        "Browser session belongs to another user than the one the app named, forcing a fresh login"
+    );
+
+    // End the other account's session first. Left in place, the upstream
+    // login callback for the right account would find it again.
+    repo.browser_session().finish(clock, session).await?;
+    repo.save().await?;
+
+    let (session_info, cookie_jar) = cookie_jar.session_info();
+    let cookie_jar = cookie_jar.update_session_info(&session_info.mark_session_ended());
+
+    // The hint also rides inside the post-auth action, so the consent page
+    // checks the account again after the login. Otherwise an upstream
+    // provider that silently signs the other account in again would bring the
+    // browser back here without a hint, and that account would consent.
+    let login_hint =
+        login_hint.unwrap_or_else(|| format!("mxid:@{expected}:{}", homeserver.homeserver()));
+    let login = mas_router::Login::and_then(PostAuthAction::continue_device_code_grant_with_hint(
+        grant_id,
+        Some(login_hint.clone()),
+    ))
+    .with_login_hint(login_hint)
+    .with_force_login();
+
+    Ok((cookie_jar, url_builder.redirect(&login)).into_response())
+}
+
 #[tracing::instrument(name = "handlers.oauth2.device.consent.get", skip_all)]
 pub(crate) async fn get(
     mut rng: BoxRng,
@@ -64,6 +127,7 @@ pub(crate) async fn get(
     user_agent: Option<TypedHeader<headers::UserAgent>>,
     cookie_jar: CookieJar,
     Path(grant_id): Path<Ulid>,
+    Query(query): Query<DeviceCodeConsentQuery>,
 ) -> Result<Response, InternalError> {
     if !site_config.device_code_grant_enabled {
         return Err(InternalError::from_anyhow(anyhow::anyhow!(
@@ -88,7 +152,11 @@ pub(crate) async fn get(
     let user_agent = user_agent.map(|ua| ua.to_string());
 
     let Some(session) = maybe_session else {
-        let login = mas_router::Login::and_continue_device_code_grant(grant_id);
+        // GUA FORK: keep the app's login hint through the login, so the
+        // account check below still runs once the user is back.
+        let login = mas_router::Login::and_then(
+            PostAuthAction::continue_device_code_grant_with_hint(grant_id, query.login_hint),
+        );
         return Ok((cookie_jar, url_builder.redirect(&login)).into_response());
     };
 
@@ -108,6 +176,27 @@ pub(crate) async fn get(
         return Err(InternalError::from_anyhow(anyhow::anyhow!(
             "Grant is expired"
         )));
+    }
+
+    // GUA FORK: never let another account's browser session consent. Checked
+    // only once the grant is known to exist and not to have expired, so a
+    // link to a made-up grant changes nothing. Anyone can start a real grant,
+    // though, so a crafted link can still end the browser session here, as
+    // the account page guard in `views/app.rs` can. That only signs the
+    // browser out: app sessions are untouched and nothing is granted.
+    if let Some(expected) = other_account_named(&query, &session, &*homeserver) {
+        return end_session_and_login_as(
+            repo,
+            &clock,
+            &url_builder,
+            &*homeserver,
+            cookie_jar,
+            session,
+            grant_id,
+            query.login_hint,
+            &expected,
+        )
+        .await;
     }
 
     let client = repo
@@ -208,6 +297,7 @@ pub(crate) async fn post(
     user_agent: Option<TypedHeader<headers::UserAgent>>,
     cookie_jar: CookieJar,
     Path(grant_id): Path<Ulid>,
+    Query(query): Query<DeviceCodeConsentQuery>,
     Form(form): Form<ProtectedForm<ConsentForm>>,
 ) -> Result<Response, InternalError> {
     if !site_config.device_code_grant_enabled {
@@ -233,7 +323,11 @@ pub(crate) async fn post(
     let user_agent = user_agent.map(|TypedHeader(ua)| ua.to_string());
 
     let Some(session) = maybe_session else {
-        let login = mas_router::Login::and_continue_device_code_grant(grant_id);
+        // GUA FORK: keep the app's login hint through the login, so the
+        // account check below still runs once the user is back.
+        let login = mas_router::Login::and_then(
+            PostAuthAction::continue_device_code_grant_with_hint(grant_id, query.login_hint),
+        );
         return Ok((cookie_jar, url_builder.redirect(&login)).into_response());
     };
 
@@ -253,6 +347,27 @@ pub(crate) async fn post(
         return Err(InternalError::from_anyhow(anyhow::anyhow!(
             "Grant is expired"
         )));
+    }
+
+    // GUA FORK: never let another account's browser session consent. Checked
+    // only once the grant is known to exist and not to have expired, so a
+    // link to a made-up grant changes nothing. Anyone can start a real grant,
+    // though, so a crafted link can still end the browser session here, as
+    // the account page guard in `views/app.rs` can. That only signs the
+    // browser out: app sessions are untouched and nothing is granted.
+    if let Some(expected) = other_account_named(&query, &session, &*homeserver) {
+        return end_session_and_login_as(
+            repo,
+            &clock,
+            &url_builder,
+            &*homeserver,
+            cookie_jar,
+            session,
+            grant_id,
+            query.login_hint,
+            &expected,
+        )
+        .await;
     }
 
     let client = repo
@@ -371,4 +486,341 @@ pub(crate) async fn post(
         .map_err(InternalError::from_anyhow)?;
 
     Ok((cookie_jar, Html(rendered)).into_response())
+}
+
+#[cfg(test)]
+mod tests {
+    use axum::response::IntoResponse as _;
+    use hyper::{Request, StatusCode, header::LOCATION};
+    use mas_axum_utils::{SessionInfoExt, csrf::CsrfExt};
+    use mas_data_model::{BrowserSession, User};
+    use mas_router::{Route, SimpleRoute};
+    use oauth2_types::{
+        registration::ClientRegistrationResponse, requests::DeviceAuthorizationResponse,
+    };
+    use sqlx::PgPool;
+    use ulid::Ulid;
+
+    use crate::test_utils::{CookieHelper, RequestBuilderExt, ResponseExt, TestState, setup};
+
+    /// GUA FORK: start a device code grant, as a new device does, and return
+    /// its ID and user code.
+    async fn start_device_code_grant(state: &TestState) -> (Ulid, String) {
+        let request =
+            Request::post(mas_router::OAuth2RegistrationEndpoint::PATH).json(serde_json::json!({
+                "client_uri": "https://example.com/",
+                "token_endpoint_auth_method": "none",
+                "grant_types": ["urn:ietf:params:oauth:grant-type:device_code", "refresh_token"],
+                "response_types": [],
+            }));
+        let response = state.request(request).await;
+        response.assert_status(StatusCode::CREATED);
+        let ClientRegistrationResponse { client_id, .. } = response.json();
+
+        let request = Request::post(mas_router::OAuth2DeviceAuthorizationEndpoint::PATH).form(
+            serde_json::json!({
+                "client_id": client_id,
+                "scope": "openid",
+            }),
+        );
+        let response = state.request(request).await;
+        response.assert_status(StatusCode::OK);
+        let DeviceAuthorizationResponse { user_code, .. } = response.json();
+
+        let mut repo = state.repository().await.unwrap();
+        let grant = repo
+            .oauth2_device_code_grant()
+            .find_by_user_code(&user_code)
+            .await
+            .unwrap()
+            .unwrap();
+        repo.cancel().await.unwrap();
+        (grant.id, user_code)
+    }
+
+    async fn signed_in_browser(
+        state: &TestState,
+        username: &str,
+    ) -> (User, BrowserSession, CookieHelper, String) {
+        let mut rng = state.rng();
+        let mut repo = state.repository().await.unwrap();
+        let user = repo
+            .user()
+            .add(&mut rng, &state.clock, username.to_owned())
+            .await
+            .unwrap();
+        let browser_session = repo
+            .browser_session()
+            .add(&mut rng, &state.clock, &user, None)
+            .await
+            .unwrap();
+        repo.save().await.unwrap();
+
+        let cookie_jar = state.cookie_jar();
+        let (csrf_token, cookie_jar) = cookie_jar.csrf_token(&state.clock, &mut rng);
+        let cookie_jar = cookie_jar.set_session(&browser_session);
+        let cookies = CookieHelper::new();
+        cookies.import(cookie_jar);
+
+        (user, browser_session, cookies, csrf_token.form_value())
+    }
+
+    async fn is_finished(state: &TestState, browser_session: &BrowserSession) -> bool {
+        let mut repo = state.repository().await.unwrap();
+        let finished = repo
+            .browser_session()
+            .lookup(browser_session.id)
+            .await
+            .unwrap()
+            .unwrap()
+            .finished_at
+            .is_some();
+        repo.cancel().await.unwrap();
+        finished
+    }
+
+    async fn grant_is_pending(state: &TestState, grant_id: Ulid) -> bool {
+        let mut repo = state.repository().await.unwrap();
+        let pending = repo
+            .oauth2_device_code_grant()
+            .lookup(grant_id)
+            .await
+            .unwrap()
+            .unwrap()
+            .is_pending();
+        repo.cancel().await.unwrap();
+        pending
+    }
+
+    fn consent_path(grant_id: Ulid, hint: Option<&str>) -> String {
+        mas_router::DeviceCodeConsent::new(grant_id)
+            .with_login_hint(hint.map(str::to_owned))
+            .path_and_query()
+            .into_owned()
+    }
+
+    fn login_as(state: &TestState, grant_id: Ulid, hint: &str) -> String {
+        state.url_builder.relative_url_for(
+            &mas_router::Login::and_then(
+                mas_router::PostAuthAction::continue_device_code_grant_with_hint(
+                    grant_id,
+                    Some(hint.to_owned()),
+                ),
+            )
+            .with_login_hint(hint.to_owned())
+            .with_force_login(),
+        )
+    }
+
+    /// GUA FORK: where the login page sends the browser once signed in, for
+    /// a login URL the consent page redirected to.
+    fn after_login(state: &TestState, login_url: &str) -> String {
+        let (_, query) = login_url.split_once('?').unwrap();
+        let login: mas_router::Login = serde_urlencoded::from_str(query).unwrap();
+        login
+            .go_next(&state.url_builder)
+            .into_response()
+            .headers()
+            .get(LOCATION)
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_owned()
+    }
+
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_gua_consent_refuses_a_session_of_another_account(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+        let (grant_id, _) = start_device_code_grant(&state).await;
+        let (_, alice_session, cookies, _) = signed_in_browser(&state, "alice").await;
+        let hint = "mxid:@bob:example.com";
+
+        let request = Request::get(consent_path(grant_id, Some(hint))).empty();
+        let response = state.request(cookies.with_cookies(request)).await;
+        cookies.save_cookies(&response);
+        response.assert_status(StatusCode::SEE_OTHER);
+        assert_eq!(
+            response.headers().get(LOCATION).unwrap().to_str().unwrap(),
+            login_as(&state, grant_id, hint)
+        );
+        assert!(is_finished(&state, &alice_session).await);
+        assert!(grant_is_pending(&state, grant_id).await);
+
+        // The session cookie no longer carries alice.
+        let request = Request::get(consent_path(grant_id, None)).empty();
+        let response = state.request(cookies.with_cookies(request)).await;
+        response.assert_status(StatusCode::SEE_OTHER);
+        assert_eq!(
+            response.headers().get(LOCATION).unwrap().to_str().unwrap(),
+            state
+                .url_builder
+                .relative_url_for(&mas_router::Login::and_continue_device_code_grant(grant_id))
+        );
+    }
+
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_gua_consent_checks_the_account_again_after_the_login(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+        let mut rng = state.rng();
+        let (grant_id, _) = start_device_code_grant(&state).await;
+        let (alice, alice_session, cookies, _) = signed_in_browser(&state, "alice").await;
+        let hint = "mxid:@bob:example.com";
+
+        let request = Request::get(consent_path(grant_id, Some(hint))).empty();
+        let response = state.request(cookies.with_cookies(request)).await;
+        response.assert_status(StatusCode::SEE_OTHER);
+        let login_url = response
+            .headers()
+            .get(LOCATION)
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_owned();
+        assert!(is_finished(&state, &alice_session).await);
+
+        // The login brings the browser back to the consent page with the hint.
+        let next = after_login(&state, &login_url);
+        assert_eq!(next, consent_path(grant_id, Some(hint)));
+
+        // The upstream provider signed alice in again instead of bob: she
+        // still cannot consent.
+        let mut repo = state.repository().await.unwrap();
+        let again = repo
+            .browser_session()
+            .add(&mut rng, &state.clock, &alice, None)
+            .await
+            .unwrap();
+        repo.save().await.unwrap();
+        let cookies = CookieHelper::new();
+        cookies.import(state.cookie_jar().set_session(&again));
+
+        let request = Request::get(next).empty();
+        let response = state.request(cookies.with_cookies(request)).await;
+        response.assert_status(StatusCode::SEE_OTHER);
+        assert_eq!(
+            response.headers().get(LOCATION).unwrap().to_str().unwrap(),
+            login_url
+        );
+        assert!(is_finished(&state, &again).await);
+        assert!(grant_is_pending(&state, grant_id).await);
+    }
+
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_gua_consent_without_a_session_keeps_the_hint(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+        let (grant_id, _) = start_device_code_grant(&state).await;
+        let hint = "mxid:@bob:example.com";
+
+        let request = Request::get(consent_path(grant_id, Some(hint))).empty();
+        let response = state.request(request).await;
+        response.assert_status(StatusCode::SEE_OTHER);
+        let login_url = response.headers().get(LOCATION).unwrap().to_str().unwrap();
+        assert_eq!(
+            login_url,
+            state
+                .url_builder
+                .relative_url_for(&mas_router::Login::and_then(
+                    mas_router::PostAuthAction::continue_device_code_grant_with_hint(
+                        grant_id,
+                        Some(hint.to_owned()),
+                    ),
+                ))
+        );
+        assert_eq!(
+            after_login(&state, login_url),
+            consent_path(grant_id, Some(hint))
+        );
+    }
+
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_gua_consent_post_refuses_a_session_of_another_account(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+        let (grant_id, _) = start_device_code_grant(&state).await;
+        let (_, alice_session, cookies, csrf) = signed_in_browser(&state, "alice").await;
+        let hint = "mxid:@bob:example.com";
+
+        let request = Request::post(consent_path(grant_id, Some(hint))).form(serde_json::json!({
+            "csrf": csrf,
+            "action": "consent",
+            "confirm_device": "on",
+        }));
+        let response = state.request(cookies.with_cookies(request)).await;
+        response.assert_status(StatusCode::SEE_OTHER);
+        assert_eq!(
+            response.headers().get(LOCATION).unwrap().to_str().unwrap(),
+            login_as(&state, grant_id, hint)
+        );
+        assert!(is_finished(&state, &alice_session).await);
+        assert!(grant_is_pending(&state, grant_id).await);
+    }
+
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_gua_consent_with_a_matching_or_absent_hint_is_unchanged(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+        let (grant_id, _) = start_device_code_grant(&state).await;
+        let (_, alice_session, cookies, csrf) = signed_in_browser(&state, "alice").await;
+
+        // Hints that name alice, or that cannot be checked, change nothing.
+        for hint in [
+            None,
+            Some("mxid:@alice:example.com"),
+            Some("mxid:@bob:other.example"),
+            Some("bob@example.com"),
+        ] {
+            let request = Request::get(consent_path(grant_id, hint)).empty();
+            let response = state.request(cookies.with_cookies(request)).await;
+            cookies.save_cookies(&response);
+            response.assert_status(StatusCode::OK);
+            assert!(!is_finished(&state, &alice_session).await);
+        }
+
+        let request = Request::post(consent_path(grant_id, Some("mxid:@alice:example.com"))).form(
+            serde_json::json!({
+                "csrf": csrf,
+                "action": "consent",
+                "confirm_device": "on",
+            }),
+        );
+        let response = state.request(cookies.with_cookies(request)).await;
+        response.assert_status(StatusCode::OK);
+        assert!(!is_finished(&state, &alice_session).await);
+        assert!(!grant_is_pending(&state, grant_id).await);
+    }
+
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_gua_link_page_passes_the_hint_to_the_consent_page(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+        let (grant_id, user_code) = start_device_code_grant(&state).await;
+
+        let request = Request::get(format!(
+            "{}?code={user_code}&org.matrix.msc4198.login_hint=mxid%3A%40bob%3Aexample.com",
+            mas_router::DeviceCodeLink::route()
+        ))
+        .empty();
+        let response = state.request(request).await;
+        response.assert_status(StatusCode::SEE_OTHER);
+        assert_eq!(
+            response.headers().get(LOCATION).unwrap().to_str().unwrap(),
+            consent_path(grant_id, Some("mxid:@bob:example.com"))
+        );
+
+        // Without a hint the consent URL stays as it was.
+        let request = Request::get(format!(
+            "{}?code={user_code}",
+            mas_router::DeviceCodeLink::route()
+        ))
+        .empty();
+        let response = state.request(request).await;
+        response.assert_status(StatusCode::SEE_OTHER);
+        assert_eq!(
+            response.headers().get(LOCATION).unwrap().to_str().unwrap(),
+            format!("/device/{grant_id}")
+        );
+    }
 }
