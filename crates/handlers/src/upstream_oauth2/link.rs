@@ -319,22 +319,12 @@ pub(crate) async fn get(
         }
 
         (Some(user_session), _) => {
-            // GUA FORK: the browser is signed in as another account than the
-            // one this upstream sign-in resolved to: the link belongs to
-            // someone else, or to nobody yet.
-            //
-            // Upstream MAS would offer to sign out ("link mismatch") or to
-            // attach this upstream account to the browser's user ("suggest
-            // link"). For Gua both are wrong. The browser can share cookies
-            // with an earlier sign-in, so the session found here is often a
-            // leftover from a different phone number: continuing with it
-            // would finish the app's sign-in as that other account, and the
-            // suggest link page would let one click attach a second number's
-            // subject to it. This holds for every post-auth action.
-            //
-            // End that session and come back to this same page. With no
-            // session left, the unchanged arms below either log in the
-            // account the link belongs to or start registration.
+            // GUA FORK: the browser session belongs to a different account
+            // than this upstream sign-in resolved to. Never continue as it and
+            // never offer to attach the subject to it: the session may be a
+            // leftover from another phone number (see `gua::sessions`). End it
+            // and re-enter this page; with no session left, the arms below log
+            // in or register the right account.
             tracing::info!(
                 browser_session.id = %user_session.id,
                 user.id = %user_session.user.id,

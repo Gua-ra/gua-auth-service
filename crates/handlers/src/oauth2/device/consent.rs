@@ -49,16 +49,14 @@ pub(crate) struct ConsentForm {
     confirm_device: Option<String>,
 }
 
-/// GUA FORK: the localpart the app named, when it is not the browser
-/// session's user.
+/// GUA FORK: the localpart the app's login hint names, when it differs from
+/// the browser session's user.
 ///
 /// The app linking a new device opens this page in a browser that can share
-/// cookies with an earlier sign-in. Without this check the consent would be
-/// given by whoever that browser is signed in as, and the new device would
-/// join their account instead of the app's. This mirrors the account page
-/// guard in `views/app.rs`: the hint is only ever used to refuse a session,
-/// never to grant one, and a hint that cannot be checked (absent, foreign,
-/// malformed) leaves the page unchanged.
+/// cookies with an earlier sign-in; without this check the new device would
+/// join whichever account that browser is signed in as. The hint only ever
+/// refuses a session, never grants one (see `gua::sessions`), and a hint that
+/// cannot be checked (absent, foreign, malformed) leaves the page unchanged.
 fn other_account_named(
     query: &DeviceCodeConsentQuery,
     session: &BrowserSession,
@@ -70,6 +68,12 @@ fn other_account_named(
 
 /// GUA FORK: end the browser session of another account and send the browser
 /// to sign in afresh, as the named account, for this device code grant.
+///
+/// Call this only once the grant is known to exist and not to have expired,
+/// so a link to a made-up grant changes nothing. Anyone can start a real
+/// grant, so a crafted link can still end the browser session here, as the
+/// account page guard in `views/app.rs` can; that only signs the browser out,
+/// app sessions are untouched and nothing is granted.
 async fn end_session_and_login_as(
     mut repo: BoxRepository,
     clock: &dyn Clock,
@@ -178,12 +182,9 @@ pub(crate) async fn get(
         )));
     }
 
-    // GUA FORK: never let another account's browser session consent. Checked
-    // only once the grant is known to exist and not to have expired, so a
-    // link to a made-up grant changes nothing. Anyone can start a real grant,
-    // though, so a crafted link can still end the browser session here, as
-    // the account page guard in `views/app.rs` can. That only signs the
-    // browser out: app sessions are untouched and nothing is granted.
+    // GUA FORK: never let another account's browser session consent. The
+    // grant is known to exist and to be unexpired here, as
+    // `end_session_and_login_as` requires.
     if let Some(expected) = other_account_named(&query, &session, &*homeserver) {
         return end_session_and_login_as(
             repo,
@@ -349,12 +350,9 @@ pub(crate) async fn post(
         )));
     }
 
-    // GUA FORK: never let another account's browser session consent. Checked
-    // only once the grant is known to exist and not to have expired, so a
-    // link to a made-up grant changes nothing. Anyone can start a real grant,
-    // though, so a crafted link can still end the browser session here, as
-    // the account page guard in `views/app.rs` can. That only signs the
-    // browser out: app sessions are untouched and nothing is granted.
+    // GUA FORK: never let another account's browser session consent. The
+    // grant is known to exist and to be unexpired here, as
+    // `end_session_and_login_as` requires.
     if let Some(expected) = other_account_named(&query, &session, &*homeserver) {
         return end_session_and_login_as(
             repo,

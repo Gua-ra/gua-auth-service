@@ -205,10 +205,9 @@ pub(crate) async fn post(
         user_id = user.id
     );
 
-    // GUA FORK: signing out ends the browser sessions behind the ended
-    // sessions too, unless one still backs another active session. Left in
-    // place, the next sign-in in any of those browsers would silently continue
-    // as this account instead of the one being signed in.
+    // GUA FORK: signing out also ends the browser sessions behind the ended
+    // sessions, unless one still backs another active session; see
+    // `gua::sessions`.
     for user_session_id in user_session_ids {
         crate::gua::sessions::finish_browser_session_if_unused(
             &mut repo,

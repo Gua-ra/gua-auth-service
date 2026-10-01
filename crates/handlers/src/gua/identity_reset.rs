@@ -5,20 +5,17 @@
 
 //! GUA FORK: lets a signed-in app approve its own cross-signing reset.
 //!
-//! Upstream expects the approval to happen on the account page, in a browser
-//! session. For the Gua apps that meant a web sheet, and on most phones that
-//! sheet holds no session at all (the app signs in through an ephemeral browser
-//! context), so finishing setup demanded a whole new phone-number login. On a
-//! phone whose browser held another account it silently approved the
-//! reset for that account instead.
+//! Upstream approves the reset on the account page, in a browser session.
+//! The app's ephemeral web sheet rarely holds one, and a shared browser could
+//! approve the reset for whichever account it was signed in as.
 //!
-//! Here the app presents the access token it is already using for the
-//! homeserver. The token is checked the same way the userinfo endpoint checks
-//! it (valid, unrevoked, session alive), the session must carry the Matrix
-//! client API scope, and the reset is opened for that session's own user and
-//! nobody else, for the homeserver's usual ten-minute window. It is
-//! deliberately not reachable from a browser: there is no CSRF story here
-//! because there is no cookie.
+//! Here the app presents the access token it already uses for the homeserver.
+//! The token is checked the same way the userinfo endpoint checks it (valid,
+//! unrevoked, session alive), the session must carry the Matrix client API
+//! scope, and the reset is opened for that session's own user and nobody
+//! else, for the homeserver's usual ten-minute window. The endpoint is not
+//! reachable from a browser, and no CSRF protection is needed because no
+//! cookie is involved.
 
 use std::sync::Arc;
 

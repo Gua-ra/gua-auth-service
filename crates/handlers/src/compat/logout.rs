@@ -124,10 +124,8 @@ pub(crate) async fn post(
     // This will make the access token invalid
     repo.compat_session().finish(&clock, session).await?;
 
-    // GUA FORK: signing out ends the browser session behind this session too,
-    // unless that browser session still backs another active session. Left in
-    // place, the next sign-in in the same browser would silently continue as
-    // this account instead of the one being signed in.
+    // GUA FORK: signing out also ends the browser session behind this one,
+    // unless it still backs another active session; see `gua::sessions`.
     crate::gua::sessions::finish_browser_session_if_unused(&mut repo, &clock, user_session_id)
         .await?;
 

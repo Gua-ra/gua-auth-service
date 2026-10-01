@@ -246,10 +246,8 @@ pub(crate) async fn post(
     // Now that we checked everything, we can end the session.
     repo.oauth2_session().finish(&clock, session).await?;
 
-    // GUA FORK: signing out of an app ends the browser session behind it too,
-    // unless that browser session still backs another active session. Left in
-    // place, the next sign-in in the same browser would silently continue as
-    // this account instead of the one being signed in.
+    // GUA FORK: signing out of an app also ends the browser session behind
+    // it, unless it still backs another active session; see `gua::sessions`.
     crate::gua::sessions::finish_browser_session_if_unused(&mut repo, &clock, user_session_id)
         .await?;
 

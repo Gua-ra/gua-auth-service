@@ -79,21 +79,14 @@ pub async fn get(
     };
 
     // GUA FORK: the browser session must belong to the user the app is signed
-    // in as.
-    //
-    // The account page is opened from inside the app in a browser context that
-    // shares cookies with the system browser, so the session found here can
-    // belong to a completely different account than the one asking. For an
-    // identity reset that is not a cosmetic mix-up: the page would approve the
-    // reset for the browser's user, the app's own upload would keep being
-    // refused, and the app would be left believing the reset failed while
-    // another account had just been opened up for replacement.
-    //
-    // When the app names its user, through the MSC4198 login hint or inside the
-    // action itself, and the session disagrees, treat the session as absent and
-    // authenticate afresh for the named user. The name is only ever used to
-    // refuse, never to grant: the action stays behind the normal owner check
-    // once a matching session exists.
+    // in as. The page opens in a browser context that shares cookies with the
+    // system browser, so the session found here can be another account's, and
+    // an identity reset would then be approved for that account. When the app
+    // names its user (MSC4198 login hint or the action itself) and the session
+    // disagrees, treat the session as absent and authenticate afresh for the
+    // named user. The name only ever refuses, never grants (see
+    // `gua::sessions`); the action stays behind the normal owner check once a
+    // matching session exists.
     let expected_user = expected_user(
         action.as_ref(),
         unstable_login_hint.as_deref(),

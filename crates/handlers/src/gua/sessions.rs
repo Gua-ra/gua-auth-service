@@ -8,7 +8,10 @@
 //! The Gua apps open these pages in browsers that can share cookies with
 //! earlier sign-ins. A browser session left behind by one account must never
 //! let a later sign-in, device link or approval continue as that account.
-//! These are the pieces the handlers share to enforce that.
+//! Signing out of an app therefore ends the browser session behind it, and a
+//! login hint naming the app's account is only ever used to refuse a session
+//! that belongs to someone else, never to grant anything. These are the
+//! pieces the handlers share to enforce that.
 
 use mas_data_model::{BrowserSession, Clock, User};
 use mas_storage::{

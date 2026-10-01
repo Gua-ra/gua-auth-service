@@ -39,12 +39,8 @@ pub enum PostAuthAction {
         #[serde(flatten)]
         action: Option<AccountAction>,
         /// GUA FORK: the MSC4198 login hint the app put on the account page,
-        /// naming the account it is signed in as.
-        ///
-        /// It rides inside the action so that it survives the login round
-        /// trip: the account page is reached again through this action, and
-        /// must still be able to refuse a browser session for another account
-        /// (one the upstream provider signed in again, say).
+        /// naming the account it is signed in as. Carried inside the action
+        /// for the same reason as in `ContinueDeviceCodeGrant`.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         gua_login_hint: Option<String>,
     },
@@ -628,21 +624,15 @@ pub enum AccountAction {
     #[serde(rename = "org.matrix.cross_signing_reset")]
     OrgMatrixCrossSigningReset {
         /// GUA FORK: the app scheme to hand control back to once the reset is
-        /// approved.
-        ///
-        /// It rides inside the action so that it survives the login round trip:
-        /// when the browser session does not match the app's login
-        /// hint, the user is sent through login and back to this
-        /// action, and the success page still needs to know where
-        /// to return.
+        /// approved. Carried inside the action so that it survives the login
+        /// round trip: after a forced login the success page still needs to
+        /// know where to return.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         gua_return: Option<String>,
         /// GUA FORK: the localpart of the account the app is signed in as.
-        ///
-        /// Carried inside the action for the same reason as `gua_return`: after
-        /// a forced login the account page is reached again through the
-        /// post-auth action, and the page must still be able to refuse
-        /// a browser session for some other account.
+        /// Carried inside the action for the same reason as `gua_return`, so
+        /// the account page can still refuse a browser session for some other
+        /// account after a forced login.
         #[serde(default, rename = "gua_user", skip_serializing_if = "Option::is_none")]
         gua_user: Option<String>,
     },
