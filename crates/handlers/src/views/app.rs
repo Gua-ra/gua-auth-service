@@ -76,8 +76,6 @@ pub async fn get(
         return Ok((cookie_jar, url_builder.redirect(&url)).into_response());
     };
 
-    // GUA FORK: a browser session of another account than the app names is
-    // replaced by a fresh login. The name only refuses, never grants.
     let expected_user = expected_user(
         action.as_ref(),
         unstable_login_hint.as_deref(),
@@ -135,8 +133,6 @@ pub async fn get_anonymous(
     Ok(Html(content).into_response())
 }
 
-/// GUA FORK: the localpart the app says it is signed in as. The name inside the
-/// action wins over the hint.
 fn expected_user(
     action: Option<&AccountAction>,
     login_hint: Option<&str>,

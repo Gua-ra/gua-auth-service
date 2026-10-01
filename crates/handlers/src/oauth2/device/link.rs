@@ -32,8 +32,8 @@ pub struct Params {
     code: Option<String>,
 }
 
-/// GUA FORK: the app's MSC4198 login hint. Kept out of [`Params`] so it never
-/// ends up in the form state.
+/// GUA FORK: kept out of [`Params`] so the hint never ends up in the form
+/// state.
 #[derive(Deserialize)]
 pub(crate) struct HintParams {
     #[serde(rename = "org.matrix.msc4198.login_hint")]

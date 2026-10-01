@@ -312,8 +312,6 @@ pub(crate) async fn get(
         }
 
         (Some(user_session), _) => {
-            // GUA FORK: never continue as, or link to, another account's
-            // browser session. End it and re-enter this page.
             tracing::info!(
                 browser_session.id = %user_session.id,
                 user.id = %user_session.user.id,
@@ -929,8 +927,7 @@ pub(crate) async fn post(
     let maybe_user_session = user_session_info.load_active_session(&mut repo).await?;
     let form_state = form.to_form_state();
 
-    // GUA FORK: the link form can still be posted. Refuse it inside a sign-in,
-    // and for a user already linked to this provider.
+    // GUA FORK: the link form is no longer rendered but can still be posted.
     if matches!(form, FormData::Link) {
         if matches!(
             post_auth_action,

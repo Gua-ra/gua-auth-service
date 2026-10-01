@@ -90,7 +90,6 @@ Please see LICENSE files in the repository root for full details.
 
 
     {% if force_localpart %}
-      {# GUA FORK: this is the person's handle, not a "Matrix ID". #}
       {% call(f) field.field(label=_("common.username"), name="username") %}
         <input {{ field.attributes(f) }} class="cpd-text-control" type="text" value="@{{ imported_localpart }}" readonly aria-describedby="{{ f.id }}-help" />
 

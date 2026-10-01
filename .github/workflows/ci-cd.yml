@@ -1,8 +1,5 @@
 name: CI/CD
 
-# Builds the Gua image and deploys it: dev on merge to main or on a `deploy:dev` PR label, prod
-# behind the `production` environment approval. PR validation stays in ci.yaml.
-
 on:
   push:
     branches: ["main"]

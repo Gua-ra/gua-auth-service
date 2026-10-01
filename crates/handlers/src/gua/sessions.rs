@@ -31,7 +31,6 @@ pub(crate) fn hinted_localpart(login_hint: Option<&str>, homeserver: &str) -> Op
     (!localpart.is_empty()).then(|| localpart.to_owned())
 }
 
-/// Only a JSON `true` counts.
 pub(crate) fn claims_end_other_sessions(id_token_claims: Option<&Value>) -> bool {
     id_token_claims
         .and_then(|claims| claims.get(END_OTHER_SESSIONS_CLAIM))

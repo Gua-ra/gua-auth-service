@@ -692,11 +692,8 @@ pub struct Provider {
     /// (`web` or `native`) should be forwarded to the provider in the
     /// authorization request.
     ///
-    /// When enabled, the downstream client that initiated the flow is
-    /// resolved and its `client_uri` host is compared against
-    /// [`Self::downstream_client_web_origin`]. If the hosts match, `web` is
-    /// sent, otherwise `native`. The upstream provider uses this marker to
-    /// decide whether the web signup allowlist applies.
+    /// Sends `web` when the downstream client's `client_uri` host matches
+    /// [`Self::downstream_client_web_origin`], otherwise `native`.
     ///
     /// Defaults to `false`.
     #[serde(default)]
@@ -704,11 +701,6 @@ pub struct Provider {
 
     /// The web origin whose host identifies the downstream web client, used
     /// together with [`Self::forward_downstream_client`].
-    ///
-    /// When `forward_downstream_client` is enabled and the downstream
-    /// client's `client_uri` host equals this origin's host, the
-    /// `gua_downstream=web` marker is forwarded upstream. Any other host
-    /// (or a missing `client_uri`) is treated as `native`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub downstream_client_web_origin: Option<Url>,
 

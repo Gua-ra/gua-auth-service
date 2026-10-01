@@ -49,8 +49,6 @@ pub(crate) struct ConsentForm {
     confirm_device: Option<String>,
 }
 
-/// GUA FORK: the localpart the app's login hint names, when it differs from the
-/// browser session's user.
 fn other_account_named(
     query: &DeviceCodeConsentQuery,
     session: &BrowserSession,
