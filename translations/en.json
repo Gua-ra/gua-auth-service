@@ -18,11 +18,11 @@
     },
     "sign_in": "Sign in",
     "@sign_in": {
-      "context": "pages/account/deactivated.html:23:28-47, pages/account/locked.html:23:28-47, pages/index.html:28:26-45"
+      "context": "pages/account/deactivated.html:23:28-47, pages/account/locked.html:23:28-47, pages/index.html:30:26-45"
     },
     "sign_out": "Sign out",
     "@sign_out": {
-      "context": "pages/account/logged_out.html:22:28-48, pages/compat_login_policy_violation.html:38:28-48, pages/index.html:26:28-48, pages/policy_violation.html:59:28-48, pages/upstream_oauth2/link_mismatch.html:24:24-44, pages/upstream_oauth2/suggest_link.html:32:26-46"
+      "context": "pages/account/logged_out.html:22:28-48, pages/compat_login_policy_violation.html:38:28-48, pages/index.html:28:28-48, pages/policy_violation.html:59:28-48, pages/upstream_oauth2/link_mismatch.html:24:24-44, pages/upstream_oauth2/suggest_link.html:32:26-46"
     },
     "skip": "Skip",
     "@skip": {
@@ -36,7 +36,7 @@
   "app": {
     "human_name": "Gua",
     "@human_name": {
-      "context": "pages/index.html:16:29-48",
+      "context": "pages/index.html:18:29-48",
       "description": "Human readable name of the application"
     },
     "name": "Gua",
@@ -486,15 +486,15 @@
     "navbar": {
       "my_account": "My account",
       "@my_account": {
-        "context": "pages/index.html:25:26-52"
+        "context": "pages/index.html:27:26-52"
       },
       "register": "Create an account",
       "@register": {
-        "context": "pages/index.html:31:36-60"
+        "context": "pages/index.html:33:36-60"
       },
       "signed_in_as": "Signed in as <span class=\"font-semibold\">%(username)s</span>.",
       "@signed_in_as": {
-        "context": "pages/index.html:22:11-79",
+        "context": "pages/index.html:24:11-79",
         "description": "Displayed in the navbar when the user is signed in"
       }
     },
