@@ -1,11 +1,11 @@
 name: CI/CD
 
-# Gua normalized CI/CD pipeline.
+# Build and deploy for the Gua fork.
 #
-# Builds ghcr.io/gua-ra/gua-auth-service from the repo Dockerfile and deploys it
-# to the Gua k3s cluster. Pre-merge PR validation (rustfmt/clippy/cargo-deny/nextest/
-# schema-drift/OPA/frontend) stays in the upstream ci.yaml ("CI"); this file does not
-# replace it. This is the single canonical build+deploy pipeline for the Gua fork.
+# Builds ghcr.io/gua-ra/gua-auth-service from the repo Dockerfile and rolls it onto
+# the Gua cluster. Pre-merge PR validation (rustfmt/clippy/cargo-deny/nextest/
+# schema-drift/OPA/frontend) stays in the upstream ci.yaml ("CI"). The trigger and
+# job shape are shared with the other Gua services; see gua-deploy k8s/cicd/README.md.
 #
 # Deploy paths, in order of how often they are used:
 #
@@ -44,10 +44,9 @@ env:
   DEPLOY_LABEL: deploy:dev
 
 jobs:
-  # Rust build + test gate. Mirrors the upstream MAS test invocation (nextest, with
-  # the frontend and OPA policies built first) so we never ship an image that fails
-  # the suite. Adapts ONLY the build/test step to this repo's language; the
-  # trigger + job skeleton below is identical to the other Gua services.
+  # Rust build + test gate: the upstream MAS test invocation (nextest, with the
+  # frontend and OPA policies built first), so an image that fails the suite is
+  # never shipped.
   build:
     name: build
     runs-on: ubuntu-latest
@@ -162,8 +161,8 @@ jobs:
       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
       (github.event_name == 'workflow_dispatch' && inputs.environment == 'dev') ||
       needs.build.outputs.deploy-to-dev == 'true'
-    # Unique label → routes ONLY to the in-cluster scoped-SA pod runner
-    # (k8s/cicd/gua-auth-deploy-runner.yaml in gua-deploy), never a privileged host runner.
+    # The label routes this job only to the in-cluster scoped-SA pod runner
+    # (gua-deploy k8s/cicd/dev/gua-auth-deploy-runner.yaml), never to a privileged host runner.
     runs-on: [self-hosted, gua-auth-incluster]
     environment: dev
     steps:
@@ -191,17 +190,10 @@ jobs:
             })
 
   # APPROVAL GATE: fires on every merge to main and on workflow_dispatch with
-  # environment=prod. A merge deploys dev automatically (deploy-dev above) and also
-  # stages this prod deployment, which pauses until the `production` GitHub
-  # Environment is approved (it has a required reviewer plus a main-only branch
-  # policy). Remaining prerequisite for prod: register the in-cluster prod runner
-  # (label gua-auth-incluster-prod); until then an approved run queues with no runner.
-  #
-  # NOTE: this job targets ns gua-prod. It used to say `-n gua`, the DEV namespace, so an
-  # approved prod deploy would have silently re-rolled dev and prod would never have
-  # received the build. The missing prod runner is what kept that from ever happening: the
-  # job queues instead of deploying, which is the safe failure, and it can no longer hit
-  # the wrong namespace once a runner does exist.
+  # environment=prod. The run pauses until the `production` GitHub Environment is
+  # approved (required reviewer plus a main-only branch policy), then rolls the
+  # image onto ns gua-prod through the in-cluster prod runner (label
+  # gua-auth-incluster-prod, gua-deploy k8s/cicd/prod/gua-auth-deploy-runner-prod.yaml).
   deploy-prod:
     needs: build
     if: >-
@@ -213,7 +205,7 @@ jobs:
       - name: Roll out ${{ needs.build.outputs.ref }} to prod
         run: |
           IMG="${{ needs.build.outputs.ref }}"
-          # Same in-cluster scoped-SA runner model as dev (a prod runner + cluster are future work).
+          # Same in-cluster scoped-SA runner model as dev.
           kubectl -n gua-prod set image deployment/gua-matrix-authentication-service \
             matrix-authentication-service="$IMG" database-migrate="$IMG"
           kubectl -n gua-prod rollout status deployment/gua-matrix-authentication-service --timeout=180s
