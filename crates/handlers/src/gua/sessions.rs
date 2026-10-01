@@ -3,15 +3,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
 // Please see LICENSE files in the repository root for full details.
 
-//! GUA FORK: keep browser sessions bound to the account that is signing in.
-//!
-//! The Gua apps open these pages in browsers that can share cookies with
-//! earlier sign-ins. A browser session left behind by one account must never
-//! let a later sign-in, device link or approval continue as that account.
-//! Signing out of an app therefore ends the browser session behind it, and a
-//! login hint naming the app's account is only ever used to refuse a session
-//! that belongs to someone else, never to grant anything. These are the
-//! pieces the handlers share to enforce that.
+//! A browser session left behind by one account never continues a later
+//! sign-in. A login hint only refuses a session, never grants one.
 
 use mas_data_model::{BrowserSession, Clock, User};
 use mas_storage::{
@@ -25,15 +18,11 @@ use rand::RngCore;
 use serde_json::Value;
 use ulid::Ulid;
 
-/// ID token claim the identity service sets, only on the sign-in that
-/// completes an account recovery, to ask for every other session of the
-/// account to be ended.
+/// ID token claim the identity service sets on the sign-in that completes an
+/// account recovery.
 pub(crate) const END_OTHER_SESSIONS_CLAIM: &str = "gua_end_other_sessions";
 
-/// The localpart an `mxid:` MSC4198 login hint names on our own homeserver.
-///
-/// Anything else (a foreign homeserver, an email, an empty localpart) yields
-/// `None`, so a hint we cannot check is never used to refuse a session.
+/// `None` for a hint that cannot be checked, so it never refuses a session.
 pub(crate) fn hinted_localpart(login_hint: Option<&str>, homeserver: &str) -> Option<String> {
     let mxid = login_hint?.strip_prefix("mxid:")?;
     let localpart = mxid
@@ -42,8 +31,7 @@ pub(crate) fn hinted_localpart(login_hint: Option<&str>, homeserver: &str) -> Op
     (!localpart.is_empty()).then(|| localpart.to_owned())
 }
 
-/// Whether verified upstream ID token claims ask to end the account's other
-/// sessions. Only a JSON `true` counts.
+/// Only a JSON `true` counts.
 pub(crate) fn claims_end_other_sessions(id_token_claims: Option<&Value>) -> bool {
     id_token_claims
         .and_then(|claims| claims.get(END_OTHER_SESSIONS_CLAIM))
@@ -51,15 +39,8 @@ pub(crate) fn claims_end_other_sessions(id_token_claims: Option<&Value>) -> bool
         .unwrap_or(false)
 }
 
-/// Finish the browser session an OAuth 2.0 or compatibility session was
-/// created from, once nothing else still uses it.
-///
-/// Call this after finishing the app's session, in the same transaction, so
-/// the counts no longer include it. Signing out of an app has to end the
-/// browser session too: left in place, the next sign-in in that browser (for
-/// a different phone number, say) would silently continue as this account.
-/// A browser session that still backs another active session is kept, so
-/// signing out of one client does not sign the user out of the others.
+/// Call after finishing the app's session, in the same transaction, so the
+/// counts no longer include it.
 pub(crate) async fn finish_browser_session_if_unused(
     repo: &mut BoxRepository,
     clock: &dyn Clock,
@@ -109,11 +90,6 @@ pub(crate) async fn finish_browser_session_if_unused(
     Ok(())
 }
 
-/// End every active OAuth 2.0, compatibility and browser session of a user,
-/// and schedule a device sync so the homeserver drops the devices too.
-///
-/// Used when a sign-in completes an account recovery: whoever held the
-/// account's other sessions must not keep them.
 pub(crate) async fn end_all_sessions_of_user(
     repo: &mut BoxRepository,
     rng: &mut (dyn RngCore + Send),

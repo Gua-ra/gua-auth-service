@@ -239,15 +239,11 @@ pub(crate) async fn post(
             .await?;
     }
 
-    // GUA FORK: remember which browser session this one was started from
-    // before ending it.
     let user_session_id = session.user_session_id;
 
     // Now that we checked everything, we can end the session.
     repo.oauth2_session().finish(&clock, session).await?;
 
-    // GUA FORK: signing out of an app also ends the browser session behind
-    // it, unless it still backs another active session; see `gua::sessions`.
     crate::gua::sessions::finish_browser_session_if_unused(&mut repo, &clock, user_session_id)
         .await?;
 
@@ -478,7 +474,6 @@ mod tests {
         assert!(!state.is_access_token_valid(&access_token).await);
     }
 
-    /// GUA FORK: register a confidential client able to revoke its tokens.
     async fn register_client(state: &TestState) -> (String, String) {
         let request =
             Request::post(mas_router::OAuth2RegistrationEndpoint::PATH).json(serde_json::json!({
@@ -553,8 +548,6 @@ mod tests {
         let response = state.request(request).await;
         response.assert_status(StatusCode::OK);
 
-        // Signing out of the app ended the browser session too, so the next
-        // sign-in in that browser cannot continue as alice.
         let mut repo = state.repository().await.unwrap();
         let browser_session = repo
             .browser_session()
@@ -624,8 +617,6 @@ mod tests {
             }))
         };
 
-        // Revoking the first session keeps the browser session: the second
-        // one was started from it and is still active.
         let response = state.request(revoke(access_tokens[0].clone())).await;
         response.assert_status(StatusCode::OK);
 
@@ -641,7 +632,6 @@ mod tests {
 
         assert!(state.is_access_token_valid(&access_tokens[1]).await);
 
-        // Revoking the last one ends it.
         let response = state.request(revoke(access_tokens[1].clone())).await;
         response.assert_status(StatusCode::OK);
 

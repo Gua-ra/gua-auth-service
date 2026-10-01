@@ -183,8 +183,6 @@ pub(crate) async fn post(
 
     let filter = CompatSessionFilter::new().for_user(&user).active_only();
 
-    // GUA FORK: remember which browser sessions the sessions about to be ended
-    // were started from, the calling session's included.
     let mut user_session_ids = BTreeSet::new();
     let mut cursor = Pagination::first(1000);
     loop {
@@ -205,9 +203,6 @@ pub(crate) async fn post(
         user_id = user.id
     );
 
-    // GUA FORK: signing out also ends the browser sessions behind the ended
-    // sessions, unless one still backs another active session; see
-    // `gua::sessions`.
     for user_session_id in user_session_ids {
         crate::gua::sessions::finish_browser_session_if_unused(
             &mut repo,
@@ -256,8 +251,6 @@ mod tests {
         finished
     }
 
-    /// GUA FORK: start a compatibility session from a browser session, as an
-    /// SSO login does, and return its access token.
     async fn add_compat_session(state: &TestState, browser_session: &BrowserSession) -> String {
         let mut rng = state.rng();
         let mut repo = state.repository().await.unwrap();
@@ -318,11 +311,8 @@ mod tests {
         response.assert_status(hyper::StatusCode::OK);
 
         assert!(browser_session_finished(&state, &lone).await);
-        // The other browser's session was ended too, so its browser session
-        // goes with it.
         assert!(browser_session_finished(&state, &shared).await);
 
-        // A browser session that still backs an OAuth 2.0 session is kept.
         let request =
             Request::post(mas_router::OAuth2RegistrationEndpoint::PATH).json(serde_json::json!({
                 "client_uri": "https://example.com/",

@@ -64,8 +64,6 @@ pub async fn get(
 
     // TODO: keep the full path, not just the action
     let Some(session) = maybe_session else {
-        // GUA FORK: keep the app's login hint through the login, so the
-        // account check below still runs once the user is back.
         let mut url = mas_router::Login::and_then(PostAuthAction::manage_account_with_hint(
             action,
             unstable_login_hint.clone(),
@@ -78,15 +76,8 @@ pub async fn get(
         return Ok((cookie_jar, url_builder.redirect(&url)).into_response());
     };
 
-    // GUA FORK: the browser session must belong to the user the app is signed
-    // in as. The page opens in a browser context that shares cookies with the
-    // system browser, so the session found here can be another account's, and
-    // an identity reset would then be approved for that account. When the app
-    // names its user (MSC4198 login hint or the action itself) and the session
-    // disagrees, treat the session as absent and authenticate afresh for the
-    // named user. The name only ever refuses, never grants (see
-    // `gua::sessions`); the action stays behind the normal owner check once a
-    // matching session exists.
+    // GUA FORK: a browser session of another account than the app names is
+    // replaced by a fresh login. The name only refuses, never grants.
     let expected_user = expected_user(
         action.as_ref(),
         unstable_login_hint.as_deref(),
@@ -100,9 +91,6 @@ pub async fn get(
             "Browser session belongs to another user than the one the app named, forcing a fresh login"
         );
 
-        // End the other account's session first. Left in place, the upstream
-        // login callback for the right account would find it and stop
-        // at "linked to another account".
         activity_tracker
             .record_browser_session(&clock, &session)
             .await;
@@ -111,10 +99,8 @@ pub async fn get(
         let (session_info, cookie_jar) = cookie_jar.session_info();
         let cookie_jar = cookie_jar.update_session_info(&session_info.mark_session_ended());
 
-        // The hint also rides inside the post-auth action, so this check runs
-        // again after the login. Otherwise an upstream provider that silently
-        // signs the other account in again would bring the browser back here
-        // without a hint, and that account would land on its account page.
+        // The hint rides in the post-auth action, so this check runs again
+        // after the login.
         let login_hint = unstable_login_hint
             .unwrap_or_else(|| format!("mxid:@{expected}:{}", homeserver.homeserver()));
         let url = mas_router::Login::and_then(PostAuthAction::manage_account_with_hint(
@@ -151,12 +137,8 @@ pub async fn get_anonymous(
     Ok(Html(content).into_response())
 }
 
-/// GUA FORK: which localpart, if any, the app says it is signed in as.
-///
-/// Prefers the name carried inside the action, since that one survives a login
-/// round trip; otherwise an `mxid:` MSC4198 hint on our own homeserver.
-/// Anything else is ignored, so a foreign or malformed hint can never lock a
-/// legitimate session out.
+/// GUA FORK: the localpart the app says it is signed in as. The name inside the
+/// action wins: it survives a login round trip.
 fn expected_user(
     action: Option<&AccountAction>,
     login_hint: Option<&str>,
@@ -220,7 +202,6 @@ mod tests {
         assert_eq!(expected_user(Some(&empty), None, HS), None);
     }
 
-    /// GUA FORK: the account page for the profile action, as an app opens it.
     fn account_path(hint: Option<&str>) -> String {
         let mut path = "/account/?action=org.matrix.profile".to_owned();
         if let Some(hint) = hint {
@@ -239,8 +220,6 @@ mod tests {
         .with_login_hint(hint.to_owned())
     }
 
-    /// GUA FORK: where the login page sends the browser once signed in, for
-    /// a login URL the account page redirected to.
     fn after_login(state: &TestState, login_url: &str) -> String {
         let (_, query) = login_url.split_once('?').unwrap();
         let login: mas_router::Login = serde_urlencoded::from_str(query).unwrap();
@@ -319,12 +298,9 @@ mod tests {
         );
         assert!(is_finished(&state, &alice_session).await);
 
-        // The login brings the browser back to the account page with the hint.
         let next = after_login(&state, &login_url);
         assert_eq!(next, account_path(Some(hint)));
 
-        // The upstream provider signed alice in again instead of bob: she
-        // still does not get the account page.
         let mut repo = state.repository().await.unwrap();
         let again = repo
             .browser_session()
@@ -361,7 +337,6 @@ mod tests {
         );
         assert_eq!(after_login(&state, login_url), account_path(Some(hint)));
 
-        // Without a hint the login and the way back stay as they were.
         let request = Request::get(account_path(None)).empty();
         let response = state.request(request).await;
         response.assert_status(StatusCode::SEE_OTHER);
@@ -379,7 +354,6 @@ mod tests {
         let state = TestState::from_pool(pool).await.unwrap();
         let (_, alice_session, cookies) = signed_in_browser(&state, "alice").await;
 
-        // Hints that name alice, or that cannot be checked, change nothing.
         for hint in [
             None,
             Some("mxid:@alice:example.com"),
@@ -396,8 +370,6 @@ mod tests {
 
     #[test]
     fn manage_account_actions_stored_before_the_hint_still_parse() {
-        // Post-auth actions are also kept as JSON, in the upstream sessions
-        // cookie and in pending registrations.
         let action: PostAuthAction = serde_json::from_value(serde_json::json!({
             "kind": "manage_account",
             "action": "org.matrix.cross_signing_reset",
@@ -417,7 +389,6 @@ mod tests {
         };
         assert_eq!(user, "alice");
 
-        // And one with the hint round-trips through JSON.
         let action = PostAuthAction::manage_account_with_hint(
             None,
             Some("mxid:@alice:example.com".to_owned()),

@@ -119,8 +119,6 @@ pub(crate) enum RouteError {
     #[error("Invalid form action")]
     InvalidFormAction,
 
-    /// GUA FORK: linking this upstream account to the signed-in user is not
-    /// allowed
     #[error("Linking upstream account refused")]
     LinkRefused,
 
@@ -279,18 +277,13 @@ pub(crate) async fn get(
     let (csrf_token, mut cookie_jar) = cookie_jar.csrf_token(&clock, &mut rng);
     let maybe_user_session = user_session_info.load_active_session(&mut repo).await?;
 
-    // GUA FORK: a sign-in that completed an account recovery carries the
-    // `gua_end_other_sessions` claim in its verified ID token. Only the claims
-    // of this upstream session are trusted for it, never a query parameter or
-    // the userinfo response.
+    // GUA FORK: only this upstream session's verified ID token claims are
+    // trusted for this, never a query parameter or the userinfo response.
     let end_other_sessions =
         crate::gua::sessions::claims_end_other_sessions(upstream_session.id_token_claims());
 
-    // GUA FORK: a recovery sign-in must not keep the browser session it found,
-    // even when that session belongs to the same account: it may be one the
-    // recovery is meant to shut out. Dropping it here sends the flow through
-    // the "linked, not logged in" arm below, which ends every session of the
-    // account before creating a fresh one.
+    // GUA FORK: a recovery sign-in never keeps the browser session it found,
+    // even one of the same account.
     let maybe_user_session = maybe_user_session
         .filter(|session| !(end_other_sessions && link.user_id == Some(session.user.id)));
 
@@ -319,12 +312,8 @@ pub(crate) async fn get(
         }
 
         (Some(user_session), _) => {
-            // GUA FORK: the browser session belongs to a different account
-            // than this upstream sign-in resolved to. Never continue as it and
-            // never offer to attach the subject to it: the session may be a
-            // leftover from another phone number (see `gua::sessions`). End it
-            // and re-enter this page; with no session left, the arms below log
-            // in or register the right account.
+            // GUA FORK: never continue as, or link to, another account's
+            // browser session. End it and re-enter this page.
             tracing::info!(
                 browser_session.id = %user_session.id,
                 user.id = %user_session.user.id,
@@ -377,10 +366,6 @@ pub(crate) async fn get(
                 return Ok((cookie_jar, Html(fallback).into_response()));
             }
 
-            // GUA FORK: finishing an account recovery signs out every other
-            // session of the account (apps, compatibility logins and browsers)
-            // before the recovering browser gets its own. The identity service
-            // cannot do this itself: the tokens the apps use are issued here.
             if end_other_sessions {
                 tracing::info!(
                     user.id = %user.id,
@@ -533,13 +518,7 @@ pub(crate) async fn get(
                     }
 
                     // GUA FORK: the Gua provider must keep `on_conflict` at
-                    // `fail` (the default when the key is omitted). Any other
-                    // value lets a sign-in attach a new upstream subject to an
-                    // existing account just because the usernames match. The
-                    // provider is declared in the MAS configuration file, under
-                    // `upstream_oauth2.providers[].claims_imports.localpart`,
-                    // which the deployment repository ships and `mas-cli config
-                    // sync` writes into the database.
+                    // `fail`, or a matching username attaches a new subject.
                     match provider.claims_imports.localpart.on_conflict {
                         // We matched an existing user, but the server doesn't allow us to link to
                         // existing users automatically. In this case, we error out
@@ -950,12 +929,8 @@ pub(crate) async fn post(
     let maybe_user_session = user_session_info.load_active_session(&mut repo).await?;
     let form_state = form.to_form_state();
 
-    // GUA FORK: the pages offering to link are no longer rendered, but the
-    // form can still be posted. Refuse it inside a sign-in (an authorization
-    // grant, a device code grant or a compatibility SSO login), where the
-    // browser's user is not necessarily the person signing in, and refuse it
-    // for a user who already holds a link to this provider, so a second
-    // subject can never be attached to an account by hand.
+    // GUA FORK: the link form can still be posted. Refuse it inside a sign-in,
+    // and for a user already linked to this provider.
     if matches!(form, FormData::Link) {
         if matches!(
             post_auth_action,
@@ -2464,8 +2439,6 @@ mod tests {
         assert_eq!(old_link_result.unwrap().user_id, Some(user.id));
     }
 
-    /// GUA FORK: a browser session never continues an upstream sign-in as
-    /// another account, and a recovery sign-in ends every other session.
     mod gua {
         use axum::response::IntoResponse;
         use hyper::{Request, StatusCode, header::LOCATION};
@@ -2494,7 +2467,6 @@ mod tests {
             views::shared::OptionalPostAuthAction,
         };
 
-        /// Every kind of post-auth action an upstream sign-in can carry.
         fn post_auth_actions() -> Vec<Option<PostAuthAction>> {
             vec![
                 None,
@@ -2555,8 +2527,6 @@ mod tests {
                 .unwrap()
         }
 
-        /// A completed upstream sign-in for `subject`, with the given ID token
-        /// claims. Each gets its own state, which must be unique.
         async fn add_upstream_sign_in(
             state: &TestState,
             repo: &mut BoxRepository,
@@ -2599,8 +2569,6 @@ mod tests {
             (link, upstream_session)
         }
 
-        /// The cookies of a browser coming back from the upstream provider,
-        /// optionally already signed in, and a CSRF token for its forms.
         fn browser(
             state: &TestState,
             upstream_session: &UpstreamOAuthAuthorizationSession,
@@ -2756,16 +2724,12 @@ mod tests {
                     Some(&alice_session),
                 );
 
-                // The browser is signed in as alice, the sign-in resolved to
-                // bob: alice's session is ended and the page is loaded again.
                 let response = get_link(&state, &cookies, &link).await;
                 response.assert_status(StatusCode::SEE_OTHER);
                 assert_eq!(location(&response), link_page(&state, &link));
                 assert!(is_finished(&state, &alice_session).await);
                 assert_eq!(active_browser_sessions(&state, &bob).await, 0);
 
-                // With no session left, bob is signed in and the sign-in
-                // carries on where it was going.
                 let response = get_link(&state, &cookies, &link).await;
                 response.assert_status(StatusCode::SEE_OTHER);
                 assert_eq!(location(&response), next_page(&state, post_auth_action));
@@ -2805,14 +2769,11 @@ mod tests {
                     Some(&alice_session),
                 );
 
-                // No "link to your account" suggestion: alice's session is
-                // ended and the page is loaded again.
                 let response = get_link(&state, &cookies, &link).await;
                 response.assert_status(StatusCode::SEE_OTHER);
                 assert_eq!(location(&response), link_page(&state, &link));
                 assert!(is_finished(&state, &alice_session).await);
 
-                // Without a session this is a new account: registration.
                 let response = get_link(&state, &cookies, &link).await;
                 response.assert_status(StatusCode::OK);
                 assert!(!response.body().contains("action=\"link\""));
@@ -2892,7 +2853,6 @@ mod tests {
             ];
             for (i, post_auth_action) in sign_ins.into_iter().enumerate() {
                 let mut repo = state.repository().await.unwrap();
-                // alice holds no link at all, so only the sign-in refuses it
                 let alice = add_user(&state, &mut repo, &format!("alice{i}")).await;
                 let (link, upstream_session) = add_upstream_sign_in(
                     &state,
@@ -2995,10 +2955,6 @@ mod tests {
             assert_eq!(link_owner(&state, &link).await, Some(alice.id));
         }
 
-        /// The Gua provider imports the localpart with `on_conflict` left at
-        /// its default, `fail`. This pins what that means inside a sign-in:
-        /// a new upstream subject whose username matches an existing account
-        /// is never attached to it, whatever post-auth action it carries.
         #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
         async fn test_default_localpart_conflict_never_attaches_a_subject_during_a_sign_in(
             pool: PgPool,
@@ -3044,9 +3000,6 @@ mod tests {
             }
         }
 
-        /// The sessions an account can hold: a browser session backing an app
-        /// (OAuth 2.0) session and a compatibility session, and a second,
-        /// unrelated browser session.
         struct Sessions {
             app_browser: BrowserSession,
             other_browser: BrowserSession,
@@ -3163,7 +3116,6 @@ mod tests {
             let sessions = add_sessions(&state, &bob).await;
             assert!(sync_devices_jobs(&pool).await.is_empty());
 
-            // A fresh browser completes the recovery sign-in.
             let post_auth_action = Some(PostAuthAction::continue_grant(Ulid::nil()));
             let (cookies, _) = browser(
                 &state,
@@ -3179,7 +3131,6 @@ mod tests {
             assert!(is_finished(&state, &sessions.app_browser).await);
             assert!(is_finished(&state, &sessions.other_browser).await);
             assert_eq!(app_sessions_valid(&state, &sessions).await, (false, false));
-            // Only the recovering browser is signed in now.
             assert_eq!(active_browser_sessions(&state, &bob).await, 1);
 
             let jobs = sync_devices_jobs(&pool).await;
@@ -3209,7 +3160,6 @@ mod tests {
             repo.save().await.unwrap();
             let sessions = add_sessions(&state, &bob).await;
 
-            // The browser still holds one of bob's sessions: it is not reused.
             let (cookies, _) = browser(
                 &state,
                 &upstream_session,
@@ -3237,8 +3187,6 @@ mod tests {
             repo.save().await.unwrap();
             let sessions = add_sessions(&state, &bob).await;
 
-            // Neither a missing claim nor anything other than a JSON `true`
-            // ends sessions.
             let claims = [
                 serde_json::json!({ "sub": "bob" }),
                 serde_json::json!({ "sub": "bob", "gua_end_other_sessions": false }),
@@ -3267,7 +3215,6 @@ mod tests {
                 assert!(!is_finished(&state, &sessions.app_browser).await);
                 assert!(!is_finished(&state, &sessions.other_browser).await);
                 assert_eq!(app_sessions_valid(&state, &sessions).await, (true, true));
-                // The two existing browser sessions plus one per sign-in.
                 assert_eq!(active_browser_sessions(&state, &bob).await, 3 + i);
             }
 

@@ -18,13 +18,8 @@ pub enum PostAuthAction {
     },
     ContinueDeviceCodeGrant {
         id: Ulid,
-        /// GUA FORK: the MSC4198 login hint the app put on the consent page,
-        /// naming the account it is signed in as.
-        ///
-        /// It rides inside the action so that it survives the login round
-        /// trip: the consent page is reached again through this action, and
-        /// must still be able to refuse a browser session for another account
-        /// (one the upstream provider signed in again, say).
+        /// GUA FORK: the app's MSC4198 login hint, carried in the action so it
+        /// survives the login round trip.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         gua_login_hint: Option<String>,
     },
@@ -38,9 +33,6 @@ pub enum PostAuthAction {
     ManageAccount {
         #[serde(flatten)]
         action: Option<AccountAction>,
-        /// GUA FORK: the MSC4198 login hint the app put on the account page,
-        /// naming the account it is signed in as. Carried inside the action
-        /// for the same reason as in `ContinueDeviceCodeGrant`.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         gua_login_hint: Option<String>,
     },
@@ -60,8 +52,6 @@ impl PostAuthAction {
         }
     }
 
-    /// GUA FORK: continue a device code grant, carrying the app's login hint
-    /// back to the consent page once the user has signed in.
     #[must_use]
     pub const fn continue_device_code_grant_with_hint(
         id: Ulid,
@@ -91,8 +81,6 @@ impl PostAuthAction {
         }
     }
 
-    /// GUA FORK: manage the account, carrying the app's login hint back to the
-    /// account page once the user has signed in.
     #[must_use]
     pub const fn manage_account_with_hint(
         action: Option<AccountAction>,
@@ -231,11 +219,6 @@ pub struct Login {
 
     login_hint: Option<String>,
 
-    /// Force a fresh authentication even if a browser session already exists.
-    ///
-    /// Used to honour an OIDC `prompt=login` (or `max_age=0`) request: when
-    /// set, the login page must not reuse the current session and instead
-    /// start a brand-new authentication flow.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     force_login: bool,
 }
@@ -304,23 +287,12 @@ impl Login {
         self
     }
 
-    /// GUA FORK: ignore any existing browser session and authenticate afresh.
-    ///
-    /// Used when the account page is opened with a login hint naming a
-    /// different user than the one the browser is signed in as, so that the
-    /// requested action (an identity reset, say) can only ever be approved
-    /// by the account it belongs to.
     #[must_use]
     pub const fn with_force_login(mut self) -> Self {
         self.force_login = true;
         self
     }
 
-    /// Force a fresh authentication, ignoring any existing browser session.
-    ///
-    /// This is what makes an OIDC `prompt=login` request actually
-    /// re-authenticate the user instead of silently reusing the current
-    /// session.
     #[must_use]
     pub fn force_login(mut self) -> Self {
         self.force_login = true;
@@ -624,15 +596,10 @@ pub enum AccountAction {
     #[serde(rename = "org.matrix.cross_signing_reset")]
     OrgMatrixCrossSigningReset {
         /// GUA FORK: the app scheme to hand control back to once the reset is
-        /// approved. Carried inside the action so that it survives the login
-        /// round trip: after a forced login the success page still needs to
-        /// know where to return.
+        /// approved.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         gua_return: Option<String>,
         /// GUA FORK: the localpart of the account the app is signed in as.
-        /// Carried inside the action for the same reason as `gua_return`, so
-        /// the account page can still refuse a browser session for some other
-        /// account after a forced login.
         #[serde(default, rename = "gua_user", skip_serializing_if = "Option::is_none")]
         gua_user: Option<String>,
     },
@@ -644,9 +611,6 @@ pub struct Account {
     #[serde(flatten)]
     action: Option<AccountAction>,
 
-    /// GUA FORK: the MSC4198 login hint naming the account the app is signed
-    /// in as, so the account page can refuse a browser session that belongs
-    /// to another account.
     #[serde(
         rename = "org.matrix.msc4198.login_hint",
         skip_serializing_if = "Option::is_none"
@@ -950,11 +914,8 @@ pub struct DeviceCodeConsent {
     query: DeviceCodeConsentQuery,
 }
 
-/// GUA FORK: query parameters of the device code consent page.
 #[derive(Default, Serialize, Deserialize, Debug, Clone)]
 pub struct DeviceCodeConsentQuery {
-    /// The MSC4198 login hint naming the account the app linking the new
-    /// device is signed in as.
     #[serde(
         rename = "org.matrix.msc4198.login_hint",
         default,
@@ -987,8 +948,6 @@ impl DeviceCodeConsent {
         }
     }
 
-    /// GUA FORK: carry the app's MSC4198 login hint to the consent page, so it
-    /// can refuse a browser session that belongs to another account.
     #[must_use]
     pub fn with_login_hint(mut self, login_hint: Option<String>) -> Self {
         self.query.login_hint = login_hint;
@@ -1161,7 +1120,6 @@ mod tests {
         .with_login_hint(hint.to_owned())
         .with_force_login();
 
-        // The action survives being carried in the login URL.
         let path_and_query = login.path_and_query();
         let (_, query) = path_and_query.split_once('?').unwrap();
         let parsed: Login = serde_urlencoded::from_str(query).unwrap();
@@ -1175,7 +1133,6 @@ mod tests {
         assert_eq!(*parsed_id, id);
         assert_eq!(gua_login_hint.as_deref(), Some(hint));
 
-        // And once signed in, the consent page gets the hint again.
         let url_builder = UrlBuilder::new("https://example.com/".parse().unwrap(), None, None);
         let response = parsed.go_next(&url_builder).into_response();
         assert_eq!(
@@ -1183,7 +1140,6 @@ mod tests {
             &format!("/device/{id}?org.matrix.msc4198.login_hint=mxid%3A%40bob%3Aexample.com")
         );
 
-        // Without a hint nothing new appears in either URL.
         let login = Login::and_continue_device_code_grant(id);
         assert!(!login.path_and_query().contains("gua_login_hint"));
         let response = login.go_next(&url_builder).into_response();
@@ -1253,7 +1209,6 @@ mod tests {
             .with_login_hint(hint.to_owned())
             .with_force_login();
 
-            // The action survives being carried in the login URL.
             let path_and_query = login.path_and_query();
             let (_, query) = path_and_query.split_once('?').unwrap();
             let parsed: Login = serde_urlencoded::from_str(query).unwrap();
@@ -1264,8 +1219,6 @@ mod tests {
             };
             assert_eq!(gua_login_hint.as_deref(), Some(hint));
 
-            // And once signed in, the account page gets the hint again, next to
-            // the action.
             let response = parsed.go_next(&url_builder).into_response();
             assert_eq!(
                 response.headers().get("location").unwrap(),
@@ -1276,7 +1229,6 @@ mod tests {
             );
         }
 
-        // Without a hint nothing new appears in either URL.
         let login = Login::and_then(PostAuthAction::manage_account(Some(
             AccountAction::OrgMatrixProfile,
         )));

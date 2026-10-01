@@ -117,15 +117,11 @@ pub(crate) async fn post(
         // XXX: this is probably not the right error
         .ok_or(RouteError::InvalidAuthorization)?;
 
-    // GUA FORK: remember which browser session this one was started from
-    // before ending it.
     let user_session_id = session.user_session_id;
 
     // This will make the access token invalid
     repo.compat_session().finish(&clock, session).await?;
 
-    // GUA FORK: signing out also ends the browser session behind this one,
-    // unless it still backs another active session; see `gua::sessions`.
     crate::gua::sessions::finish_browser_session_if_unused(&mut repo, &clock, user_session_id)
         .await?;
 
@@ -156,8 +152,6 @@ mod tests {
 
     use crate::test_utils::{RequestBuilderExt, ResponseExt, TestState, setup};
 
-    /// GUA FORK: start a compatibility session from a browser session, as an
-    /// SSO login does, and return its access token.
     async fn add_compat_session(
         state: &TestState,
         user: &User,
@@ -224,7 +218,6 @@ mod tests {
         let first = add_compat_session(&state, &user, &browser_session).await;
         let second = add_compat_session(&state, &user, &browser_session).await;
 
-        // Another session still uses the browser session: keep it.
         let request = Request::post("/_matrix/client/v3/logout")
             .bearer(&first)
             .empty();
@@ -232,7 +225,6 @@ mod tests {
         response.assert_status(hyper::StatusCode::OK);
         assert!(!browser_session_finished(&state, &browser_session).await);
 
-        // The last one is gone: end it.
         let request = Request::post("/_matrix/client/v3/logout")
             .bearer(&second)
             .empty();

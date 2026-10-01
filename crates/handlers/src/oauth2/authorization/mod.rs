@@ -295,13 +295,8 @@ pub(crate) async fn get(
                 Some(_user_session)
                     if prompt.contains(&Prompt::Login) || prompt.contains(&Prompt::Create) =>
                 {
-                    // `prompt=login` / `prompt=create`: never reuse the browser
-                    // session. OIDC requires a fresh authentication for
-                    // `prompt=login`, and MAS has no RP-initiated logout, so
-                    // after an app signs out its browser session lingers and
-                    // reusing it would sign a different phone number into the
-                    // old account. Route through login with `force_login`,
-                    // keeping the `login_hint` as the `None` arm does.
+                    // `prompt=login` and `prompt=create` never reuse a browser
+                    // session: a signed-out app may have left it behind.
                     repo.save().await?;
 
                     let mut url = mas_router::Login::and_then(continue_grant).force_login();
@@ -316,9 +311,6 @@ pub(crate) async fn get(
                 }
 
                 Some(user_session) => {
-                    // A browser session exists and the client did not demand a
-                    // fresh authentication. Reuse the session and go straight
-                    // to consent.
                     repo.save().await?;
 
                     activity_tracker
@@ -360,8 +352,6 @@ mod tests {
 
     use crate::test_utils::{CookieHelper, RequestBuilderExt, ResponseExt, TestState, setup};
 
-    /// Register an `OAuth2` client that supports the authorization code grant
-    /// and return its `client_id`.
     async fn register_client(state: &TestState) -> String {
         let request =
             Request::post(mas_router::OAuth2RegistrationEndpoint::PATH).json(serde_json::json!({
@@ -378,8 +368,6 @@ mod tests {
         registration.client_id
     }
 
-    /// Build the `/authorize` query string for the given client, optionally
-    /// including a `prompt` value.
     fn authorize_query(client_id: &str, prompt: Option<&str>) -> String {
         let mut serializer = url::form_urlencoded::Serializer::new(String::new());
         serializer
@@ -394,8 +382,6 @@ mod tests {
         serializer.finish()
     }
 
-    /// Create a logged-in browser session and return a `CookieHelper` holding
-    /// its session cookie.
     async fn logged_in_cookies(state: &TestState) -> CookieHelper {
         let mut rng = state.rng();
         let mut repo = state.repository().await.unwrap();
@@ -427,9 +413,6 @@ mod tests {
             .expect("Invalid Location header")
     }
 
-    /// With an existing browser session and `prompt=login`, the authorize
-    /// handler must force re-authentication by redirecting to `/login` (with
-    /// `force_login=true`) instead of silently reusing the session via consent.
     #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
     async fn test_prompt_login_with_session_forces_reauth(pool: PgPool) {
         setup();
@@ -459,11 +442,6 @@ mod tests {
         );
     }
 
-    /// With an existing browser session and `prompt=create`, the authorize
-    /// handler must also force re-authentication: MAS has no RP-initiated
-    /// logout, so after an app signs out its browser session lingers and a
-    /// different phone number entered for a new account would otherwise
-    /// resume the old one.
     #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
     async fn test_prompt_create_with_session_forces_reauth(pool: PgPool) {
         setup();
@@ -489,9 +467,6 @@ mod tests {
         );
     }
 
-    /// With an existing browser session and no `prompt`, the authorize handler
-    /// keeps the existing behaviour of reusing the session and redirecting to
-    /// consent.
     #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
     async fn test_no_prompt_with_session_goes_to_consent(pool: PgPool) {
         setup();
