@@ -68,10 +68,8 @@ const AccountDeleteButton: React.FC<Props> = (props) => {
   const siteConfig = useFragment(CONFIG_FRAGMENT, props.siteConfig);
   const { t } = useTranslation();
 
-  // GUA FORK: Show only the localpart (e.g. "alice") instead of the full Matrix
-  // ID ("@alice:dev.local"). The homeserver suffix is jargon for our users and
-  // clashes with Gua's frictionless design. Used for display and the deletion
-  // confirmation prompt — the user types just their username, not the full mxid.
+  // GUA FORK: show and confirm the localpart only ("alice"); the homeserver
+  // suffix is never shown to users.
   const localpart = user.matrix.mxid.replace(/^@/, "").split(":")[0];
   const mutation = useMutation({
     mutationFn: ({

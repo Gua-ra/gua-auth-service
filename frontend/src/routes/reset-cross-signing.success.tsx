@@ -17,9 +17,8 @@ const CROSS_SIGNING_REPLACEMENT_PERIOD_MS = 10 * 60 * 1000; // 10 minutes
 /**
  * GUA FORK: the URL schemes we will hand control back to.
  *
- * A fixed list, deliberately. The scheme arrives as a query parameter, so anything derived from it
- * has to be treated as untrusted: we compare against this list and navigate to a URL we build
- * ourselves, rather than to anything the caller supplied. That is what keeps this from being an
+ * The scheme arrives as a query parameter and is untrusted: only a scheme on this list is used,
+ * and the URL is built here, never taken from the caller. That is what keeps this from being an
  * open redirect.
  */
 const RETURNABLE_APP_SCHEMES = [
@@ -42,17 +41,11 @@ export const Route = createFileRoute("/reset-cross-signing/success")({
         ? returnUrlFor(guaReturn)
         : undefined;
 
-    // GUA FORK: hand control straight back to the app that sent the user here.
-    //
-    // This page is where a reset finishes, and until now it was a dead end: it told people to go
-    // back to the app, and they had to close the web sheet by hand. Navigating to the app's own
-    // scheme is what makes that sheet close itself -- iOS matches the scheme at the
-    // ASWebAuthenticationSession level, and on Android the scheme's intent filter brings the app
-    // forward, which tears the Custom Tab down with it.
-    //
-    // Only ever for a caller that named an app scheme we recognise. Someone who did this from an
-    // ordinary browser tab has no app to go back to, and must not be thrown at a protocol their
-    // browser cannot open, so they keep the page below and the button.
+    // GUA FORK: navigate to the app's own scheme so the web sheet closes itself
+    // (ASWebAuthenticationSession matches the scheme on iOS; the scheme's intent filter brings the
+    // app forward on Android). Only for a recognised app scheme: a plain browser tab has no app to
+    // go back to and must not be redirected to a scheme it cannot open, so it keeps the page and
+    // the button.
     useEffect(() => {
       if (!returnUrl) return;
       window.location.href = returnUrl;
@@ -72,9 +65,8 @@ export const Route = createFileRoute("/reset-cross-signing/success")({
         </Text>
 
         {/*
-          A manual way back, for the case where the automatic hand-off does not take: the app was
-          uninstalled mid-flow, or the browser declined the navigation. Without it, refusing to
-          redirect would leave the user staring at a page with nothing to press.
+          A manual way back for when the automatic hand-off does not take (the app was uninstalled
+          mid-flow, or the browser declined the navigation).
         */}
         {returnUrl ? (
           <Button as="a" href={returnUrl} kind="primary" size="lg">
