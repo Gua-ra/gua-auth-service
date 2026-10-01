@@ -86,8 +86,6 @@ async fn end_session_and_login_as(
     let (session_info, cookie_jar) = cookie_jar.session_info();
     let cookie_jar = cookie_jar.update_session_info(&session_info.mark_session_ended());
 
-    // The hint rides in the post-auth action, so the consent page checks the
-    // account again after the login.
     let login_hint =
         login_hint.unwrap_or_else(|| format!("mxid:@{expected}:{}", homeserver.homeserver()));
     let login = mas_router::Login::and_then(PostAuthAction::continue_device_code_grant_with_hint(

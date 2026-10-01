@@ -99,8 +99,6 @@ pub async fn get(
         let (session_info, cookie_jar) = cookie_jar.session_info();
         let cookie_jar = cookie_jar.update_session_info(&session_info.mark_session_ended());
 
-        // The hint rides in the post-auth action, so this check runs again
-        // after the login.
         let login_hint = unstable_login_hint
             .unwrap_or_else(|| format!("mxid:@{expected}:{}", homeserver.homeserver()));
         let url = mas_router::Login::and_then(PostAuthAction::manage_account_with_hint(
@@ -138,7 +136,7 @@ pub async fn get_anonymous(
 }
 
 /// GUA FORK: the localpart the app says it is signed in as. The name inside the
-/// action wins: it survives a login round trip.
+/// action wins over the hint.
 fn expected_user(
     action: Option<&AccountAction>,
     login_hint: Option<&str>,
