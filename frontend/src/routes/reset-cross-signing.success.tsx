@@ -53,10 +53,7 @@ export const Route = createFileRoute("/reset-cross-signing/success")({
           })}
         </Text>
 
-        {/*
-          A manual way back for when the automatic hand-off does not take (the app was uninstalled
-          mid-flow, or the browser declined the navigation).
-        */}
+        {/* Fallback for when the automatic hand-off does not take. */}
         {returnUrl ? (
           <Button as="a" href={returnUrl} kind="primary" size="lg">
             {t("action.continue")}
