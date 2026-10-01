@@ -8,7 +8,7 @@ See the [Documentation](https://element-hq.github.io/matrix-authentication-servi
 
 You can learn more about Matrix and next-generation auth at [areweoidcyet.com](https://areweoidcyet.com/).
 
-> **Gua fork.** Gua runs one instance of this service beside each homeserver, built and run the same way as upstream MAS (see "Standalone installation and configuration" below). Today the instance holds no login credentials of its own and delegates every sign-in to identity-service. Homeserver-local sign-in, including passkeys verified by the homeserver, is the target; that work is tracked in the identifier binding, placement and trust decision ([ADM-001](https://github.com/Gua-ra/gua-resolver/blob/main/docs/decisions/ADM-001-identifier-binding-placement-trust.md)) and in [Phase 7 of the migration plan](https://github.com/Gua-ra/gua-resolver/blob/main/docs/migrations/gua-resolver-migration-plan.md). For a plain-language overview, read the [Gua identity and federation guide](https://github.com/Gua-ra/gua-resolver/blob/main/docs/architecture/gua-identity-and-federation.md).
+> **Gua fork.** Gua runs one instance of this service beside each homeserver, built and run the same way as upstream MAS (see "Standalone installation and configuration" below). It holds no login credentials of its own and delegates every sign-in to identity-service. See the [Gua identity and federation guide](https://github.com/Gua-ra/gua-resolver/blob/main/docs/architecture/gua-identity-and-federation.md).
 
 ## 🚀 Getting started
 
