@@ -14,20 +14,13 @@ import PageHeading from "../components/PageHeading";
 // https://github.com/element-hq/synapse/blob/34b758644611721911a223814a7b35d8e14067e6/synapse/rest/admin/users.py#L1335
 const CROSS_SIGNING_REPLACEMENT_PERIOD_MS = 10 * 60 * 1000; // 10 minutes
 
-/**
- * GUA FORK: the URL schemes we will hand control back to.
- *
- * The scheme arrives as a query parameter and is untrusted: only a scheme on this list is used,
- * and the URL is built here, never taken from the caller. That is what keeps this from being an
- * open redirect.
- */
+// GUA FORK: the return scheme is untrusted. Only these are used, and the URL is built here.
 const RETURNABLE_APP_SCHEMES = [
-  "global.gua", // production
-  "global.gua.dev", // the QA app on TestFlight and the Play internal track
-  "global.gua.debug", // the Android debug flavour, so a local build is not a silent dead end
+  "global.gua",
+  "global.gua.dev",
+  "global.gua.debug",
 ];
 
-/** Where we send the app. The path is ours; only the scheme comes from the caller. */
 const returnUrlFor = (scheme: string): string =>
   `${scheme}:/reset-cross-signing-done`;
 
@@ -41,11 +34,7 @@ export const Route = createFileRoute("/reset-cross-signing/success")({
         ? returnUrlFor(guaReturn)
         : undefined;
 
-    // GUA FORK: navigate to the app's own scheme so the web sheet closes itself
-    // (ASWebAuthenticationSession matches the scheme on iOS; the scheme's intent filter brings the
-    // app forward on Android). Only for a recognised app scheme: a plain browser tab has no app to
-    // go back to and must not be redirected to a scheme it cannot open, so it keeps the page and
-    // the button.
+    // GUA FORK: navigating to the app's own scheme closes its web sheet.
     useEffect(() => {
       if (!returnUrl) return;
       window.location.href = returnUrl;

@@ -68,8 +68,6 @@ const AccountDeleteButton: React.FC<Props> = (props) => {
   const siteConfig = useFragment(CONFIG_FRAGMENT, props.siteConfig);
   const { t } = useTranslation();
 
-  // GUA FORK: show and confirm the localpart only ("alice"); the homeserver
-  // suffix is never shown to users.
   const localpart = user.matrix.mxid.replace(/^@/, "").split(":")[0];
   const mutation = useMutation({
     mutationFn: ({
