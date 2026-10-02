@@ -38,6 +38,7 @@ http.workspace = true
 hyper.workspace = true
 icu_normalizer.workspace = true
 indexmap.workspace = true
+language-tags.workspace = true
 lettre.workspace = true
 mime.workspace = true
 minijinja-contrib.workspace = true
