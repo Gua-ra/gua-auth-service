@@ -66,7 +66,7 @@ impl RunnableJob for CleanupRevokedOAuthAccessTokensJob {
     fn timeout(&self) -> Option<Duration> {
         // This job runs every hour, so having it running it for 10 minutes is
         // fine
-        Some(Duration::from_secs(10 * 60))
+        Some(Duration::from_mins(10))
     }
 }
 
@@ -120,7 +120,7 @@ impl RunnableJob for CleanupExpiredOAuthAccessTokensJob {
     }
 
     fn timeout(&self) -> Option<Duration> {
-        Some(Duration::from_secs(60))
+        Some(Duration::from_mins(1))
     }
 }
 
@@ -170,7 +170,7 @@ impl RunnableJob for CleanupRevokedOAuthRefreshTokensJob {
     fn timeout(&self) -> Option<Duration> {
         // This job runs every hour, so having it running it for 10 minutes is
         // fine
-        Some(Duration::from_secs(10 * 60))
+        Some(Duration::from_mins(10))
     }
 }
 
@@ -220,6 +220,6 @@ impl RunnableJob for CleanupConsumedOAuthRefreshTokensJob {
     fn timeout(&self) -> Option<Duration> {
         // This job runs every hour, so having it running it for 10 minutes is
         // fine
-        Some(Duration::from_secs(10 * 60))
+        Some(Duration::from_mins(10))
     }
 }

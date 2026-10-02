@@ -527,7 +527,7 @@ impl Object for IncludeAsset {
                 // preload it
                 let src = main.src(assets_base);
                 if tracker.mark_preloaded(&src) {
-                    writeln!(output, r#"<link rel="preload" href="{src}" as="fetch" />"#,).unwrap();
+                    writeln!(output, r#"<link rel="preload" href="{src}" as="fetch" />"#).unwrap();
                 }
             }
 
