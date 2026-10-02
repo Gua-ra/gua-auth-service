@@ -295,24 +295,8 @@ pub(crate) async fn get(
                 Some(_user_session)
                     if prompt.contains(&Prompt::Login) || prompt.contains(&Prompt::Create) =>
                 {
-                    // The client demanded a fresh authentication
-                    // (`prompt=login`) OR a new
-                    // account (`prompt=create`). Even though a browser session
-                    // exists, we must NOT silently reuse
-                    // it: OIDC says honor `prompt=login`, and for
-                    // `prompt=create` reusing the session is exactly the
-                    // sign-out bug (the app signs out
-                    // locally but MAS's session lingers — MAS has no
-                    // RP-initiated logout to clear it — so a different phone
-                    // number would resume the OLD account).
-                    // Route back through login with `force_login`
-                    // so the login page does NOT reuse the existing session and
-                    // instead starts a brand-new
-                    // authentication (for Gua, re-running the upstream
-                    // phone+OTP, which creates-or-matches the account by the
-                    // number entered). Carry the login_hint
-                    // so the new flow can be pre-filled, mirroring the
-                    // `None =>` arm.
+                    // `prompt=login` and `prompt=create` never reuse a browser
+                    // session: a signed-out app may have left it behind.
                     repo.save().await?;
 
                     let mut url = mas_router::Login::and_then(continue_grant).force_login();
@@ -327,10 +311,6 @@ pub(crate) async fn get(
                 }
 
                 Some(user_session) => {
-                    // A browser session exists and the client did not demand a
-                    // fresh auth (no prompt=login/create —
-                    // those are handled above). Reuse the session
-                    // and go straight to consent.
                     repo.save().await?;
 
                     activity_tracker
@@ -372,8 +352,6 @@ mod tests {
 
     use crate::test_utils::{CookieHelper, RequestBuilderExt, ResponseExt, TestState, setup};
 
-    /// Register an `OAuth2` client that supports the authorization code grant
-    /// and return its `client_id`.
     async fn register_client(state: &TestState) -> String {
         let request =
             Request::post(mas_router::OAuth2RegistrationEndpoint::PATH).json(serde_json::json!({
@@ -390,8 +368,6 @@ mod tests {
         registration.client_id
     }
 
-    /// Build the `/authorize` query string for the given client, optionally
-    /// including a `prompt` value.
     fn authorize_query(client_id: &str, prompt: Option<&str>) -> String {
         let mut serializer = url::form_urlencoded::Serializer::new(String::new());
         serializer
@@ -406,8 +382,6 @@ mod tests {
         serializer.finish()
     }
 
-    /// Create a logged-in browser session and return a `CookieHelper` holding
-    /// its session cookie.
     async fn logged_in_cookies(state: &TestState) -> CookieHelper {
         let mut rng = state.rng();
         let mut repo = state.repository().await.unwrap();
@@ -439,9 +413,6 @@ mod tests {
             .expect("Invalid Location header")
     }
 
-    /// With an existing browser session and `prompt=login`, the authorize
-    /// handler must force re-authentication by redirecting to `/login` (with
-    /// `force_login=true`) instead of silently reusing the session via consent.
     #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
     async fn test_prompt_login_with_session_forces_reauth(pool: PgPool) {
         setup();
@@ -471,12 +442,6 @@ mod tests {
         );
     }
 
-    /// With an existing browser session and `prompt=create`, the authorize
-    /// handler must ALSO force re-authentication (not silently reuse the
-    /// session): after a client-side sign-out MAS's browser session lingers
-    /// (no RP-initiated logout to clear it), so a different phone number
-    /// entered for a NEW account would otherwise resume the OLD account —
-    /// the sign-out bug.
     #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
     async fn test_prompt_create_with_session_forces_reauth(pool: PgPool) {
         setup();
@@ -502,9 +467,6 @@ mod tests {
         );
     }
 
-    /// With an existing browser session and no `prompt`, the authorize handler
-    /// keeps the existing behaviour of reusing the session and redirecting to
-    /// consent.
     #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
     async fn test_no_prompt_with_session_goes_to_consent(pool: PgPool) {
         setup();

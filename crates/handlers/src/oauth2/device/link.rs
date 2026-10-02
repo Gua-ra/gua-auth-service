@@ -32,9 +32,8 @@ pub struct Params {
     code: Option<String>,
 }
 
-/// GUA FORK: the MSC4198 login hint the app adds to the link URL, naming the
-/// account it is signed in as. Kept out of [`Params`] so it never ends up in
-/// the form state.
+/// GUA FORK: kept out of [`Params`] so the hint never ends up in the form
+/// state.
 #[derive(Deserialize)]
 pub(crate) struct HintParams {
     #[serde(rename = "org.matrix.msc4198.login_hint")]
@@ -142,8 +141,6 @@ async fn handle_code(
             // This is a valid code, redirect to the consent page
             // This will in turn redirect to the login page if the user is not
             // logged in
-            // GUA FORK: pass the app's login hint along, so the consent page
-            // can refuse a browser session of another account.
             let destination = url_builder.redirect(
                 &mas_router::DeviceCodeConsent::new(grant.id).with_login_hint(login_hint),
             );

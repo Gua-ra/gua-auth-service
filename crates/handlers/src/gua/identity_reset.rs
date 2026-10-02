@@ -3,22 +3,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
 // Please see LICENSE files in the repository root for full details.
 
-//! GUA FORK: lets a signed-in app approve its own cross-signing reset.
-//!
-//! Upstream expects the approval to happen on the account page, in a browser
-//! session. For the Gua apps that meant a web sheet, and on most phones that
-//! sheet holds no session at all (the app signs in through an ephemeral browser
-//! context), so finishing setup demanded a whole new phone-number login. On a
-//! phone whose browser held another account it silently approved the
-//! reset for that account instead.
-//!
-//! Here the app presents the access token it is already using for the
-//! homeserver. The token is checked the same way the userinfo endpoint checks
-//! it (valid, unrevoked, session alive), the session must carry the Matrix
-//! client API scope, and the reset is opened for that session's own user and
-//! nobody else, for the homeserver's usual ten-minute window. It is
-//! deliberately not reachable from a browser: there is no CSRF story here
-//! because there is no cookie.
+//! Lets a signed-in app approve its own cross-signing reset with its access
+//! token. The reset is only ever opened for that session's own user.
 
 use std::sync::Arc;
 
@@ -36,7 +22,6 @@ use ulid::Ulid;
 
 use crate::{BoundActivityTracker, impl_from_error_for_route};
 
-/// The scope every Gua app session carries for the homeserver API.
 const MATRIX_CLIENT_API_SCOPE: &str = "urn:matrix:org.matrix.msc2967.client:api:*";
 
 #[derive(Debug, Error)]
@@ -107,8 +92,6 @@ pub async fn post(
         .await?
         .ok_or(RouteError::NoSuchUser(user_id))?;
 
-    // Only ever for the session's own user: the caller does not get to name
-    // anyone.
     homeserver
         .allow_cross_signing_reset(&user.username)
         .await

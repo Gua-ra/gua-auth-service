@@ -23,20 +23,11 @@ ignore = [
     # Rand 0.8.5 unsoundness with custom logger + thread_rng reseeding.
     # Only triggers when the `log` feature is enabled, which we don't use.
     "RUSTSEC-2026-0097",
-    # A bug in wasmtime, but we are not affected: every Store we create comes
-    # from the one Engine held by the PolicyFactory (crates/policy/src/lib.rs),
-    # so type indices are never mixed across Engines. The advisory also says
-    # explicitly:
-    # > This bug is not triggerable by guest WebAssembly programs.
-    # We cannot bump past it on our own: opa-wasm 0.2.0 requires wasmtime 43,
-    # and the fix first landed in 46.0.2. Drop this entry when we move to
-    # opa-wasm 0.3.x. Review by 2026-11-30.
+    # wasmtime: not triggerable by guest programs. Drop when opa-wasm 0.3.x
+    # allows wasmtime 46; review by 2026-11-30.
     "RUSTSEC-2026-0222",
-    # wasmtime: filesystem sandbox escape when a WASI preopened path or symlink
-    # carries a trailing slash. We are not affected: the only wasm we run is the
-    # policy module, through opa-wasm, with no WASI filesystem preopens at all
-    # (crates/policy/src/lib.rs). Same wasmtime pin as above; drop this entry
-    # together with it when we move to opa-wasm 0.3.x. Review by 2026-11-30.
+    # wasmtime: needs WASI filesystem preopens, which the policy module never
+    # gets. Drop together with the entry above.
     "RUSTSEC-2026-0269",
     # wasmtime: dynamic record lifting can allocate beyond the hostcall fuel
     # limit. The bug is in the component-model Val API; this workspace builds
@@ -48,11 +39,7 @@ ignore = [
     "RUSTSEC-2026-0316",
 ]
 
-# Only warn about unmaintained crates that are direct dependencies of the
-# workspace, not transitive ones. RUSTSEC-2026-0249 (smartstring, archived by
-# its author with no safe upgrade available) only reaches us through
-# opentelemetry-prometheus-text-exporter, and pinning an ignore for a crate
-# that will never be patched would just get renewed forever.
+# smartstring (RUSTSEC-2026-0249) is transitive and has no safe upgrade.
 unmaintained = "workspace"
 
 [licenses]

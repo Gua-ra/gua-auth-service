@@ -14,21 +14,13 @@ import PageHeading from "../components/PageHeading";
 // https://github.com/element-hq/synapse/blob/34b758644611721911a223814a7b35d8e14067e6/synapse/rest/admin/users.py#L1335
 const CROSS_SIGNING_REPLACEMENT_PERIOD_MS = 10 * 60 * 1000; // 10 minutes
 
-/**
- * GUA FORK: the URL schemes we will hand control back to.
- *
- * A fixed list, deliberately. The scheme arrives as a query parameter, so anything derived from it
- * has to be treated as untrusted: we compare against this list and navigate to a URL we build
- * ourselves, rather than to anything the caller supplied. That is what keeps this from being an
- * open redirect.
- */
+// GUA FORK: the return scheme is untrusted. Only these are used, and the URL is built here.
 const RETURNABLE_APP_SCHEMES = [
-  "global.gua", // production
-  "global.gua.dev", // the QA app on TestFlight and the Play internal track
-  "global.gua.debug", // the Android debug flavour, so a local build is not a silent dead end
+  "global.gua",
+  "global.gua.dev",
+  "global.gua.debug",
 ];
 
-/** Where we send the app. The path is ours; only the scheme comes from the caller. */
 const returnUrlFor = (scheme: string): string =>
   `${scheme}:/reset-cross-signing-done`;
 
@@ -42,17 +34,7 @@ export const Route = createFileRoute("/reset-cross-signing/success")({
         ? returnUrlFor(guaReturn)
         : undefined;
 
-    // GUA FORK: hand control straight back to the app that sent the user here.
-    //
-    // This page is where a reset finishes, and until now it was a dead end: it told people to go
-    // back to the app, and they had to close the web sheet by hand. Navigating to the app's own
-    // scheme is what makes that sheet close itself -- iOS matches the scheme at the
-    // ASWebAuthenticationSession level, and on Android the scheme's intent filter brings the app
-    // forward, which tears the Custom Tab down with it.
-    //
-    // Only ever for a caller that named an app scheme we recognise. Someone who did this from an
-    // ordinary browser tab has no app to go back to, and must not be thrown at a protocol their
-    // browser cannot open, so they keep the page below and the button.
+    // GUA FORK: navigating to the app's own scheme closes its web sheet.
     useEffect(() => {
       if (!returnUrl) return;
       window.location.href = returnUrl;
@@ -71,11 +53,7 @@ export const Route = createFileRoute("/reset-cross-signing/success")({
           })}
         </Text>
 
-        {/*
-          A manual way back, for the case where the automatic hand-off does not take: the app was
-          uninstalled mid-flow, or the browser declined the navigation. Without it, refusing to
-          redirect would leave the user staring at a page with nothing to press.
-        */}
+        {/* Fallback for when the automatic hand-off does not take. */}
         {returnUrl ? (
           <Button as="a" href={returnUrl} kind="primary" size="lg">
             {t("action.continue")}

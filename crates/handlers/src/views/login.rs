@@ -90,11 +90,6 @@ pub(crate) async fn get(
         SessionOrFallback::Fallback { response } => return Ok(response),
     };
 
-    // When the client demanded a fresh authentication (OIDC `prompt=login`), we
-    // must NOT reuse the existing browser session. Skipping this short-circuit
-    // lets the flow fall through to a brand-new authentication below (for Gua,
-    // that means re-running the upstream phone+OTP), so a different phone ends
-    // up on a different account instead of resuming the old session.
     if !query_force_login.force_login
         && let Some(session) = maybe_session
     {

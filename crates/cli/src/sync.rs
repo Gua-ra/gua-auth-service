@@ -19,13 +19,6 @@ use mas_storage_pg::PgRepository;
 use sqlx::{Connection, PgConnection, postgres::PgAdvisoryLock};
 use tracing::{error, info, info_span, warn};
 
-/// Build the per-provider [`DownstreamClientGuardConfig`] from the upstream
-/// OAuth 2.0 configuration.
-///
-/// This maps each configured provider id to whether the `gua_downstream`
-/// marker should be forwarded and, if so, the host derived from the configured
-/// web origin. It is used to thread the guard into the authorize handler
-/// without persisting it to the database.
 #[must_use]
 pub fn downstream_client_guard_from_config(
     config: &UpstreamOAuth2Config,
