@@ -33,6 +33,7 @@
     "username": "Nome de usuário"
   },
   "error": {
+    "link_refused": "Não foi possível concluir o login. Feche esta página e tente de novo.",
     "unexpected": "Erro inesperado"
   },
   "mas": {

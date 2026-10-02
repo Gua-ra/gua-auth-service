@@ -18,17 +18,29 @@ Please see LICENSE files in the repository root for full details.
         {{ icon.error_solid() }}
       </div>
 
+      {# GUA FORK: errors people can hit get a translated message by code. #}
+      {% set messages = {
+        "link_refused": _("error.link_refused"),
+        "username_taken": _("mas.errors.username_taken"),
+        "username_not_allowed": _("mas.errors.username_not_allowed"),
+      } %}
       <div class="header">
         <h1 class="title">{{ _("error.unexpected") }}</h1>
-        {% if code %}
-          <p class="text font-semibold font-mono">
-            {{ code }}
-          </p>
-        {% endif %}
-        {% if description %}
+        {% if code in messages %}
           <p class="text">
-            {{ description }}
+            {{ messages[code] }}
           </p>
+        {% else %}
+          {% if code %}
+            <p class="text font-semibold font-mono">
+              {{ code }}
+            </p>
+          {% endif %}
+          {% if description %}
+            <p class="text">
+              {{ description }}
+            </p>
+          {% endif %}
         {% endif %}
       </div>
     </header>

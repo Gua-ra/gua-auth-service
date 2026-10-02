@@ -32,6 +32,7 @@
     "username": "Nombre de usuario"
   },
   "error": {
+    "link_refused": "No pudimos completar el inicio de sesión. Cierra esta página e inténtalo de nuevo.",
     "unexpected": "Error inesperado"
   },
   "mas": {

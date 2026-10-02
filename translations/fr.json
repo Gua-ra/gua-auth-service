@@ -33,6 +33,7 @@
     "username": "Nom d’utilisateur"
   },
   "error": {
+    "link_refused": "Impossible de terminer la connexion. Fermez cette page et réessayez.",
     "unexpected": "Erreur inattendue"
   },
   "mas": {
