@@ -46,6 +46,15 @@ ignore = [
     # entry as soon as an opa-wasm release allows a patched wasmtime.
     # Review by 2026-11-30.
     "RUSTSEC-2026-0316",
+    # wasmtime: component async-lifted callback result count is unvalidated
+    # (native stack buffer overflow). The bug is in the component model's async
+    # lifting; this workspace builds wasmtime with the async feature but without
+    # the component-model feature (only core wasm, through opa-wasm in
+    # crates/policy), so the affected code is not compiled. Patched in 48.0.4
+    # and 49.0.2, which opa-wasm 0.2/0.3.2 do not accept yet. Drop this entry
+    # with the 0316 one when wasmtime moves to a patched release.
+    # Review by 2026-11-30.
+    "RUSTSEC-2026-0327",
 ]
 
 # Only warn about unmaintained crates that are direct dependencies of the
