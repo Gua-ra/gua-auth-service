@@ -10,6 +10,7 @@ use axum::{
 };
 use axum_extra::extract::Query;
 use hyper::StatusCode;
+use language_tags::LanguageTag;
 use mas_axum_utils::{GenericError, InternalError, cookies::CookieJar};
 use mas_data_model::{BoxClock, BoxRng, DownstreamClientGuardConfig, UpstreamOAuthProvider};
 use mas_oidc_client::requests::authorization_code::AuthorizationRequestData;
@@ -23,8 +24,8 @@ use ulid::Ulid;
 
 use super::{UpstreamSessionsCookie, cache::LazyProviderInfos};
 use crate::{
-    impl_from_error_for_route, upstream_oauth2::cache::MetadataCache,
-    views::shared::OptionalPostAuthAction,
+    impl_from_error_for_route, preferred_language::ExplicitLanguage,
+    upstream_oauth2::cache::MetadataCache, views::shared::OptionalPostAuthAction,
 };
 
 #[derive(Debug, Error)]
@@ -65,6 +66,7 @@ pub(crate) async fn get(
     State(http_client): State<reqwest::Client>,
     State(downstream_guard): State<DownstreamClientGuardConfig>,
     cookie_jar: CookieJar,
+    ExplicitLanguage(explicit_language): ExplicitLanguage,
     Path(provider_id): Path<Ulid>,
     Query(query): Query<OptionalPostAuthAction>,
 ) -> Result<impl IntoResponse, RouteError> {
@@ -93,18 +95,26 @@ pub(crate) async fn get(
         data = data.with_response_mode(response_mode.into());
     }
 
-    // Fetch the authorization grant once if we need it, either to forward the
-    // login hint or to resolve the downstream client for the Gua marker.
-    let grant = if (provider.forward_login_hint
-        || downstream_guard
-            .get(provider.id)
-            .is_some_and(|entry| entry.forward_downstream_client))
-        && let Some(PostAuthAction::ContinueAuthorizationGrant { id }) = &query.post_auth_action
-    {
-        repo.oauth2_authorization_grant().lookup(*id).await?
-    } else {
-        None
+    // Fetch the authorization grant once: it carries the language, the login
+    // hint and the downstream client for the Gua marker.
+    let grant =
+        if let Some(PostAuthAction::ContinueAuthorizationGrant { id }) = &query.post_auth_action {
+            repo.oauth2_authorization_grant().lookup(*id).await?
+        } else {
+            None
+        };
+
+    // GUA FORK: hand the page language to the provider, so its sign-in pages
+    // match the app. A sign-in uses the grant's locale; a flow without a grant
+    // (the account page sending the browser to the login) uses the language
+    // its `ui_locales` left in the language cookie.
+    let ui_locale = match grant.as_ref() {
+        Some(grant) => grant.locale.clone(),
+        None => explicit_language.map(|locale| locale.to_string()),
     };
+    if let Some(tag) = ui_locale.and_then(|tag| tag.parse::<LanguageTag>().ok()) {
+        data = data.with_ui_locales(vec![tag]);
+    }
 
     // Forward the raw login hint upstream for the provider to handle however it
     // sees fit
@@ -180,4 +190,154 @@ pub(crate) async fn get(
     repo.save().await?;
 
     Ok((cookie_jar, Redirect::temporary(url.as_str())))
+}
+
+#[cfg(test)]
+mod tests {
+    use hyper::{
+        Request, StatusCode,
+        header::{ACCEPT_LANGUAGE, LOCATION},
+    };
+    use mas_data_model::{
+        UpstreamOAuthProvider, UpstreamOAuthProviderClaimsImports,
+        UpstreamOAuthProviderDiscoveryMode, UpstreamOAuthProviderOnBackchannelLogout,
+        UpstreamOAuthProviderPkceMode, UpstreamOAuthProviderTokenAuthMethod,
+    };
+    use mas_iana::jose::JsonWebSignatureAlg;
+    use mas_router::{PostAuthAction, Route, SimpleRoute};
+    use mas_storage::upstream_oauth2::{
+        UpstreamOAuthProviderParams, UpstreamOAuthProviderRepository,
+    };
+    use oauth2_types::{registration::ClientRegistrationResponse, scope::OPENID};
+    use sqlx::PgPool;
+    use ulid::Ulid;
+    use url::Url;
+
+    use crate::test_utils::{RequestBuilderExt, ResponseExt, TestState, setup};
+
+    async fn add_provider(state: &TestState) -> UpstreamOAuthProvider {
+        let mut repo = state.repository().await.unwrap();
+        let provider = repo
+            .upstream_oauth_provider()
+            .add(
+                &mut state.rng(),
+                &state.clock,
+                UpstreamOAuthProviderParams {
+                    issuer: None,
+                    human_name: None,
+                    brand_name: None,
+                    scope: [OPENID].into_iter().collect(),
+                    token_endpoint_auth_method: UpstreamOAuthProviderTokenAuthMethod::None,
+                    token_endpoint_signing_alg: None,
+                    id_token_signed_response_alg: JsonWebSignatureAlg::Rs256,
+                    client_id: "client".to_owned(),
+                    encrypted_client_secret: None,
+                    claims_imports: UpstreamOAuthProviderClaimsImports::default(),
+                    authorization_endpoint_override: Some(
+                        "https://idp.example.com/authorize".parse().unwrap(),
+                    ),
+                    token_endpoint_override: Some("https://idp.example.com/token".parse().unwrap()),
+                    userinfo_endpoint_override: None,
+                    fetch_userinfo: false,
+                    userinfo_signed_response_alg: None,
+                    jwks_uri_override: None,
+                    discovery_mode: UpstreamOAuthProviderDiscoveryMode::Disabled,
+                    pkce_mode: UpstreamOAuthProviderPkceMode::Disabled,
+                    response_mode: None,
+                    additional_authorization_parameters: Vec::new(),
+                    forward_login_hint: false,
+                    on_backchannel_logout: UpstreamOAuthProviderOnBackchannelLogout::DoNothing,
+                    ui_order: 0,
+                    registration_token_required: false,
+                },
+            )
+            .await
+            .unwrap();
+        repo.save().await.unwrap();
+        provider
+    }
+
+    /// Start a sign-in with `ui_locales` and return its grant id.
+    async fn start_sign_in(state: &TestState, ui_locales: &str) -> Ulid {
+        let request =
+            Request::post(mas_router::OAuth2RegistrationEndpoint::PATH).json(serde_json::json!({
+                "client_uri": "https://example.com/",
+                "redirect_uris": ["https://example.com/callback"],
+                "token_endpoint_auth_method": "none",
+                "response_types": ["code"],
+                "grant_types": ["authorization_code"],
+            }));
+        let response = state.request(request).await;
+        response.assert_status(StatusCode::CREATED);
+        let client: ClientRegistrationResponse = response.json();
+
+        let request = Request::get(format!(
+            "https://example.com/authorize?response_type=code&client_id={}\
+             &redirect_uri=https%3A%2F%2Fexample.com%2Fcallback&scope=openid\
+             &ui_locales={ui_locales}",
+            client.client_id
+        ))
+        .empty();
+        let response = state.request(request).await;
+        response.assert_status(StatusCode::SEE_OTHER);
+        let login = Url::parse("https://example.com/")
+            .unwrap()
+            .join(location(&response))
+            .unwrap();
+        login
+            .query_pairs()
+            .find(|(key, _)| key == "id")
+            .unwrap()
+            .1
+            .parse()
+            .unwrap()
+    }
+
+    fn location(response: &hyper::Response<String>) -> &str {
+        response.headers().get(LOCATION).unwrap().to_str().unwrap()
+    }
+
+    fn ui_locales(response: &hyper::Response<String>) -> Option<String> {
+        let url = Url::parse(location(response)).unwrap();
+        url.query_pairs()
+            .find(|(key, _)| key == "ui_locales")
+            .map(|(_, value)| value.into_owned())
+    }
+
+    /// GUA FORK: the provider receives the page language as `ui_locales`.
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_forwards_the_language_upstream(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+        let provider = add_provider(&state).await;
+
+        // A sign-in forwards the grant's locale, over the browser's language.
+        let grant_id = start_sign_in(&state, "pt").await;
+        let url = mas_router::UpstreamOAuth2Authorize::new(provider.id)
+            .and_then(PostAuthAction::continue_grant(grant_id));
+        let request = Request::get(&*url.path_and_query())
+            .header(ACCEPT_LANGUAGE, "fr")
+            .empty();
+        let response = state.request(request).await;
+        response.assert_status(StatusCode::TEMPORARY_REDIRECT);
+        assert_eq!(ui_locales(&response).as_deref(), Some("pt-BR"));
+
+        // Without a grant, the language cookie left by an earlier `ui_locales`.
+        let url = mas_router::UpstreamOAuth2Authorize::new(provider.id);
+        let request = Request::get(&*url.path_and_query())
+            .header(ACCEPT_LANGUAGE, "fr")
+            .header("Cookie", "mas-language=es")
+            .empty();
+        let response = state.request(request).await;
+        response.assert_status(StatusCode::TEMPORARY_REDIRECT);
+        assert_eq!(ui_locales(&response).as_deref(), Some("es"));
+
+        // Nothing chosen: the provider reads the browser's language itself.
+        let request = Request::get(&*url.path_and_query())
+            .header(ACCEPT_LANGUAGE, "fr")
+            .empty();
+        let response = state.request(request).await;
+        response.assert_status(StatusCode::TEMPORARY_REDIRECT);
+        assert_eq!(ui_locales(&response), None);
+    }
 }

@@ -16,7 +16,6 @@
 )]
 
 use std::{
-    convert::Infallible,
     sync::{Arc, LazyLock},
     time::Duration,
 };
@@ -33,12 +32,13 @@ use hyper::{
     StatusCode, Version,
     header::{
         ACCEPT, ACCEPT_LANGUAGE, AUTHORIZATION, CONTENT_LANGUAGE, CONTENT_LENGTH, CONTENT_TYPE,
-        X_FRAME_OPTIONS,
+        SET_COOKIE, X_FRAME_OPTIONS,
     },
 };
 use mas_axum_utils::{InternalError, cookies::CookieJar};
 use mas_data_model::{DownstreamClientGuardConfig, SiteConfig};
 use mas_http::CorsLayerExt;
+use mas_i18n::{DataLocale, Translator};
 use mas_keystore::{Encrypter, Keystore};
 use mas_matrix::HomeserverConnection;
 use mas_policy::Policy;
@@ -47,7 +47,6 @@ use mas_storage::{BoxRepository, BoxRepositoryFactory};
 use mas_templates::{ErrorContext, NotFoundContext, TemplateContext, Templates};
 use opentelemetry::metrics::Meter;
 use sqlx::PgPool;
-use tower::util::AndThenLayer;
 use tower_http::{
     cors::{Any, CorsLayer},
     set_header::SetResponseHeaderLayer,
@@ -299,10 +298,9 @@ where
             mas_router::CompatLoginSsoRedirectSlash::route(),
             get(self::compat::login_sso_redirect::get),
         )
-        .layer(AndThenLayer::new(
-            async move |response: axum::response::Response| {
-                Ok::<_, Infallible>(recover_error(&templates, response))
-            },
+        .layer(axum::middleware::from_fn_with_state(
+            templates,
+            localize_response,
         ));
 
     // A sub-router for API-facing routes with CORS
@@ -346,6 +344,7 @@ where
     S: Clone + Send + Sync + 'static,
     UrlBuilder: FromRef<S>,
     PreferredLanguage: FromRequestParts<S>,
+    Arc<Translator>: FromRef<S>,
     BoxRepository: FromRequestParts<S>,
     CookieJar: FromRequestParts<S>,
     BoundActivityTracker: FromRequestParts<S>,
@@ -476,10 +475,9 @@ where
             mas_router::DeviceCodeConsent::route(),
             get(self::oauth2::device::consent::get).post(self::oauth2::device::consent::post),
         )
-        .layer(AndThenLayer::new(
-            async move |response: axum::response::Response| {
-                Ok::<_, Infallible>(recover_error(&templates, response))
-            },
+        .layer(axum::middleware::from_fn_with_state(
+            templates,
+            localize_response,
         ))
         .layer(SetResponseHeaderLayer::if_not_present(
             X_FRAME_OPTIONS,
@@ -487,14 +485,47 @@ where
         ))
 }
 
+/// GUA FORK: renders error pages in the request's language, and remembers a
+/// supported `ui_locales` in the language cookie so the pages after the next
+/// redirects keep it.
+async fn localize_response(
+    State(templates): State<Templates>,
+    request: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> axum::response::Response {
+    let translator = templates.translator();
+    let requested = preferred_language::query_language(&translator, request.uri());
+    let locale =
+        preferred_language::request_language(&translator, request.headers(), request.uri());
+
+    let mut response = recover_error(&templates, &locale, next.run(request).await);
+
+    if let Some(cookie) = requested
+        .as_ref()
+        .and_then(preferred_language::language_cookie)
+    {
+        response.headers_mut().append(SET_COOKIE, cookie);
+    }
+
+    response
+}
+
 fn recover_error(
     templates: &Templates,
+    locale: &DataLocale,
     response: axum::response::Response,
 ) -> axum::response::Response {
-    // Error responses should have an ErrorContext attached to them
-    let ext = response.extensions().get::<ErrorContext>();
-    if let Some(ctx) = ext
-        && let Ok(res) = templates.render_error(ctx)
+    // Error responses should have an ErrorContext attached to them. GUA FORK:
+    // it renders in the request's language unless the handler chose one.
+    let ctx = response.extensions().get::<ErrorContext>().map(|ctx| {
+        if ctx.language().is_some() {
+            ctx.clone()
+        } else {
+            ctx.clone().with_language(locale)
+        }
+    });
+    if let Some(ctx) = ctx
+        && let Ok(res) = templates.render_error(&ctx)
     {
         let (mut parts, _original_body) = response.into_parts();
         parts.headers.remove(CONTENT_TYPE);

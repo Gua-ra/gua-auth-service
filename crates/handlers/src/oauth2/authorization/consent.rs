@@ -35,6 +35,7 @@ use super::callback::CallbackDestination;
 use crate::{
     BoundActivityTracker, PreferredLanguage, impl_from_error_for_route,
     oauth2::generate_id_token,
+    preferred_language::grant_language,
     session::{SessionOrFallback, count_user_sessions_for_limiting, load_session_or_fallback},
 };
 
@@ -118,6 +119,7 @@ pub(crate) async fn get(
         .lookup(grant_id)
         .await?
         .ok_or(RouteError::GrantNotFound)?;
+    let locale = grant_language(&templates.translator(), &grant).unwrap_or(locale);
 
     let client = repo
         .oauth2_client()
@@ -253,6 +255,7 @@ pub(crate) async fn post(
         .lookup(grant_id)
         .await?
         .ok_or(RouteError::GrantNotFound)?;
+    let locale = grant_language(&templates.translator(), &grant).unwrap_or(locale);
     let callback_destination = CallbackDestination::try_from(&grant)?;
 
     let Some(browser_session) = maybe_session else {

@@ -32,14 +32,17 @@
     "username": "Nombre de usuario"
   },
   "error": {
+    "link_refused": "No pudimos completar el inicio de sesión. Cierra esta página e inténtalo de nuevo.",
     "unexpected": "Error inesperado"
   },
   "mas": {
     "account": {
       "deactivated": {
+        "description": "Esta cuenta (<em>%(username)s</em>) fue eliminada. Si no lo esperabas, contacta al equipo de soporte.",
         "heading": "Cuenta eliminada"
       },
       "locked": {
+        "description": "Esta cuenta (<em>%(username)s</em>) fue bloqueada. Si no lo esperabas, contacta al equipo de soporte.",
         "heading": "Cuenta bloqueada"
       },
       "logged_out": {
@@ -85,6 +88,7 @@
         "description": "Denegaste el acceso a %(client_name)s. Puedes cerrar esta ventana.",
         "heading": "Acceso denegado"
       },
+      "description": "<strong>Otro dispositivo</strong> quiere conectar %(client_name)s a tu cuenta de Gua. Asegúrate de reconocer este dispositivo.",
       "grant_access": "Conceder acceso",
       "granted": {
         "description": "Concediste acceso a %(client_name)s. Puedes cerrar esta ventana.",
@@ -112,6 +116,7 @@
         "copy_link": "Copia el siguiente enlace y pégalo en un navegador para crear una nueva contraseña:",
         "create_new_password": "Crear nueva contraseña",
         "fallback": "¿El botón no te funciona?",
+        "headline": "Pediste restablecer la contraseña de tu cuenta de Gua.",
         "subject": "Restablece la contraseña de tu cuenta (%(mxid)s)",
         "you_can_ignore": "Si no pediste una nueva contraseña, puedes ignorar este correo. Tu contraseña actual seguirá funcionando."
       },
@@ -140,7 +145,9 @@
       "username_too_long": "El nombre de usuario es demasiado largo",
       "username_too_short": "El nombre de usuario es demasiado corto"
     },
-    "legacy_consent": {},
+    "legacy_consent": {
+      "this_will_setup": "Esto conectará <span>%(client_name)s</span> a tu cuenta de Gua."
+    },
     "login": {
       "call_to_register": "¿Aún no tienes una cuenta?",
       "continue_with_provider": "Continuar con %(provider)s",
@@ -218,6 +225,7 @@
       "terms_of_service": "Acepto los <a href=\"%s\" data-kind=\"primary\" class=\"cpd-link\">Términos y condiciones</a>"
     },
     "registration_token": {
+      "description": "Ingresa el código de invitación que recibiste.",
       "field": "Token de registro",
       "headline": "Token de registro"
     },
@@ -245,6 +253,7 @@
         "forced_email": "Se usará la siguiente dirección de correo",
         "forced_localpart": "Se usará el siguiente nombre de usuario",
         "import_data": {
+          "description": "Confirma la información que se vinculará a tu nueva cuenta de Gua.",
           "heading": "Importa tus datos"
         },
         "imported_from_upstream": "Importado de tu cuenta externa",

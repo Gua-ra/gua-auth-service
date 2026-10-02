@@ -94,9 +94,14 @@
     }
   },
   "error": {
+    "link_refused": "We couldn't finish signing you in. Close this page and try again.",
+    "@link_refused": {
+      "context": "pages/error.html:23:24-47",
+      "description": "Error page message when a sign-in has to be started again from the app"
+    },
     "unexpected": "Unexpected error",
     "@unexpected": {
-      "context": "pages/error.html:22:29-50",
+      "context": "pages/error.html:28:29-50",
       "description": "Error message displayed when an unexpected error occurs"
     }
   },
@@ -419,12 +424,12 @@
       },
       "username_not_allowed": "Username is not allowed by the server policy",
       "@username_not_allowed": {
-        "context": "components/field.html:42:11-47",
+        "context": "components/field.html:42:11-47, pages/error.html:25:32-68",
         "description": "Error message shown on registration, when the username *does not match* any of the patterns that are allowed by the server policy."
       },
       "username_taken": "This username is already taken",
       "@username_taken": {
-        "context": "components/field.html:29:9-39"
+        "context": "components/field.html:29:9-39, pages/error.html:24:26-56"
       },
       "username_too_long": "Username is too long",
       "@username_too_long": {

@@ -2104,6 +2104,12 @@ impl ErrorContext {
     pub fn details(&self) -> Option<&str> {
         self.details.as_deref()
     }
+
+    /// Get the language, if any
+    #[must_use]
+    pub fn language(&self) -> Option<&str> {
+        self.lang.as_deref()
+    }
 }
 
 /// Context used by the not found (`404.html`) template

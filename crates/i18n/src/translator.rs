@@ -359,25 +359,35 @@ impl Translator {
     #[must_use]
     pub fn choose_locale(&self, iter: impl Iterator<Item = DataLocale>) -> DataLocale {
         for locale in iter {
-            if self.has_locale(&locale) {
+            if let Some(locale) = self.match_locale(locale) {
                 return locale;
-            }
-
-            let mut fallbacker = FALLBACKER.fallback_for(locale);
-
-            loop {
-                if fallbacker.get().is_und() {
-                    break;
-                }
-
-                if self.has_locale(fallbacker.get()) {
-                    return fallbacker.take();
-                }
-                fallbacker.step();
             }
         }
 
         self.default_locale.clone()
+    }
+
+    /// Find the available locale closest to a candidate, following the locale
+    /// fallback chain (`fr-CA` to `fr`), without falling back to the default
+    /// locale.
+    #[must_use]
+    pub fn match_locale(&self, locale: DataLocale) -> Option<DataLocale> {
+        if self.has_locale(&locale) {
+            return Some(locale);
+        }
+
+        let mut fallbacker = FALLBACKER.fallback_for(locale);
+
+        loop {
+            if fallbacker.get().is_und() {
+                return None;
+            }
+
+            if self.has_locale(fallbacker.get()) {
+                return Some(fallbacker.take());
+            }
+            fallbacker.step();
+        }
     }
 }
 

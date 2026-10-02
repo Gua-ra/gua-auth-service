@@ -260,6 +260,8 @@ pub(crate) async fn get(
                     response_mode,
                     response_type.has_id_token(),
                     params.auth.login_hint,
+                    // GUA FORK: a supported `ui_locales` wins here, so the
+                    // consent page and the provider pages follow the app.
                     Some(locale.to_string()),
                 )
                 .await?;
@@ -364,11 +366,17 @@ pub(crate) async fn get(
 
 #[cfg(test)]
 mod tests {
-    use hyper::{Request, StatusCode, header::LOCATION};
+    use hyper::{
+        Request, StatusCode,
+        header::{ACCEPT_LANGUAGE, LOCATION, SET_COOKIE},
+    };
     use mas_axum_utils::SessionInfoExt;
     use mas_router::SimpleRoute;
+    use mas_storage::oauth2::OAuth2AuthorizationGrantRepository;
+    use mas_templates::ErrorContext;
     use oauth2_types::registration::ClientRegistrationResponse;
     use sqlx::PgPool;
+    use ulid::Ulid;
 
     use crate::test_utils::{CookieHelper, RequestBuilderExt, ResponseExt, TestState, setup};
 
@@ -524,5 +532,159 @@ mod tests {
             location.starts_with("/consent/"),
             "expected redirect to /consent/{{id}}, got {location}"
         );
+    }
+
+    /// The language cookie a response sets, if any.
+    fn language_cookie(response: &hyper::Response<String>) -> Option<&str> {
+        response
+            .headers()
+            .get_all(SET_COOKIE)
+            .iter()
+            .filter_map(|value| value.to_str().ok())
+            .find(|value| value.starts_with("mas-language="))
+    }
+
+    /// The grant id carried by a `/login?kind=continue_authorization_grant`
+    /// redirect.
+    fn grant_id_from_login(location: &str) -> Ulid {
+        let url = url::Url::parse("https://example.com/")
+            .unwrap()
+            .join(location)
+            .unwrap();
+        url.query_pairs()
+            .find(|(key, _)| key == "id")
+            .expect("Missing grant id")
+            .1
+            .parse()
+            .unwrap()
+    }
+
+    /// GUA FORK: a supported `ui_locales` beats `Accept-Language`, lands on
+    /// the grant (bare `pt` as `pt-BR`), and is remembered in the language
+    /// cookie for the pages that follow.
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_ui_locales_sets_the_grant_locale_and_the_cookie(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+        let client_id = register_client(&state).await;
+
+        let query = authorize_query(&client_id, None);
+        let request = Request::get(format!(
+            "https://example.com/authorize?{query}&ui_locales=pt"
+        ))
+        .header(ACCEPT_LANGUAGE, "fr")
+        .empty();
+        let response = state.request(request).await;
+        response.assert_status(StatusCode::SEE_OTHER);
+
+        let cookie = language_cookie(&response).expect("Missing language cookie");
+        assert!(cookie.starts_with("mas-language=pt-BR;"), "got {cookie}");
+
+        let grant_id = grant_id_from_login(location(&response));
+        let mut repo = state.repository().await.unwrap();
+        let grant = repo
+            .oauth2_authorization_grant()
+            .lookup(grant_id)
+            .await
+            .unwrap()
+            .unwrap();
+        assert_eq!(grant.locale.as_deref(), Some("pt-BR"));
+
+        // The login page that follows reads the cookie.
+        let request = Request::get(location(&response))
+            .header(ACCEPT_LANGUAGE, "fr")
+            .header("Cookie", "mas-language=pt-BR")
+            .empty();
+        let response = state.request(request).await;
+        response.assert_status(StatusCode::OK);
+        assert!(response.body().contains(r#"<html lang="pt-BR""#));
+    }
+
+    /// Without `ui_locales`, the grant keeps the `Accept-Language` choice and
+    /// no language cookie is set.
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_accept_language_without_ui_locales(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+        let client_id = register_client(&state).await;
+
+        let query = authorize_query(&client_id, None);
+        let request = Request::get(format!("https://example.com/authorize?{query}"))
+            .header(ACCEPT_LANGUAGE, "fr-CA,fr;q=0.9")
+            .empty();
+        let response = state.request(request).await;
+        response.assert_status(StatusCode::SEE_OTHER);
+        assert_eq!(language_cookie(&response), None);
+
+        let grant_id = grant_id_from_login(location(&response));
+        let mut repo = state.repository().await.unwrap();
+        let grant = repo
+            .oauth2_authorization_grant()
+            .lookup(grant_id)
+            .await
+            .unwrap()
+            .unwrap();
+        assert_eq!(grant.locale.as_deref(), Some("fr"));
+    }
+
+    /// The consent page renders in the grant's language, whatever the browser
+    /// sends on that request.
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_consent_page_uses_the_grant_locale(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+        let client_id = register_client(&state).await;
+        let cookies = logged_in_cookies(&state).await;
+
+        let query = authorize_query(&client_id, None);
+        let request = Request::get(format!(
+            "https://example.com/authorize?{query}&ui_locales=es"
+        ))
+        .empty();
+        let response = state.request(cookies.with_cookies(request)).await;
+        response.assert_status(StatusCode::SEE_OTHER);
+        let consent = location(&response).to_owned();
+        assert!(consent.starts_with("/consent/"), "got {consent}");
+
+        // No language cookie on this request: only the grant knows.
+        let request = Request::get(&consent).header(ACCEPT_LANGUAGE, "fr").empty();
+        let response = state.request(cookies.with_cookies(request)).await;
+        response.assert_status(StatusCode::OK);
+        assert!(response.body().contains(r#"<html lang="es""#));
+    }
+
+    /// Error pages render in the request's language.
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_error_page_uses_the_request_language(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+
+        // An unknown client is a plain error page.
+        let query = authorize_query("unknown-client", None);
+        let request = Request::get(format!(
+            "https://example.com/authorize?{query}&ui_locales=pt-BR"
+        ))
+        .header(ACCEPT_LANGUAGE, "fr")
+        .empty();
+        let response = state.request(request).await;
+        response.assert_status(StatusCode::BAD_REQUEST);
+        assert!(response.body().contains(r#"<html lang="pt-BR""#));
+        assert!(response.body().contains("Erro inesperado"));
+
+        let request = Request::get(format!("https://example.com/authorize?{query}"))
+            .header(ACCEPT_LANGUAGE, "es")
+            .empty();
+        let response = state.request(request).await;
+        response.assert_status(StatusCode::BAD_REQUEST);
+        assert!(response.body().contains(r#"<html lang="es""#));
+        assert!(response.body().contains("Error inesperado"));
+
+        // Known codes get a translated message instead of the developer text.
+        let ctx = ErrorContext::new()
+            .with_code("link_refused")
+            .with_language(&"pt-BR".parse().unwrap());
+        let page = state.templates.render_error(&ctx).unwrap();
+        assert!(page.contains("Feche esta página e tente de novo."));
+        assert!(!page.contains("link_refused"));
     }
 }

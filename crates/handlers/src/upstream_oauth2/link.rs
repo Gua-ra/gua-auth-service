@@ -10,7 +10,7 @@ use std::{
 };
 
 use axum::{
-    Form,
+    Extension, Form,
     extract::{Path, State},
     response::{Html, IntoResponse, Response},
 };
@@ -151,9 +151,23 @@ impl IntoResponse for RouteError {
                 | Self::HomeserverConnection(_)
         );
 
+        // GUA FORK: people can reach this one, so the error page shows a
+        // translated message for its code instead of the developer text.
+        if matches!(self, Self::LinkRefused) {
+            tracing::warn!(message = &self as &dyn std::error::Error);
+            let ctx = ErrorContext::new().with_code("link_refused");
+            let text = ctx.to_string();
+            return (
+                StatusCode::BAD_REQUEST,
+                TypedHeader(headers::ContentType::text()),
+                Extension(ctx),
+                text,
+            )
+                .into_response();
+        }
+
         let status_code = match self {
             Self::LinkNotFound => StatusCode::NOT_FOUND,
-            Self::LinkRefused => StatusCode::BAD_REQUEST,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         };
 
@@ -561,14 +575,9 @@ pub(crate) async fn get(
                                 "Upstream provider returned a localpart {localpart:?} which is already used by another user. Configuration doesn't allow for automatic linking of existing users."
                             );
 
-                            // TODO: translate
+                            // GUA FORK: translated by its code in `error.html`.
                             let ctx = ErrorContext::new()
-                                .with_code("User exists")
-                                .with_description(format!(
-                                    r"Upstream account provider returned {localpart:?} as username,
-                                    which is not linked to that upstream account. Your homeserver does not allow
-                                    linking an upstream account to an existing account"
-                                ))
+                                .with_code("username_taken")
                                 .with_language(&locale);
 
                             return Ok((
@@ -659,14 +668,10 @@ pub(crate) async fn get(
                                     "Upstream provider returned a localpart {localpart:?} matching an existing user who already has {count} link(s) to this provider, which isn't allowed by the conflict resolution"
                                 );
 
-                                // TODO: translate
+                                // GUA FORK: translated by its code in
+                                // `error.html`.
                                 let ctx = ErrorContext::new()
-                                    .with_code("User exists")
-                                    .with_description(format!(
-                                        r"Upstream account provider returned {localpart:?} as username,
-                                        but this user already has an existing link to this provider.
-                                        Your homeserver does not allow replacing upstream account links automatically."
-                                    ))
+                                    .with_code("username_taken")
                                     .with_language(&locale);
 
                                 return Ok((
@@ -778,13 +783,15 @@ pub(crate) async fn get(
                     }
 
                     // If the username policy check fails, we display an error
-                    // message. TODO: translate
+                    // message. GUA FORK: translated by its code in
+                    // `error.html`.
+                    tracing::warn!(
+                        upstream_oauth_provider.id = %provider.id,
+                        upstream_oauth_link.id = %link.id,
+                        "Upstream provider returned a localpart {localpart:?} which was denied by the policy ({res})"
+                    );
                     let ctx = ErrorContext::new()
-                        .with_code("Policy error")
-                        .with_description(format!(
-                            r"Upstream account provider returned {localpart:?} as username,
-                            which does not pass the policy check: {res}"
-                        ))
+                        .with_code("username_not_allowed")
                         .with_language(&locale);
 
                     return Ok((
@@ -812,12 +819,14 @@ pub(crate) async fn get(
                         break 'localpart None;
                     }
 
-                    // TODO: translate
+                    // GUA FORK: translated by its code in `error.html`.
+                    tracing::warn!(
+                        upstream_oauth_provider.id = %provider.id,
+                        upstream_oauth_link.id = %link.id,
+                        "Upstream provider returned a localpart {localpart:?} which isn't available on the homeserver"
+                    );
                     let ctx = ErrorContext::new()
-                        .with_code("Localpart not available")
-                        .with_description(format!(
-                            r"Localpart {localpart:?} is not available on this homeserver"
-                        ))
+                        .with_code("username_taken")
                         .with_language(&locale);
 
                     return Ok((
@@ -2447,8 +2456,8 @@ mod tests {
         response.assert_header_value(CONTENT_TYPE, "text/html; charset=utf-8");
 
         // Verify the error message is displayed
-        assert!(response.body().contains("User exists"));
-        assert!(response.body().contains("replacing upstream account links"));
+        assert!(response.body().contains("This username is already taken"));
+        assert!(!response.body().contains("homeserver"));
 
         // Check that the new link was NOT associated with the existing user
         let mut repo = state.repository().await.unwrap();
@@ -2925,6 +2934,8 @@ mod tests {
 
                 let response = post_link(&state, &cookies, &csrf, &link).await;
                 response.assert_status(StatusCode::BAD_REQUEST);
+                assert!(response.body().contains("finish signing you in"));
+                assert!(!response.body().contains("upstream"));
                 assert_eq!(link_owner(&state, &link).await, None);
             }
         }
@@ -3048,7 +3059,7 @@ mod tests {
                     browser(&state, &upstream_session, &link, post_auth_action, None);
                 let response = get_link(&state, &cookies, &link).await;
                 response.assert_status(StatusCode::OK);
-                assert!(response.body().contains("User exists"));
+                assert!(response.body().contains("This username is already taken"));
                 assert_eq!(link_owner(&state, &link).await, None);
                 assert_eq!(active_browser_sessions(&state, &john).await, 0);
             }

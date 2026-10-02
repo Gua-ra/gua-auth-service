@@ -183,7 +183,10 @@ fn expected_user(
 #[cfg(test)]
 mod tests {
     use axum::response::IntoResponse as _;
-    use hyper::{Request, StatusCode, header::LOCATION};
+    use hyper::{
+        Request, StatusCode,
+        header::{ACCEPT_LANGUAGE, LOCATION},
+    };
     use mas_axum_utils::SessionInfoExt;
     use mas_data_model::{BrowserSession, User};
     use mas_router::{AccountAction, PostAuthAction};
@@ -378,6 +381,30 @@ mod tests {
         )));
         assert_eq!(login_url, state.url_builder.relative_url_for(&login));
         assert_eq!(after_login(&state, login_url), account_path(None));
+    }
+
+    /// GUA FORK: the app's `ui_locales` survives the redirect to the login,
+    /// which drops the query, through the language cookie.
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_gua_account_page_keeps_the_language_through_the_login(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+        let cookies = CookieHelper::new();
+
+        let path = format!("{}&ui_locales=pt-BR", account_path(None));
+        let request = Request::get(path).header(ACCEPT_LANGUAGE, "fr").empty();
+        let response = state.request(request).await;
+        response.assert_status(StatusCode::SEE_OTHER);
+        cookies.save_cookies(&response);
+        let login_url = response.headers().get(LOCATION).unwrap().to_str().unwrap();
+        assert!(!login_url.contains("ui_locales"));
+
+        let request = Request::get(login_url)
+            .header(ACCEPT_LANGUAGE, "fr")
+            .empty();
+        let response = state.request(cookies.with_cookies(request)).await;
+        response.assert_status(StatusCode::OK);
+        assert!(response.body().contains(r#"<html lang="pt-BR""#));
     }
 
     #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
