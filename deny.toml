@@ -23,38 +23,6 @@ ignore = [
     # Rand 0.8.5 unsoundness with custom logger + thread_rng reseeding.
     # Only triggers when the `log` feature is enabled, which we don't use.
     "RUSTSEC-2026-0097",
-    # A bug in wasmtime, but we are not affected: every Store we create comes
-    # from the one Engine held by the PolicyFactory (crates/policy/src/lib.rs),
-    # so type indices are never mixed across Engines. The advisory also says
-    # explicitly:
-    # > This bug is not triggerable by guest WebAssembly programs.
-    # We cannot bump past it on our own: opa-wasm 0.2.0 requires wasmtime 43,
-    # and the fix first landed in 46.0.2. Drop this entry when we move to
-    # opa-wasm 0.3.x. Review by 2026-11-30.
-    "RUSTSEC-2026-0222",
-    # wasmtime: filesystem sandbox escape when a WASI preopened path or symlink
-    # carries a trailing slash. We are not affected: the only wasm we run is the
-    # policy module, through opa-wasm, with no WASI filesystem preopens at all
-    # (crates/policy/src/lib.rs). Same wasmtime pin as above; drop this entry
-    # together with it when we move to opa-wasm 0.3.x. Review by 2026-11-30.
-    "RUSTSEC-2026-0269",
-    # wasmtime: dynamic record lifting can allocate beyond the hostcall fuel
-    # limit. The bug is in the component-model Val API; this workspace builds
-    # wasmtime without the component-model feature (only core wasm, through
-    # opa-wasm in crates/policy), so the affected code is not compiled. No
-    # patched wasmtime (>= 48.0.3) is accepted by opa-wasm 0.3.2 yet. Drop this
-    # entry as soon as an opa-wasm release allows a patched wasmtime.
-    # Review by 2026-11-30.
-    "RUSTSEC-2026-0316",
-    # wasmtime: component async-lifted callback result count is unvalidated
-    # (native stack buffer overflow). The bug is in the component model's async
-    # lifting; this workspace builds wasmtime with the async feature but without
-    # the component-model feature (only core wasm, through opa-wasm in
-    # crates/policy), so the affected code is not compiled. Patched in 48.0.4
-    # and 49.0.2, which opa-wasm 0.2/0.3.2 do not accept yet. Drop this entry
-    # with the 0316 one when wasmtime moves to a patched release.
-    # Review by 2026-11-30.
-    "RUSTSEC-2026-0327",
 ]
 
 # Only warn about unmaintained crates that are direct dependencies of the
@@ -134,3 +102,4 @@ deny = ["oldtime"]
 unknown-registry = "warn"
 unknown-git = "warn"
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = ["https://github.com/Gua-ra/rust-opa-wasm"]
