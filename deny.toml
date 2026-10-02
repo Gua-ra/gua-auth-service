@@ -38,6 +38,14 @@ ignore = [
     # (crates/policy/src/lib.rs). Same wasmtime pin as above; drop this entry
     # together with it when we move to opa-wasm 0.3.x. Review by 2026-11-30.
     "RUSTSEC-2026-0269",
+    # wasmtime: dynamic record lifting can allocate beyond the hostcall fuel
+    # limit. The bug is in the component-model Val API; this workspace builds
+    # wasmtime without the component-model feature (only core wasm, through
+    # opa-wasm in crates/policy), so the affected code is not compiled. No
+    # patched wasmtime (>= 48.0.3) is accepted by opa-wasm 0.3.2 yet. Drop this
+    # entry as soon as an opa-wasm release allows a patched wasmtime.
+    # Review by 2026-11-30.
+    "RUSTSEC-2026-0316",
 ]
 
 # Only warn about unmaintained crates that are direct dependencies of the
