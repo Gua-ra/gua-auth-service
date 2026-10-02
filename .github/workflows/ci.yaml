@@ -138,6 +138,22 @@ jobs:
       - name: Check for unused dependencies
         run: pnpm --filter mas-frontend run knip
 
+  translations:
+    name: Check translations
+    runs-on: ubuntu-24.04
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      - name: Check the languages the apps ship
+        run: python3 misc/check-translations.py
+
   rustfmt:
     name: Check Rust style
     runs-on: ubuntu-24.04
@@ -357,6 +373,7 @@ jobs:
       - frontend-lint
       - frontend-test
       - frontend-knip
+      - translations
       - rustfmt
       - cargo-deny
       - clippy
