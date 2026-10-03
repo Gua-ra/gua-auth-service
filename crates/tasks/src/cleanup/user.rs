@@ -72,7 +72,7 @@ impl RunnableJob for CleanupUserRegistrationsJob {
     fn timeout(&self) -> Option<Duration> {
         // This job runs every hour, so having it running it for 10 minutes is
         // fine
-        Some(Duration::from_secs(10 * 60))
+        Some(Duration::from_mins(10))
     }
 }
 
@@ -128,7 +128,7 @@ impl RunnableJob for CleanupUserRecoverySessionsJob {
     fn timeout(&self) -> Option<Duration> {
         // This job runs every hour, so having it running it for 10 minutes is
         // fine
-        Some(Duration::from_secs(10 * 60))
+        Some(Duration::from_mins(10))
     }
 }
 
@@ -184,6 +184,6 @@ impl RunnableJob for CleanupUserEmailAuthenticationsJob {
     fn timeout(&self) -> Option<Duration> {
         // This job runs every hour, so having it running it for 10 minutes is
         // fine
-        Some(Duration::from_secs(10 * 60))
+        Some(Duration::from_mins(10))
     }
 }
