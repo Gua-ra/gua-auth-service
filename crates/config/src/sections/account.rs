@@ -93,6 +93,15 @@ pub struct AccountConfig {
     /// This is deprecated in favor of `password_registration_token_required`
     #[serde(default = "default_false", skip_serializing_if = "is_default_false")]
     pub registration_token_required: bool,
+
+    // GUA FORK
+    /// Whether deleting an account notifies every upstream provider linked to
+    /// it, then removes each link once its provider confirms. Defaults to
+    /// `true`.
+    ///
+    /// Turning this off stops the notices and keeps the links.
+    #[serde(default = "default_true", skip_serializing_if = "is_default_true")]
+    pub gua_forget_upstream_on_deactivation: bool,
 }
 
 impl Default for AccountConfig {
@@ -108,6 +117,7 @@ impl Default for AccountConfig {
             registration_token_required: default_false(),
             account_deactivation_allowed: default_true(),
             login_with_email_allowed: default_false(),
+            gua_forget_upstream_on_deactivation: default_true(),
         }
     }
 }
@@ -124,6 +134,7 @@ impl AccountConfig {
             && is_default_false(&self.registration_token_required)
             && is_default_true(&self.account_deactivation_allowed)
             && is_default_false(&self.login_with_email_allowed)
+            && is_default_true(&self.gua_forget_upstream_on_deactivation)
     }
 }
 

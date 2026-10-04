@@ -188,6 +188,11 @@ impl Options {
                 homeserver_connection.clone(),
                 url_builder.clone(),
                 &site_config,
+                mas_tasks::UpstreamProviderAccess {
+                    http_client: http_client.clone(),
+                    encrypter: encrypter.clone(),
+                    keystore: key_store.clone(),
+                },
                 shutdown.soft_shutdown_token(),
                 shutdown.task_tracker(),
             )

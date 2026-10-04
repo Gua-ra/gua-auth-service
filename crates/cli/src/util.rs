@@ -263,6 +263,7 @@ pub fn site_config_from_config(
         device_code_grant_enabled: oauth_config.device_code_grant_enabled,
         device_code_user_code_auto_fill_enabled: oauth_config
             .device_code_user_code_auto_fill_enabled,
+        gua_forget_upstream_on_deactivation: account_config.gua_forget_upstream_on_deactivation,
     })
 }
 

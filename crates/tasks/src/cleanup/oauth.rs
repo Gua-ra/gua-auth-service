@@ -213,6 +213,9 @@ impl RunnableJob for CleanupUpstreamOAuthLinksJob {
             info!(count = total, "cleaned up orphaned upstream OAuth links");
         }
 
+        // GUA FORK: retry the account deletion notices still owed.
+        crate::gua::sweep_deactivated_users(state, &context.cancellation_token).await?;
+
         Ok(())
     }
 

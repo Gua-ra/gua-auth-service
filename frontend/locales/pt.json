@@ -40,15 +40,14 @@
       "account_password": "Palavra-passe da conta",
       "contact_info": "Informações de contacto",
       "delete_account": {
-        "alert_description": "Esta conta será permanentemente eliminada e deixará de ter acesso a todas as suas mensagens.",
-        "alert_title": "Está prestes a perder todos os seus dados",
+        "alert_description": "Perderá o acesso a esta conta e a todas as suas mensagens.",
+        "alert_title": "Esta ação não pode ser desfeita",
         "button": "Eliminar conta",
-        "dialog_description": "<text>Confirme que pretende eliminar a conta:</text>\n<profile />\n<list>\n<item>Não será possível reativar a conta</item>\n<item>Deixará de poder iniciar sessão</item>\n<item>Ninguém poderá reutilizar o seu nome de utilizador (MXID), incluindo o próprio</item>\n<item>Deixará todas as salas e mensagens diretas em que participa</item>\n<item>Será removido do servidor de identidade e ninguém o poderá encontrar com o seu e-mail ou número de telefone</item>\n</list>\n<text>As suas mensagens antigas continuarão visíveis para as pessoas que as receberam. Gostaria de ocultar as suas mensagens enviadas a pessoas que entrem em salas no futuro?</text>",
+        "dialog_description": "<text>Confirme que pretende eliminar a conta:</text>\n<profile />\n<list>\n<item>Deixará de poder iniciar sessão e não será possível restaurar a conta</item>\n<item>Ninguém, incluindo o próprio, poderá voltar a usar o seu nome de utilizador</item>\n<item>Será removido de todas as conversas</item>\n<item>O seu nome e a sua fotografia serão removidos do seu perfil</item>\n<item>O número de telefone, o PIN e as chaves de acesso associados à conta serão eliminados e as pessoas deixarão de o poder encontrar pelo seu número. Poderá voltar a usar o número para criar uma nova conta.</item>\n</list>\n<text>As mensagens e os ficheiros que já enviou continuam visíveis para quem os recebeu, mas não para quem entrar numa conversa mais tarde. Os ficheiros que carregou, incluindo a sua fotografia de perfil, continuam guardados nos nossos servidores. Guardamos a informação de que o seu nome de utilizador existiu, sem o seu número de telefone. Os registos de início de sessão e de atividade são mantidos durante um máximo de 31 dias.</text>",
         "dialog_title": "Eliminar esta conta?",
-        "erase_checkbox_label": "Sim, ocultar todas as minhas mensagens de novos marceneiros",
         "incorrect_password": "Palavra-passe incorreta, tente novamente",
-        "mxid_label": "Confirme o seu ID do Matrix ({{ mxid }})",
-        "mxid_mismatch": "Este valor não corresponde ao seu ID da matrix",
+        "mxid_label": "Confirme o seu nome de utilizador ({{ localpart }})",
+        "mxid_mismatch": "Este nome de utilizador não corresponde",
         "password_label": "Introduza a sua palavra-passe para continuar"
       },
       "edit_profile": {
