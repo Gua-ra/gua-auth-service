@@ -444,6 +444,64 @@ impl UpstreamOAuthLinkRepository for PgUpstreamOAuthLinkRepository<'_> {
         Ok(())
     }
 
+    // GUA FORK
+    #[tracing::instrument(
+        name = "db.upstream_oauth_link.remove_and_clear_tokens",
+        skip_all,
+        fields(
+            db.query.text,
+            upstream_oauth_link.id = %upstream_oauth_link.id,
+            upstream_oauth_link.provider_id = %upstream_oauth_link.provider_id,
+        ),
+        err,
+    )]
+    async fn remove_and_clear_tokens(
+        &mut self,
+        clock: &dyn Clock,
+        upstream_oauth_link: &UpstreamOAuthLink,
+    ) -> Result<bool, Self::Error> {
+        let span = tracing::info_span!(
+            "db.upstream_oauth_link.remove_and_clear_tokens.unlink",
+            { DB_QUERY_TEXT } = tracing::field::Empty
+        );
+        sqlx::query!(
+            r#"
+                UPDATE upstream_oauth_authorization_sessions SET
+                    upstream_oauth_link_id = NULL,
+                    unlinked_at = $2,
+                    id_token = NULL,
+                    id_token_claims = NULL,
+                    userinfo = NULL,
+                    extra_callback_parameters = NULL
+                WHERE upstream_oauth_link_id = $1
+            "#,
+            Uuid::from(upstream_oauth_link.id),
+            clock.now()
+        )
+        .record(&span)
+        .execute(&mut *self.conn)
+        .instrument(span)
+        .await?;
+
+        let span = tracing::info_span!(
+            "db.upstream_oauth_link.remove_and_clear_tokens.delete",
+            { DB_QUERY_TEXT } = tracing::field::Empty
+        );
+        let res = sqlx::query!(
+            r#"
+                DELETE FROM upstream_oauth_links
+                WHERE upstream_oauth_link_id = $1
+            "#,
+            Uuid::from(upstream_oauth_link.id),
+        )
+        .record(&span)
+        .execute(&mut *self.conn)
+        .instrument(span)
+        .await?;
+
+        Ok(res.rows_affected() == 1)
+    }
+
     #[tracing::instrument(
         name = "db.upstream_oauth_link.cleanup_orphaned",
         skip_all,

@@ -40,15 +40,9 @@
       "account_password": "Heslo účtu",
       "contact_info": "Kontaktní informace",
       "delete_account": {
-        "alert_description": "Tento účet bude trvale smazán a nebudete mít přístup k žádné ze svých zpráv.",
-        "alert_title": "Přijdete o všechna svá data",
         "button": "Smazat účet",
-        "dialog_description": "<text>Potvrďte, že chcete smazat svůj účet:</text>\n<profile />\n<list>\n<item>Nebudete moci svůj účet znovu aktivovat</item>\n<item>Nebudete se už moci přihlásit</item>\n<item>Nikdo nebude moci znovu použít vaše uživatelské jméno (MXID), včetně vás</item>\n<item>Opustíte všechny místnosti a přímé zprávy, ve kterých se nacházíte</item>\n<item>Budete odstraněni ze serveru identity a nikdo vás nebude moci najít pomocí vašeho e-mailu nebo telefonního čísla</item>\n</list>\n<text>Vaše staré zprávy budou stále viditelné pro lidi, kteří je obdrželi. Chcete skrýt své odeslané zprávy před lidmi, kteří vstoupí do místnosti v budoucnu?</text>",
         "dialog_title": "Smazat tento účet?",
-        "erase_checkbox_label": "Ano, skrýt všechny mé zprávy před novými členy",
         "incorrect_password": "Nesprávné heslo, zkuste to prosím znovu",
-        "mxid_label": "Potvrďte své Matrix ID ({{ mxid }})",
-        "mxid_mismatch": "Tato hodnota neodpovídá vašemu Matrix ID",
         "password_label": "Zadejte své heslo pro pokračování"
       },
       "edit_profile": {

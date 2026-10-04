@@ -218,6 +218,29 @@ pub trait UpstreamOAuthLinkRepository: Send + Sync {
         upstream_oauth_link: UpstreamOAuthLink,
     ) -> Result<(), Self::Error>;
 
+    /// GUA FORK: delete a [`UpstreamOAuthLink`] after its provider confirmed
+    /// that it forgot the account
+    ///
+    /// The ID token, its claims, the userinfo and the extra callback
+    /// parameters stored on the link's authorization sessions are cleared
+    /// along with the link.
+    ///
+    /// Returns `false` if the link no longer exists.
+    ///
+    /// # Parameters
+    ///
+    /// * `clock`: The clock used to generate timestamps
+    /// * `upstream_oauth_link`: The [`UpstreamOAuthLink`] to delete
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Self::Error`] if the underlying repository fails
+    async fn remove_and_clear_tokens(
+        &mut self,
+        clock: &dyn Clock,
+        upstream_oauth_link: &UpstreamOAuthLink,
+    ) -> Result<bool, Self::Error>;
+
     /// Cleanup orphaned upstream OAuth links
     ///
     /// This will delete orphaned links (where `user_id IS NULL`) with IDs up to
@@ -276,6 +299,12 @@ repository_impl!(UpstreamOAuthLinkRepository:
     async fn count(&mut self, filter: UpstreamOAuthLinkFilter<'_>) -> Result<usize, Self::Error>;
 
     async fn remove(&mut self, clock: &dyn Clock, upstream_oauth_link: UpstreamOAuthLink) -> Result<(), Self::Error>;
+
+    async fn remove_and_clear_tokens(
+        &mut self,
+        clock: &dyn Clock,
+        upstream_oauth_link: &UpstreamOAuthLink,
+    ) -> Result<bool, Self::Error>;
 
     async fn cleanup_orphaned(
         &mut self,
