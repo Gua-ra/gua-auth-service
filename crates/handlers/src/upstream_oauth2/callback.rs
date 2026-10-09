@@ -742,6 +742,7 @@ mod tests {
         provider: &UpstreamOAuthProvider,
     ) -> FirstCallback {
         let session_id = start_session(state, cookies, provider).await;
+        state.clock.advance(chrono::Duration::minutes(2));
 
         let response = state
             .request(cookies.with_cookies(callback(provider.id)))
