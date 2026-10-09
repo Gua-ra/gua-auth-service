@@ -15,6 +15,7 @@ use axum::{
 use chrono::Duration;
 use hyper::StatusCode;
 use mas_axum_utils::{GenericError, InternalError, cookies::CookieJar};
+use mas_context::LogContext;
 use mas_data_model::{
     BoxClock, BoxRng, Clock, UpstreamOAuthAuthorizationSessionState, UpstreamOAuthProvider,
     UpstreamOAuthProviderResponseMode,
@@ -36,6 +37,7 @@ use opentelemetry::{Key, KeyValue, metrics::Counter};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use thiserror::Error;
+use tracing::Instrument;
 use ulid::Ulid;
 
 use super::{
@@ -178,6 +180,54 @@ impl IntoResponse for RouteError {
 )]
 #[expect(clippy::too_many_arguments)]
 pub(crate) async fn handler(
+    rng: BoxRng,
+    clock: BoxClock,
+    metadata_cache: State<MetadataCache>,
+    repo: BoxRepository,
+    url_builder: State<UrlBuilder>,
+    encrypter: State<Encrypter>,
+    keystore: State<Keystore>,
+    client: State<reqwest::Client>,
+    templates: State<Templates>,
+    method: Method,
+    preferred_language: PreferredLanguage,
+    cookie_jar: CookieJar,
+    Path(provider_id): Path<Ulid>,
+    params: Form<Params>,
+) -> Result<Response, RouteError> {
+    // GUA FORK: the token exchange spends the single-use code, so the callback
+    // runs in its own task and still commits when the client disconnects.
+    let callback = handle(
+        rng,
+        clock,
+        metadata_cache,
+        repo,
+        url_builder,
+        encrypter,
+        keystore,
+        client,
+        templates,
+        method,
+        preferred_language,
+        cookie_jar,
+        Path(provider_id),
+        params,
+    )
+    .in_current_span();
+    let task = match LogContext::maybe_with(LogContext::clone) {
+        Some(log_context) => tokio::spawn(log_context.run(|| callback)),
+        None => tokio::spawn(callback),
+    };
+
+    match task.await {
+        Ok(result) => result,
+        Err(e) if e.is_panic() => std::panic::resume_unwind(e.into_panic()),
+        Err(e) => Err(RouteError::Internal(Box::new(e))),
+    }
+}
+
+#[expect(clippy::too_many_arguments)]
+async fn handle(
     mut rng: BoxRng,
     clock: BoxClock,
     State(metadata_cache): State<MetadataCache>,
@@ -258,9 +308,11 @@ pub(crate) async fn handler(
         .find_session(provider_id, &state)
         .map_err(|_| RouteError::MissingCookie)?;
 
+    // GUA FORK: a concurrent callback for this session waits here until the
+    // first one commits, then answers with the redirect the first one got.
     let session = repo
         .upstream_oauth_session()
-        .lookup(session_id)
+        .lookup_for_update(session_id)
         .await?
         .ok_or(RouteError::SessionNotFound)?;
 
@@ -539,7 +591,8 @@ pub(crate) async fn handler(
 
 #[cfg(test)]
 mod tests {
-    use chrono::Duration;
+    use std::time::Duration;
+
     use hyper::{Request, StatusCode, header::LOCATION};
     use mas_data_model::{
         UpstreamOAuthProvider, UpstreamOAuthProviderClaimsImports,
@@ -564,16 +617,32 @@ mod tests {
 
     const STATE: &str = "state";
 
-    /// A provider whose token and userinfo endpoints each expect exactly one
-    /// request
-    async fn add_provider(state: &TestState, mock_server: &MockServer) -> UpstreamOAuthProvider {
+    /// A provider whose token endpoint accepts the code once, and whose
+    /// userinfo endpoint expects exactly one request
+    async fn add_provider(
+        state: &TestState,
+        mock_server: &MockServer,
+        token_delay: Duration,
+    ) -> UpstreamOAuthProvider {
         Mock::given(method("POST"))
             .and(path("/token"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(json!({
-                "access_token": "access-token",
-                "token_type": "Bearer",
-            })))
+            .respond_with(
+                ResponseTemplate::new(200)
+                    .set_body_json(json!({
+                        "access_token": "access-token",
+                        "token_type": "Bearer",
+                    }))
+                    .set_delay(token_delay),
+            )
+            .up_to_n_times(1)
             .expect(1)
+            .mount(mock_server)
+            .await;
+        Mock::given(method("POST"))
+            .and(path("/token"))
+            .respond_with(ResponseTemplate::new(400).set_body_json(json!({
+                "error": "invalid_grant",
+            })))
             .mount(mock_server)
             .await;
         Mock::given(method("GET"))
@@ -634,13 +703,12 @@ mod tests {
         location: String,
     }
 
-    /// Starts an authorization session and runs its callback, without keeping
-    /// the cookies of the response, as when the browser aborted it
-    async fn first_callback(
+    /// Starts an authorization session and stores its cookie
+    async fn start_session(
         state: &TestState,
         cookies: &CookieHelper,
         provider: &UpstreamOAuthProvider,
-    ) -> FirstCallback {
+    ) -> Ulid {
         let mut rng = state.rng();
         let mut repo = state.repository().await.unwrap();
         let session = repo
@@ -663,14 +731,43 @@ mod tests {
                 .save(state.cookie_jar(), &state.clock),
         );
 
+        session.id
+    }
+
+    /// Starts an authorization session and runs its callback, without keeping
+    /// the cookies of the response, as when the browser aborted it
+    async fn first_callback(
+        state: &TestState,
+        cookies: &CookieHelper,
+        provider: &UpstreamOAuthProvider,
+    ) -> FirstCallback {
+        let session_id = start_session(state, cookies, provider).await;
+
         let response = state
             .request(cookies.with_cookies(callback(provider.id)))
             .await;
         response.assert_status(StatusCode::SEE_OTHER);
 
         FirstCallback {
-            session_id: session.id,
-            location: response.headers()[LOCATION].to_str().unwrap().to_owned(),
+            session_id,
+            location: location(&response),
+        }
+    }
+
+    fn location(response: &hyper::Response<String>) -> String {
+        response.headers()[LOCATION].to_str().unwrap().to_owned()
+    }
+
+    async fn token_requested(mock_server: &MockServer) {
+        loop {
+            let requests = mock_server.received_requests().await.unwrap();
+            if requests
+                .iter()
+                .any(|request| request.url.path() == "/token")
+            {
+                return;
+            }
+            tokio::time::sleep(Duration::from_millis(5)).await;
         }
     }
 
@@ -679,7 +776,7 @@ mod tests {
         setup();
         let state = TestState::from_pool(pool).await.unwrap();
         let mock_server = MockServer::start().await;
-        let provider = add_provider(&state, &mock_server).await;
+        let provider = add_provider(&state, &mock_server, Duration::ZERO).await;
         let cookies = CookieHelper::new();
         let first = first_callback(&state, &cookies, &provider).await;
 
@@ -697,17 +794,63 @@ mod tests {
     }
 
     #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_concurrent_callbacks_get_the_same_redirect(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+        let mock_server = MockServer::start().await;
+        let provider = add_provider(&state, &mock_server, Duration::from_millis(300)).await;
+        let cookies = CookieHelper::new();
+        start_session(&state, &cookies, &provider).await;
+
+        let (first, second) = tokio::join!(
+            state.request(cookies.with_cookies(callback(provider.id))),
+            state.request(cookies.with_cookies(callback(provider.id))),
+        );
+        first.assert_status(StatusCode::SEE_OTHER);
+        second.assert_status(StatusCode::SEE_OTHER);
+        assert_eq!(location(&first), location(&second));
+    }
+
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
+    async fn test_callback_dropped_after_the_token_request_still_completes(pool: PgPool) {
+        setup();
+        let state = TestState::from_pool(pool).await.unwrap();
+        let mock_server = MockServer::start().await;
+        let provider = add_provider(&state, &mock_server, Duration::from_millis(300)).await;
+        let cookies = CookieHelper::new();
+        start_session(&state, &cookies, &provider).await;
+
+        tokio::select! {
+            _ = state.request(cookies.with_cookies(callback(provider.id))) => {
+                panic!("the callback finished before the token request was observed");
+            }
+            () = token_requested(&mock_server) => {}
+        }
+
+        let response = state
+            .request(cookies.with_cookies(callback(provider.id)))
+            .await;
+        cookies.save_cookies(&response);
+        response.assert_status(StatusCode::SEE_OTHER);
+
+        let response = state
+            .request(cookies.with_cookies(Request::get(location(&response)).empty()))
+            .await;
+        response.assert_status(StatusCode::OK);
+    }
+
+    #[sqlx::test(migrator = "mas_storage_pg::MIGRATOR")]
     async fn test_repeated_callback_after_the_window_is_refused(pool: PgPool) {
         setup();
         let state = TestState::from_pool(pool).await.unwrap();
         let mock_server = MockServer::start().await;
-        let provider = add_provider(&state, &mock_server).await;
+        let provider = add_provider(&state, &mock_server, Duration::ZERO).await;
         let cookies = CookieHelper::new();
         first_callback(&state, &cookies, &provider).await;
 
         state
             .clock
-            .advance(REPEATED_CALLBACK_WINDOW + Duration::seconds(1));
+            .advance(REPEATED_CALLBACK_WINDOW + chrono::Duration::seconds(1));
 
         let response = state
             .request(cookies.with_cookies(callback(provider.id)))
@@ -721,7 +864,7 @@ mod tests {
         setup();
         let state = TestState::from_pool(pool).await.unwrap();
         let mock_server = MockServer::start().await;
-        let provider = add_provider(&state, &mock_server).await;
+        let provider = add_provider(&state, &mock_server, Duration::ZERO).await;
         let cookies = CookieHelper::new();
         let first = first_callback(&state, &cookies, &provider).await;
 
@@ -761,7 +904,7 @@ mod tests {
         setup();
         let state = TestState::from_pool(pool).await.unwrap();
         let mock_server = MockServer::start().await;
-        let provider = add_provider(&state, &mock_server).await;
+        let provider = add_provider(&state, &mock_server, Duration::ZERO).await;
         let cookies = CookieHelper::new();
         first_callback(&state, &cookies, &provider).await;
 
