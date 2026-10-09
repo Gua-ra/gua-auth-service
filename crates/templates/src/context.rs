@@ -2036,21 +2036,33 @@ impl TemplateContext for ErrorContext {
     fn sample<R: Rng>(
         _now: chrono::DateTime<Utc>,
         _rng: &mut R,
-        _locales: &[DataLocale],
+        locales: &[DataLocale],
     ) -> BTreeMap<SampleIdentifier, Self>
     where
         Self: Sized,
     {
-        sample_list(vec![
-            Self::new()
-                .with_code("sample_error")
-                .with_description("A fancy description".into())
-                .with_details("Something happened".into()),
-            Self::new().with_code("another_error"),
-            Self::new().with_code("username_unavailable"),
-            Self::new().with_code("username_not_allowed"),
-            Self::new(),
-        ])
+        // GUA FORK: codes with translated copy render once per locale.
+        let translated = ["username_unavailable", "username_not_allowed"]
+            .into_iter()
+            .flat_map(|code| {
+                locales
+                    .iter()
+                    .map(move |locale| Self::new().with_code(code).with_language(locale))
+            });
+
+        sample_list(
+            [
+                Self::new()
+                    .with_code("sample_error")
+                    .with_description("A fancy description".into())
+                    .with_details("Something happened".into()),
+                Self::new().with_code("another_error"),
+                Self::new(),
+            ]
+            .into_iter()
+            .chain(translated)
+            .collect(),
+        )
     }
 }
 

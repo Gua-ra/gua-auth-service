@@ -1360,7 +1360,10 @@ async fn prepare_user_registration(
 
 #[cfg(test)]
 mod tests {
-    use hyper::{Request, StatusCode, header::CONTENT_TYPE};
+    use hyper::{
+        Request, StatusCode,
+        header::{ACCEPT_LANGUAGE, CONTENT_TYPE},
+    };
     use mas_data_model::{
         UpstreamOAuthAuthorizationSession, UpstreamOAuthLink, UpstreamOAuthProviderClaimsImports,
         UpstreamOAuthProviderImportPreference, UpstreamOAuthProviderLocalpartPreference,
@@ -2439,6 +2442,19 @@ mod tests {
         // Verify the error message is displayed
         assert!(response.body().contains("This username is not available"));
         assert!(!response.body().contains("homeserver"));
+
+        for (language, message) in [
+            ("es", "Este nombre de usuario no está disponible."),
+            ("pt-BR", "Este nome de usuário não está disponível."),
+            ("fr", "Ce nom d'utilisateur n'est pas disponible."),
+        ] {
+            let request = Request::get(&*mas_router::UpstreamOAuth2Link::new(link.id).path())
+                .header(ACCEPT_LANGUAGE, language)
+                .empty();
+            let response = state.request(cookies.with_cookies(request)).await;
+            response.assert_status(StatusCode::OK);
+            assert!(response.body().contains(message), "missing {language} copy");
+        }
 
         // Check that the new link was NOT associated with the existing user
         let mut repo = state.repository().await.unwrap();
