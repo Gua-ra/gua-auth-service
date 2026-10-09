@@ -2047,6 +2047,8 @@ impl TemplateContext for ErrorContext {
                 .with_description("A fancy description".into())
                 .with_details("Something happened".into()),
             Self::new().with_code("another_error"),
+            Self::new().with_code("username_unavailable"),
+            Self::new().with_code("username_not_allowed"),
             Self::new(),
         ])
     }

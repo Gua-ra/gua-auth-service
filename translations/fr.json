@@ -33,7 +33,9 @@
     "username": "Nom d’utilisateur"
   },
   "error": {
-    "unexpected": "Erreur inattendue"
+    "unexpected": "Erreur inattendue",
+    "username_not_allowed": "Ce nom d'utilisateur n'est pas autorisé. Contactez le support pour terminer la connexion.",
+    "username_unavailable": "Ce nom d'utilisateur n'est pas disponible. Contactez le support pour terminer la connexion."
   },
   "mas": {
     "account": {
