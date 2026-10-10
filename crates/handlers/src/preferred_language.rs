@@ -50,3 +50,16 @@ where
         Ok(PreferredLanguage(locale))
     }
 }
+
+/// GUA FORK: the first of the client's `ui_locales` that has translations,
+/// else `fallback`.
+pub(crate) fn choose_ui_locale<'a>(
+    translator: &Translator,
+    ui_locales: impl IntoIterator<Item = &'a str>,
+    fallback: DataLocale,
+) -> DataLocale {
+    let requested = ui_locales
+        .into_iter()
+        .filter_map(|tag| tag.parse::<DataLocale>().ok());
+    translator.choose_locale(requested.chain(std::iter::once(fallback)))
+}
