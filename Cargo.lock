@@ -3317,6 +3317,7 @@ dependencies = [
  "icu_normalizer",
  "indexmap 2.14.0",
  "insta",
+ "language-tags",
  "lettre",
  "mas-axum-utils",
  "mas-config",
