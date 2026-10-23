@@ -1,0 +1,16 @@
+# Fails a pull request whose commits or text carry AI attribution. The check lives in Gua-ra/.github.
+name: No AI attribution
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  no-ai-attribution:
+    uses: Gua-ra/.github/.github/workflows/no-ai-attribution.yml@main
+    with:
+      upstream: element-hq/matrix-authentication-service
+      upstream_branch: main
