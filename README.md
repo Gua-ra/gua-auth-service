@@ -12,7 +12,7 @@ The Gua changes are marked `GUA FORK` in the source. New modules sit under `crat
 - **Account deletion notifies the provider.** Deleting an account erases the user on the homeserver and tells each upstream provider, retrying until the provider confirms.
 - **First-party endpoints** for the Gua apps, such as approving the app's own cross-signing reset with its access token.
 
-The target design moves login authority to each homeserver's own instance of this service, including login methods verified locally. That is not implemented yet. [ADM-001](https://github.com/Gua-ra/gua-resolver/blob/main/docs/decisions/ADM-001-identifier-binding-placement-trust.md) records the decision; [Gua identity and federation](https://github.com/Gua-ra/gua-resolver/blob/main/docs/architecture/gua-identity-and-federation.md) explains it in plain language.
+The target design moves login authority to each homeserver's own instance of this service, including login methods verified locally. That is not implemented yet. [Planned federation work](https://github.com/Gua-ra/gua-resolver/blob/main/docs/architecture/planned-federation-work.md#sign-in-decided-by-each-homeserver-and-passkeys) describes that design and the rules it must keep; [Gua identity and federation](https://github.com/Gua-ra/gua-resolver/blob/main/docs/architecture/gua-identity-and-federation.md) describes sign-in as it runs today, in plain language.
 
 ## Running it
 
@@ -31,7 +31,7 @@ The image that [ci-cd.yml](.github/workflows/ci-cd.yml) publishes is private. Bu
 ## How it relates to the rest of Gua
 
 - [gua-resolver](https://github.com/Gua-ra/gua-resolver) tells a client which homeserver, and therefore which instance of this service, to sign in at.
-- [identity-service](https://github.com/Gua-ra/identity-service) is the upstream OIDC provider today. Gua configures this service to delegate every sign-in to it, so the service holds no login credentials of its own.
+- [identity-service](https://github.com/Gua-ra/identity-service) is the upstream OIDC provider today. Gua configures this service to delegate every sign-in to it, so the service holds no login credentials of its own. The identity service asks for a code sent to the phone number and then the account's passkey or PIN; a code alone never completes a sign-in.
 - [gua-ios](https://github.com/Gua-ra/gua-ios), [gua-android](https://github.com/Gua-ra/gua-android) and [gua-web](https://github.com/Gua-ra/gua-web) are the clients.
 - [rust-opa-wasm](https://github.com/Gua-ra/rust-opa-wasm) is Gua's fork of the OPA WebAssembly crate, with no code changes. `Cargo.toml` pins a commit from it.
 
