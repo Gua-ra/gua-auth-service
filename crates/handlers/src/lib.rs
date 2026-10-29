@@ -262,7 +262,8 @@ where
                     ACCEPT_LANGUAGE,
                     CONTENT_LANGUAGE,
                     CONTENT_TYPE,
-                    // Swagger will send this header, so we have to allow it to avoid CORS errors
+                    // Swagger will send this header, so we have to allow it to
+                    // avoid CORS errors
                     HeaderName::from_static("x-requested-with"),
                 ])
                 .max_age(Duration::from_hours(1)),

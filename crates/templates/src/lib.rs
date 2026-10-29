@@ -525,8 +525,8 @@ mod tests {
             let templates = Templates::load(
                 path.clone(),
                 url_builder.clone(),
-                // Check both renders against the real vite manifest and the 'dummy' vite manifest
-                // used for reproducible renders.
+                // Check both renders against the real vite manifest and the
+                // 'dummy' vite manifest used for reproducible renders.
                 use_real_vite_manifest.then_some(vite_manifest_path.clone()),
                 translations_path.clone(),
                 branding.clone(),

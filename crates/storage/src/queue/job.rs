@@ -66,7 +66,8 @@ impl JobMetadata {
             TraceId::from_hex(&self.trace_id).unwrap_or(TraceId::INVALID),
             SpanId::from_hex(&self.span_id).unwrap_or(SpanId::INVALID),
             TraceFlags::new(self.trace_flags),
-            // Trace context is remote, as it comes from another service/from the database
+            // Trace context is remote, as it comes from another service/from
+            // the database
             true,
             TraceState::NONE,
         )

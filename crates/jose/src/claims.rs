@@ -460,8 +460,8 @@ impl From<chrono::DateTime<chrono::Utc>> for Timestamp {
 )]
 pub struct OneOrMany<T>(
     // serde_as seems to not work properly with #[serde(transparent)]
-    // We have use plain old #[serde(with = ...)] with serde_with's utilities, which is a bit
-    // verbose but works
+    // We have use plain old #[serde(with = ...)] with serde_with's utilities,
+    // which is a bit verbose but works
     #[serde(
         with = "serde_with::As::<serde_with::OneOrMany<serde_with::Same, serde_with::formats::PreferOne>>"
     )]

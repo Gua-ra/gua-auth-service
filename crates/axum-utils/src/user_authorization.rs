@@ -321,12 +321,14 @@ where
                 Err(FormRejection::FailedToDeserializeForm(err)) => {
                     return Err(UserAuthorizationError::BadForm(err));
                 }
-                // Other errors (body read twice, byte stream broke) return an internal error
+                // Other errors (body read twice, byte stream broke) return an
+                // internal error
                 Err(e) => return Err(UserAuthorizationError::Internal(Box::new(e))),
             };
 
         let access_token = match (token_from_header, token_from_form) {
-            // Ensure the token should not be in both the form and the access token
+            // Ensure the token should not be in both the form and the access
+            // token
             (Some(_), Some(_)) => return Err(UserAuthorizationError::TokenInFormAndHeader),
             (Some(t), None) => AccessToken::Header(t),
             (None, Some(t)) => AccessToken::Form(t),
