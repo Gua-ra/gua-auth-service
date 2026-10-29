@@ -20,9 +20,9 @@ ignore = [
     # RSA key extraction "Marvin Attack". This is only relevant when using
     # PKCS#1 v1.5 encryption, which we don't
     "RUSTSEC-2023-0071",
-    # Rand 0.8.5 unsoundness with custom logger + thread_rng reseeding.
-    # Only triggers when the `log` feature is enabled, which we don't use.
-    "RUSTSEC-2026-0097",
+    # crypto-bigint timing leaks: no patched 0.5.x exists and elliptic-curve 0.13
+    # requires 0.5, so this clears only with the RustCrypto 0.14 move upstream made.
+    "RUSTSEC-2026-0387",
 ]
 
 # Only warn about unmaintained crates that are direct dependencies of the
@@ -85,7 +85,7 @@ skip = [
     { name = "object", version = "0.37.3" },
 
     # We are still mainly using rand 0.8
-    { name = "rand", version = "0.8.5" },
+    { name = "rand", version = "0.8.6" },
     { name = "rand_chacha", version = "0.3.1" },
     { name = "rand_core", version = "0.6.4" },
     { name = "getrandom", version = "0.2.16" },

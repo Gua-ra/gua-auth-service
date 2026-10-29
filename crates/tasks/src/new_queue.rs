@@ -1051,7 +1051,8 @@ impl JobTracker {
 
         while let Some(result) = self.last_join_result.take() {
             match result {
-                // The job succeeded. The logging and time measurement is already done in the task
+                // The job succeeded. The logging and time measurement is
+                // already done in the task
                 Ok((id, (elapsed, Ok(())))) => {
                     let context = self
                         .job_contexts
@@ -1077,7 +1078,8 @@ impl JobTracker {
                         .await?;
                 }
 
-                // The job failed. The logging and time measurement is already done in the task
+                // The job failed. The logging and time measurement is already
+                // done in the task
                 Ok((id, (elapsed, Err(e)))) => {
                     let context = self
                         .job_contexts

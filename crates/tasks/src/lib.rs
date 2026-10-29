@@ -190,7 +190,8 @@ pub async fn init(
         )
         .add_schedule(
             "cleanup-consumed-oauth-refresh-tokens",
-            // Run this job every hour at minute 5 (safe to parallelize with revoked)
+            // Run this job every hour at minute 5 (safe to parallelize with
+            // revoked)
             "0 5 * * * *".parse()?,
             mas_storage::queue::CleanupConsumedOAuthRefreshTokensJob,
         )
@@ -244,7 +245,8 @@ pub async fn init(
         )
         .add_schedule(
             "cleanup-upstream-oauth-sessions",
-            // Run this job every hour at minute 40 (independent, safe to parallelize)
+            // Run this job every hour at minute 40 (independent, safe to
+            // parallelize)
             "0 40 * * * *".parse()?,
             mas_storage::queue::CleanupUpstreamOAuthSessionsJob,
         )
