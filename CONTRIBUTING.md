@@ -18,7 +18,7 @@ cargo deny check
 ```
 
 - Section 7 of the upstream guide covers the frontend and policy tests. [ci.yaml](.github/workflows/ci.yaml) runs all of these on every pull request. [ci-cd.yml](.github/workflows/ci-cd.yml) builds the container image; an unlabelled pull request stops at build and tests.
-- A new Gua file starts with `Copyright <year> Gua` followed by the repository's SPDX line. A modified upstream file keeps its upstream notice.
+- A new Gua file starts with `Copyright <year> Gua` followed by `SPDX-License-Identifier: AGPL-3.0-only`. An upstream file, or a new file built from upstream code, keeps upstream's copyright and SPDX lines, with any Gua line below them.
 
 ## Pull requests
 
