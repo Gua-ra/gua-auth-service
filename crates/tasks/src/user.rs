@@ -135,9 +135,21 @@ impl RunnableJob for DeactivateUserJob {
         // possible
         repo.save().await.map_err(JobError::retry)?;
 
-        info!("Deactivating user {} on homeserver", user.username);
+        // GUA FORK: every deletion erases the user on the homeserver, whatever
+        // scheduled it (account page, admin API or mas-cli), so the job's
+        // `hs_erase` is only logged.
+        info!(
+            requested_erase = self.hs_erase(),
+            "Deactivating user {} on homeserver, erasing it", user.username
+        );
         matrix
-            .delete_user(&user.username, self.hs_erase())
+            .delete_user(&user.username, true)
+            .await
+            .map_err(JobError::retry)?;
+
+        // GUA FORK: upstream providers forget the account last, once the
+        // homeserver has deactivated it.
+        crate::gua::forget_upstream_links(state, &user)
             .await
             .map_err(JobError::retry)?;
 

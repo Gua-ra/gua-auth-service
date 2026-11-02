@@ -395,6 +395,8 @@ pub struct DeactivateUserInput {
     ///
     /// What Synapse does is documented here:
     /// <https://element-hq.github.io/synapse/latest/admin_api/user_admin_api.html#deactivate-account>
+    ///
+    /// Ignored on this server: the user is always erased.
     hs_erase: bool,
 
     /// The password of the user to deactivate.

@@ -48,13 +48,15 @@ impl QueryBuilderExt for sea_query::SelectStatement {
         }
 
         match pagination.direction {
-            // 4. If the first argument is provided, add `ORDER BY id ASC LIMIT first+1` to the
+            // 4. If the first argument is provided, add `ORDER BY id ASC LIMIT
+            //    first+1` to the
             // query
             PaginationDirection::Forward => {
                 self.order_by(id_field, sea_query::Order::Asc)
                     .limit((pagination.count + 1) as u64);
             }
-            // 5. If the first argument is provided, add `ORDER BY id DESC LIMIT last+1` to the
+            // 5. If the first argument is provided, add `ORDER BY id DESC LIMIT
+            //    last+1` to the
             // query
             PaginationDirection::Backward => {
                 self.order_by(id_field, sea_query::Order::Desc)

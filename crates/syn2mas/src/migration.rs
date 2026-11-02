@@ -156,8 +156,8 @@ pub async fn migrate(
 
     let state = MigrationState {
         server_name,
-        // We oversize the hashmaps, as the estimates are innaccurate, and we would like to avoid
-        // reallocations.
+        // We oversize the hashmaps, as the estimates are innaccurate, and we
+        // would like to avoid reallocations.
         users: HashMap::with_capacity_and_hasher(counts.users * 9 / 8, RandomState::default()),
         devices_to_compat_sessions: HashMap::with_capacity_and_hasher(
             counts.devices * 9 / 8,

@@ -358,6 +358,14 @@ account:
   # When enabled, users must provide a valid registration token during password
   # registration. This has no effect if password registration is disabled.
   registration_token_required: false
+
+  # Gua: whether deleting an account notifies every upstream provider linked
+  # to it, then removes each link once its provider confirms. The notice is a
+  # form POST of the link's subject as `sub` to `<issuer>/oauth2/account-deleted`,
+  # authenticated the way the provider's token endpoint is.
+  #
+  # Defaults to `true`. Turning it off stops the notices and keeps the links.
+  gua_forget_upstream_on_deactivation: true
 ```
 
 ## `captcha`

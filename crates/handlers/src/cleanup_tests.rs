@@ -191,7 +191,8 @@ async fn create_session_hierarchy(
             authorization_endpoint_override: None,
             token_endpoint_override: None,
             userinfo_endpoint_override: None,
-            // Point to the mock server to have it use a JWKS we can use for signing
+            // Point to the mock server to have it use a JWKS we can use for
+            // signing
             jwks_uri_override: Some(format!("{}/jwks.json", mock_server.uri()).parse().unwrap()),
             discovery_mode: UpstreamOAuthProviderDiscoveryMode::Disabled,
             pkce_mode: UpstreamOAuthProviderPkceMode::Auto,

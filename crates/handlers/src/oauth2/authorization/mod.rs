@@ -9,6 +9,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use hyper::StatusCode;
+use language_tags::LanguageTag;
 use mas_axum_utils::{GenericError, InternalError, SessionInfoExt, cookies::CookieJar};
 use mas_data_model::{AuthorizationCode, BoxClock, BoxRng, Pkce};
 use mas_router::{PostAuthAction, UrlBuilder};
@@ -28,7 +29,10 @@ use serde::Deserialize;
 use thiserror::Error;
 
 use self::callback::CallbackDestination;
-use crate::{BoundActivityTracker, PreferredLanguage, impl_from_error_for_route};
+use crate::{
+    BoundActivityTracker, PreferredLanguage, impl_from_error_for_route,
+    preferred_language::choose_ui_locale,
+};
 
 mod callback;
 pub(crate) mod consent;
@@ -120,6 +124,18 @@ pub(crate) async fn get(
     cookie_jar: CookieJar,
     Form(params): Form<Params>,
 ) -> Result<Response, RouteError> {
+    // GUA FORK: the client's `ui_locales` outranks the browser's language.
+    let locale = choose_ui_locale(
+        &templates.translator(),
+        params
+            .auth
+            .ui_locales
+            .iter()
+            .flatten()
+            .map(LanguageTag::as_str),
+        locale,
+    );
+
     // First, figure out what client it is
     let client = repo
         .oauth2_client()

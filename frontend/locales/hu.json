@@ -40,15 +40,9 @@
       "account_password": "Fiók jelszava",
       "contact_info": "Kapcsolati információ",
       "delete_account": {
-        "alert_description": "Ez a fiók véglegesen törölve lesz, és többé nem fog hozzáférni az üzeneteihez.",
-        "alert_title": "Hamarosan elveszíti az összes adatát",
         "button": "Fiók törlése",
-        "dialog_description": "<text>Erősítse meg, hogy törölné a fiókját:</text>\n<profile />\n<list>\n<item>Nem fogja tudni újraaktiválni a fiókját</item>\n<item>Többé nem fog tudni bejelentkezni</item>\n<item>Senki sem fogja tudni használni a felhasználónevét (MXID), Önt is beleértve</item>\n<item>Elhagyja az összes szobáját és a közvetlen üzeneteit</item>\n<item>El lesz távolítva az azonosítási kiszolgálóról, és senki sem fogja tudni megtalálni az e-mail-címe vagy telefonszáma alapján</item>\n</list>\n<text>A régi üzenetei továbbra is láthatóak lesznek azok számára, akik megkapták azokat. Elrejti az elküldött üzeneteit azok elől, akik a jövőben csatlakoznak a szobákhoz?</text>",
         "dialog_title": "Törli ezt a fiókot?",
-        "erase_checkbox_label": "Igen, az összes üzenet elrejtése az új érkezők elől",
         "incorrect_password": "Helytelen jelszó, próbálja újra",
-        "mxid_label": "Erősítse meg a Matrix-azonosítóját ({{ mxid }})",
-        "mxid_mismatch": "Ez az érték nem egyezik a Matrix-azonosítójával",
         "password_label": "A folytatáshoz adja meg a jelszavát"
       },
       "edit_profile": {

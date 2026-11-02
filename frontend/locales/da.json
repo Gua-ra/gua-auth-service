@@ -40,15 +40,9 @@
       "account_password": "Adgangskode til konto",
       "contact_info": "Kontaktoplysninger",
       "delete_account": {
-        "alert_description": "Denne konto vil blive slettet permanent, og du vil ikke længere have adgang til nogen af dine beskeder.",
-        "alert_title": "Du er ved at miste alle dine data",
         "button": "Slet konto",
-        "dialog_description": "<text>Bekræft, at du ønsker at slette din konto:</text>\n<profile />\n<list>\n<item>Du vil ikke kunne genaktivere din konto</item>\n<item>Du vil ikke længere kunne logge ind</item>\n<item>Ingen vil kunne genbruge dit brugernavn (MXID), heller ikke dig selv</item>\n<item>Du vil forlade alle rum og direkte beskeder, du er i</item>\n<item>Du vil blive fjernet fra identitetsserveren, og ingen vil kunne finde dig med din e-mail eller dit telefonnummer</item>\n</list>\n<text>Dine gamle beskeder vil stadig være synlige for folk, der har modtaget dem. Vil du gerne skjule dine sendte beskeder for folk, der tilmelder sig rum i fremtiden?</text>",
         "dialog_title": "Vil du slette denne konto?",
-        "erase_checkbox_label": "Ja, skjul alle mine beskeder fra nye deltagere",
         "incorrect_password": "Forkert adgangskode, prøv venligst igen",
-        "mxid_label": "Bekræft dit Matrix ID ({{ mxid }})",
-        "mxid_mismatch": "Denne værdi stemmer ikke overens med dit Matrix-ID",
         "password_label": "Indtast din adgangskode for at fortsætte"
       },
       "edit_profile": {

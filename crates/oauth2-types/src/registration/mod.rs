@@ -460,7 +460,8 @@ impl ClientMetadata {
         let response_type_code = [OAuthAuthorizationEndpointResponseType::Code.into()];
         let response_types = match &self.response_types {
             Some(types) => &types[..],
-            // Default to code only if the client uses the authorization code or implicit flow
+            // Default to code only if the client uses the authorization code or
+            // implicit flow
             None if has_authorization_code || has_implicit => &response_type_code[..],
             None => &[],
         };

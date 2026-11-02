@@ -20,15 +20,9 @@ ignore = [
     # RSA key extraction "Marvin Attack". This is only relevant when using
     # PKCS#1 v1.5 encryption, which we don't
     "RUSTSEC-2023-0071",
-    # Rand 0.8.5 unsoundness with custom logger + thread_rng reseeding.
-    # Only triggers when the `log` feature is enabled, which we don't use.
-    "RUSTSEC-2026-0097",
-    # wasmtime: not triggerable by guest programs. Drop when opa-wasm 0.3.x
-    # allows wasmtime 46; review by 2026-11-30.
-    "RUSTSEC-2026-0222",
-    # wasmtime: needs WASI filesystem preopens, which the policy module never
-    # gets. Drop together with the entry above.
-    "RUSTSEC-2026-0269",
+    # crypto-bigint timing leaks: no patched 0.5.x exists and elliptic-curve 0.13
+    # requires 0.5, so this clears only with the RustCrypto 0.14 move upstream made.
+    "RUSTSEC-2026-0387",
 ]
 
 # smartstring (RUSTSEC-2026-0249) is transitive and has no safe upgrade.
@@ -87,7 +81,7 @@ skip = [
     { name = "object", version = "0.37.3" },
 
     # We are still mainly using rand 0.8
-    { name = "rand", version = "0.8.5" },
+    { name = "rand", version = "0.8.6" },
     { name = "rand_chacha", version = "0.3.1" },
     { name = "rand_core", version = "0.6.4" },
     { name = "getrandom", version = "0.2.16" },
@@ -104,3 +98,4 @@ deny = ["oldtime"]
 unknown-registry = "warn"
 unknown-git = "warn"
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = ["https://github.com/Gua-ra/rust-opa-wasm"]

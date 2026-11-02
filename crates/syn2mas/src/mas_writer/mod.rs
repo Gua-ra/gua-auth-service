@@ -321,7 +321,8 @@ impl WriteBatch for MasNewUser {
             &user_ids[..],
             &usernames[..],
             &created_ats[..],
-            // We need to override the typing for arrays of optionals (sqlx limitation)
+            // We need to override the typing for arrays of optionals (sqlx
+            // limitation)
             &locked_ats[..] as &[Option<DateTime<Utc>>],
             &deactivated_ats[..] as &[Option<DateTime<Utc>>],
             &can_request_admins[..],
@@ -588,7 +589,8 @@ impl WriteBatch for MasNewCompatSession {
             &human_names[..] as &[Option<String>],
             &created_ats[..],
             &is_synapse_admins[..],
-            // We need to override the typing for arrays of optionals (sqlx limitation)
+            // We need to override the typing for arrays of optionals (sqlx
+            // limitation)
             &last_active_ats[..] as &[Option<DateTime<Utc>>],
             &last_active_ips[..] as &[Option<IpAddr>],
             &user_agents[..] as &[Option<String>],
@@ -651,7 +653,8 @@ impl WriteBatch for MasNewCompatAccessToken {
             &session_ids[..],
             &access_tokens[..],
             &created_ats[..],
-            // We need to override the typing for arrays of optionals (sqlx limitation)
+            // We need to override the typing for arrays of optionals (sqlx
+            // limitation)
             &expires_ats[..] as &[Option<DateTime<Utc>>],
         )
         .execute(&mut *conn)

@@ -5,3 +5,6 @@
 
 pub mod identity_reset;
 pub(crate) mod sessions;
+
+#[cfg(test)]
+mod deletion_tests;

@@ -2840,6 +2840,10 @@
         "registration_token_required": {
           "description": "Whether registration tokens are required for password registrations\n This is deprecated in favor of `password_registration_token_required`",
           "type": "boolean"
+        },
+        "gua_forget_upstream_on_deactivation": {
+          "description": "Whether deleting an account notifies every upstream provider linked to\n it, then removes each link once its provider confirms. Defaults to\n `true`.\n\n Turning this off stops the notices and keeps the links.",
+          "type": "boolean"
         }
       }
     },

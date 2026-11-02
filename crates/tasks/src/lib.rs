@@ -19,14 +19,16 @@ use rand::SeedableRng;
 use sqlx::{Pool, Postgres};
 use tokio_util::{sync::CancellationToken, task::TaskTracker};
 
-pub use crate::new_queue::QueueWorker;
+pub use crate::{gua::UpstreamProviderAccess, new_queue::QueueWorker};
 
 mod cleanup;
 mod email;
+mod gua;
 mod matrix;
 mod new_queue;
 mod recovery;
 mod sessions;
+pub mod upstream_oauth2;
 mod user;
 
 static METER: LazyLock<Meter> = LazyLock::new(|| {
@@ -46,6 +48,7 @@ struct State {
     homeserver: Arc<dyn HomeserverConnection>,
     url_builder: UrlBuilder,
     site_config: SiteConfig,
+    upstream_provider_access: UpstreamProviderAccess,
 }
 
 impl State {
@@ -56,6 +59,7 @@ impl State {
         homeserver: impl HomeserverConnection + 'static,
         url_builder: UrlBuilder,
         site_config: SiteConfig,
+        upstream_provider_access: UpstreamProviderAccess,
     ) -> Self {
         Self {
             repository_factory,
@@ -64,6 +68,7 @@ impl State {
             homeserver: Arc::new(homeserver),
             url_builder,
             site_config,
+            upstream_provider_access,
         }
     }
 
@@ -100,6 +105,10 @@ impl State {
     pub fn site_config(&self) -> &SiteConfig {
         &self.site_config
     }
+
+    pub fn upstream_provider_access(&self) -> &UpstreamProviderAccess {
+        &self.upstream_provider_access
+    }
 }
 
 /// Initialise the worker, without running it.
@@ -109,6 +118,7 @@ impl State {
 /// # Errors
 ///
 /// This function can fail if the database connection fails.
+#[expect(clippy::too_many_arguments, reason = "this is fine")]
 pub async fn init(
     repository_factory: PgRepositoryFactory,
     clock: impl Clock + 'static,
@@ -116,6 +126,7 @@ pub async fn init(
     homeserver: impl HomeserverConnection + 'static,
     url_builder: UrlBuilder,
     site_config: &SiteConfig,
+    upstream_provider_access: UpstreamProviderAccess,
     cancellation_token: CancellationToken,
 ) -> Result<QueueWorker, QueueRunnerError> {
     let state = State::new(
@@ -125,6 +136,7 @@ pub async fn init(
         homeserver,
         url_builder,
         site_config.clone(),
+        upstream_provider_access,
     );
     let mut worker = QueueWorker::new(state, cancellation_token).await?;
 
@@ -178,7 +190,8 @@ pub async fn init(
         )
         .add_schedule(
             "cleanup-consumed-oauth-refresh-tokens",
-            // Run this job every hour at minute 5 (safe to parallelize with revoked)
+            // Run this job every hour at minute 5 (safe to parallelize with
+            // revoked)
             "0 5 * * * *".parse()?,
             mas_storage::queue::CleanupConsumedOAuthRefreshTokensJob,
         )
@@ -232,7 +245,8 @@ pub async fn init(
         )
         .add_schedule(
             "cleanup-upstream-oauth-sessions",
-            // Run this job every hour at minute 40 (independent, safe to parallelize)
+            // Run this job every hour at minute 40 (independent, safe to
+            // parallelize)
             "0 40 * * * *".parse()?,
             mas_storage::queue::CleanupUpstreamOAuthSessionsJob,
         )
@@ -302,6 +316,7 @@ pub async fn init_and_run(
     homeserver: impl HomeserverConnection + 'static,
     url_builder: UrlBuilder,
     site_config: &SiteConfig,
+    upstream_provider_access: UpstreamProviderAccess,
     cancellation_token: CancellationToken,
     task_tracker: &TaskTracker,
 ) -> Result<(), QueueRunnerError> {
@@ -312,6 +327,7 @@ pub async fn init_and_run(
         homeserver,
         url_builder,
         site_config,
+        upstream_provider_access,
         cancellation_token,
     )
     .await?;

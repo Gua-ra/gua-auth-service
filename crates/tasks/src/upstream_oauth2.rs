@@ -1,0 +1,146 @@
+// Copyright 2024, 2025 New Vector Ltd.
+// Copyright 2022-2024 The Matrix.org Foundation C.I.C.
+//
+// SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+// Please see LICENSE files in the repository root for full details.
+
+//! Client credentials for upstream OAuth 2.0 providers.
+//!
+//! GUA FORK: moved here from the handlers crate so the task worker can
+//! authenticate to upstream providers the same way the callback handler does.
+
+use std::string::FromUtf8Error;
+
+use mas_data_model::{UpstreamOAuthProvider, UpstreamOAuthProviderTokenAuthMethod};
+use mas_iana::jose::JsonWebSignatureAlg;
+use mas_keystore::{DecryptError, Encrypter, Keystore};
+use mas_oidc_client::types::client_credentials::ClientCredentials;
+use pkcs8::DecodePrivateKey;
+use serde::Deserialize;
+use thiserror::Error;
+use url::Url;
+
+#[derive(Debug, Error)]
+pub enum ProviderCredentialsError {
+    #[error("Provider doesn't have a client secret")]
+    MissingClientSecret,
+
+    #[error("Could not decrypt client secret")]
+    DecryptClientSecret {
+        #[from]
+        inner: DecryptError,
+    },
+
+    #[error("Client secret is invalid")]
+    InvalidClientSecret {
+        #[from]
+        inner: FromUtf8Error,
+    },
+
+    #[error("Invalid JSON in client secret")]
+    InvalidClientSecretJson {
+        #[from]
+        inner: serde_json::Error,
+    },
+
+    #[error("Could not parse PEM encoded private key")]
+    InvalidPrivateKey {
+        #[from]
+        inner: pkcs8::Error,
+    },
+}
+
+#[derive(Debug, Deserialize)]
+pub struct SignInWithApple {
+    pub private_key: String,
+    pub team_id: String,
+    pub key_id: String,
+}
+
+/// Build the credentials MAS presents to an upstream provider.
+///
+/// `token_endpoint` is the audience of the client assertion for the JWT based
+/// authentication methods.
+///
+/// # Errors
+///
+/// Returns an error if the provider's client secret is missing or cannot be
+/// decrypted or parsed.
+pub fn client_credentials_for_provider(
+    provider: &UpstreamOAuthProvider,
+    token_endpoint: &Url,
+    keystore: &Keystore,
+    encrypter: &Encrypter,
+) -> Result<ClientCredentials, ProviderCredentialsError> {
+    let client_id = provider.client_id.clone();
+
+    // Decrypt the client secret
+    let client_secret = provider
+        .encrypted_client_secret
+        .as_deref()
+        .map(|encrypted_client_secret| {
+            let decrypted = encrypter.decrypt_string(encrypted_client_secret)?;
+            let decrypted = String::from_utf8(decrypted)?;
+            Ok::<_, ProviderCredentialsError>(decrypted)
+        })
+        .transpose()?;
+
+    let client_credentials = match provider.token_endpoint_auth_method {
+        UpstreamOAuthProviderTokenAuthMethod::None => ClientCredentials::None { client_id },
+
+        UpstreamOAuthProviderTokenAuthMethod::ClientSecretPost => {
+            ClientCredentials::ClientSecretPost {
+                client_id,
+                client_secret: client_secret
+                    .ok_or(ProviderCredentialsError::MissingClientSecret)?,
+            }
+        }
+
+        UpstreamOAuthProviderTokenAuthMethod::ClientSecretBasic => {
+            ClientCredentials::ClientSecretBasic {
+                client_id,
+                client_secret: client_secret
+                    .ok_or(ProviderCredentialsError::MissingClientSecret)?,
+            }
+        }
+
+        UpstreamOAuthProviderTokenAuthMethod::ClientSecretJwt => {
+            ClientCredentials::ClientSecretJwt {
+                client_id,
+                client_secret: client_secret
+                    .ok_or(ProviderCredentialsError::MissingClientSecret)?,
+                signing_algorithm: provider
+                    .token_endpoint_signing_alg
+                    .clone()
+                    .unwrap_or(JsonWebSignatureAlg::Rs256),
+                token_endpoint: token_endpoint.clone(),
+            }
+        }
+
+        UpstreamOAuthProviderTokenAuthMethod::PrivateKeyJwt => ClientCredentials::PrivateKeyJwt {
+            client_id,
+            keystore: keystore.clone(),
+            signing_algorithm: provider
+                .token_endpoint_signing_alg
+                .clone()
+                .unwrap_or(JsonWebSignatureAlg::Rs256),
+            token_endpoint: token_endpoint.clone(),
+        },
+
+        UpstreamOAuthProviderTokenAuthMethod::SignInWithApple => {
+            let params = client_secret.ok_or(ProviderCredentialsError::MissingClientSecret)?;
+            let params: SignInWithApple = serde_json::from_str(&params)?;
+
+            let key = elliptic_curve::SecretKey::from_pkcs8_pem(&params.private_key)?;
+
+            ClientCredentials::SignInWithApple {
+                client_id,
+                key,
+                key_id: params.key_id,
+                team_id: params.team_id,
+            }
+        }
+    };
+
+    Ok(client_credentials)
+}

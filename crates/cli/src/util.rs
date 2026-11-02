@@ -263,6 +263,7 @@ pub fn site_config_from_config(
         device_code_grant_enabled: oauth_config.device_code_grant_enabled,
         device_code_user_code_auto_fill_enabled: oauth_config
             .device_code_user_code_auto_fill_enabled,
+        gua_forget_upstream_on_deactivation: account_config.gua_forget_upstream_on_deactivation,
     })
 }
 
@@ -457,7 +458,7 @@ pub async fn load_policy_factory_dynamic_data_continuously(
     load_policy_factory_dynamic_data(&policy_factory, &*repository_factory).await?;
 
     task_tracker.spawn(async move {
-        let mut interval = tokio::time::interval(Duration::from_secs(60));
+        let mut interval = tokio::time::interval(Duration::from_mins(1));
 
         loop {
             tokio::select! {

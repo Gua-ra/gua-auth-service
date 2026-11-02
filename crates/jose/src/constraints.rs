@@ -191,7 +191,8 @@ impl<'a> ConstraintSet<'a> {
                 match constraint.decide(constrainable) {
                     ConstraintDecision::Positive => score += 1,
                     ConstraintDecision::Neutral => {}
-                    // If any constraint was negative, don't add it to the candidates
+                    // If any constraint was negative, don't add it to the
+                    // candidates
                     ConstraintDecision::Negative => continue 'outer,
                 }
             }

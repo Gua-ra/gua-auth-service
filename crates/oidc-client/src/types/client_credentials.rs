@@ -130,7 +130,14 @@ impl ClientCredentials {
 
     /// Apply these [`ClientCredentials`] to the given request with the given
     /// form.
-    pub(crate) fn authenticated_form<T: Serialize>(
+    ///
+    /// GUA FORK: public so the task worker can authenticate the account
+    /// deletion notice it sends to upstream providers.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the client assertion could not be signed.
+    pub fn authenticated_form<T: Serialize>(
         &self,
         request: reqwest::RequestBuilder,
         form: &T,

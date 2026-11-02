@@ -120,8 +120,8 @@ pub async fn get(
             login: CompatLogin::Sso {
                 redirect_uri: login.redirect_uri.to_string(),
             },
-            // We don't know if there's going to be a replacement until we received the device ID,
-            // which happens too late.
+            // We don't know if there's going to be a replacement until we
+            // received the device ID, which happens too late.
             session_replaced: false,
             session_counts,
             requester: mas_policy::Requester {
@@ -269,8 +269,8 @@ pub async fn post(
                 redirect_uri: login.redirect_uri.to_string(),
             },
             session_counts,
-            // We don't know if there's going to be a replacement until we received the device ID,
-            // which happens too late.
+            // We don't know if there's going to be a replacement until we
+            // received the device ID, which happens too late.
             session_replaced: false,
             requester: mas_policy::Requester {
                 ip_address: activity_tracker.ip(),

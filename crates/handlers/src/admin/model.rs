@@ -889,7 +889,8 @@ impl
             last_active_at: session.last_active_at,
             last_active_ip: session.last_active_ip,
             expires_at,
-            // If relevant, the caller will populate using `with_token` afterwards.
+            // If relevant, the caller will populate using `with_token`
+            // afterwards.
             access_token: None,
         })
     }

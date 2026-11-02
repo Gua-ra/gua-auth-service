@@ -64,8 +64,8 @@ enum LoginType {
     #[serde(rename = "m.login.password")]
     Password,
 
-    // we will leave MSC3824 `actions` as undefined for this auth type as unclear
-    // how it should be interpreted
+    // we will leave MSC3824 `actions` as undefined for this auth type as
+    // unclear how it should be interpreted
     #[serde(rename = "m.login.token")]
     Token,
 
@@ -146,7 +146,8 @@ pub enum Credentials {
     #[serde(rename = "m.login.password")]
     Password {
         identifier: Option<Identifier>,
-        // This property has been deprecated for a while, but some tools still use it.
+        // This property has been deprecated for a while, but some tools still
+        // use it.
         user: Option<String>,
         password: String,
     },
@@ -525,11 +526,12 @@ async fn process_violations_for_compat_login(
 ) -> Result<(), RouteError> {
     // We're using slice syntax here so we can match easily
     match (res.valid(), &res.violations[..]) {
-        // If the only violation is having reached the session limit, we might be
-        // able to resolve the situation.
+        // If the only violation is having reached the session limit, we might
+        // be able to resolve the situation.
         //
         // We don't trigger this if there was some other violation anyway, since
-        // that means that removing a session wouldn't actually unblock the login.
+        // that means that removing a session wouldn't actually unblock the
+        // login.
         (
             false,
             [
@@ -627,11 +629,13 @@ async fn process_violations_for_compat_login(
                         return Err(RouteError::PolicyHardSessionLimitReached);
                     }
                 }
-                // If we got here, it means they are using their own custom policies
-                // which don't take into account the configured `session_limit`.
+                // If we got here, it means they are using their own custom
+                // policies which don't take into account the configured
+                // `session_limit`.
                 //
-                // We don't know the actual reason behind the policy emitting the
-                // violation so we just have to show a generic policy rejected page.
+                // We don't know the actual reason behind the policy emitting
+                // the violation so we just have to show a generic policy
+                // rejected page.
                 None => {
                     // FIXME: We should be exposing the violations to the user
                     return Err(RouteError::PolicyRejected);
@@ -2029,8 +2033,8 @@ mod tests {
             pool,
             SiteConfig {
                 session_limit: Some(SessionLimitConfig {
-                    // Lowest non-zero value so we don't have to login a bunch (lower
-                    // than `hard_limit`)
+                    // Lowest non-zero value so we don't have to login a bunch
+                    // (lower than `hard_limit`)
                     soft_limit: NonZeroU64::new(1).unwrap(),
                     // Some arbitrary high value (more than we login)
                     hard_limit: NonZeroU64::new(5).unwrap(),
@@ -2094,8 +2098,8 @@ mod tests {
             pool,
             SiteConfig {
                 session_limit: Some(SessionLimitConfig {
-                    // Lowest non-zero value so we don't have to login a bunch (lower
-                    // than `hard_limit`)
+                    // Lowest non-zero value so we don't have to login a bunch
+                    // (lower than `hard_limit`)
                     soft_limit: NonZeroU64::new(1).unwrap(),
                     // Some arbitrary high value (more than we login)
                     hard_limit: NonZeroU64::new(5).unwrap(),
@@ -2332,7 +2336,8 @@ mod tests {
         let mut state = TestState::from_pool_with_site_config(
             pool.clone(),
             SiteConfig {
-                // Setup an account with a few sessions before we add a `session_limit`
+                // Setup an account with a few sessions before we add a
+                // `session_limit`
                 session_limit: None,
                 ..test_site_config()
             },
@@ -2408,7 +2413,8 @@ mod tests {
         let mut state = TestState::from_pool_with_site_config(
             pool.clone(),
             SiteConfig {
-                // Setup an account with a few sessions before we add a `session_limit`
+                // Setup an account with a few sessions before we add a
+                // `session_limit`
                 session_limit: None,
                 ..test_site_config()
             },

@@ -188,6 +188,11 @@ impl Options {
                 homeserver_connection.clone(),
                 url_builder.clone(),
                 &site_config,
+                mas_tasks::UpstreamProviderAccess {
+                    http_client: http_client.clone(),
+                    encrypter: encrypter.clone(),
+                    keystore: key_store.clone(),
+                },
                 shutdown.soft_shutdown_token(),
                 shutdown.task_tracker(),
             )
@@ -205,7 +210,7 @@ impl Options {
         // Activity is flushed every minute
         let activity_tracker = ActivityTracker::new(
             PgRepositoryFactory::new(pool.clone()).boxed(),
-            Duration::from_secs(60),
+            Duration::from_mins(1),
             shutdown.task_tracker(),
             shutdown.soft_shutdown_token(),
         );

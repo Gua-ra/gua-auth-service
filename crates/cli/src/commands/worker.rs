@@ -6,6 +6,7 @@
 
 use std::{process::ExitCode, time::Duration};
 
+use anyhow::Context as _;
 use clap::Parser;
 use figment::Figment;
 use mas_config::{AppConfig, ConfigurationSection};
@@ -68,7 +69,17 @@ impl Options {
         test_mailer_in_background(&mailer, Duration::from_secs(30));
 
         let http_client = mas_http::reqwest_client();
-        let conn = homeserver_connection_from_config(&config.matrix, http_client).await?;
+        let conn = homeserver_connection_from_config(&config.matrix, http_client.clone()).await?;
+
+        let upstream_provider_access = mas_tasks::UpstreamProviderAccess {
+            http_client,
+            encrypter: config.secrets.encrypter().await?,
+            keystore: config
+                .secrets
+                .key_store()
+                .await
+                .context("could not import keys from config")?,
+        };
 
         drop(config);
 
@@ -80,6 +91,7 @@ impl Options {
             conn,
             url_builder,
             &site_config,
+            upstream_provider_access,
             shutdown.soft_shutdown_token(),
             shutdown.task_tracker(),
         )

@@ -518,8 +518,9 @@ pub(crate) async fn get(
                     // GUA FORK: the Gua provider must keep `on_conflict` at
                     // `fail`, or a matching username attaches a new subject.
                     match provider.claims_imports.localpart.on_conflict {
-                        // We matched an existing user, but the server doesn't allow us to link to
-                        // existing users automatically. In this case, we error out
+                        // We matched an existing user, but the server doesn't
+                        // allow us to link to existing users automatically. In
+                        // this case, we error out
                         UpstreamOAuthProviderOnConflict::Fail => {
                             tracing::warn!(
                                 upstream_oauth_provider.id = %provider.id,
@@ -528,14 +529,8 @@ pub(crate) async fn get(
                                 "Upstream provider returned a localpart {localpart:?} which is already used by another user. Configuration doesn't allow for automatic linking of existing users."
                             );
 
-                            // TODO: translate
                             let ctx = ErrorContext::new()
-                                .with_code("User exists")
-                                .with_description(format!(
-                                    r"Upstream account provider returned {localpart:?} as username,
-                                    which is not linked to that upstream account. Your homeserver does not allow
-                                    linking an upstream account to an existing account"
-                                ))
+                                .with_code("username_unavailable")
                                 .with_language(&locale);
 
                             return Ok((
@@ -544,8 +539,9 @@ pub(crate) async fn get(
                             ));
                         }
 
-                        // We matched an existing user and the conflict resolution is to add the
-                        // link to the existing user. In this case, we add the link
+                        // We matched an existing user and the conflict
+                        // resolution is to add the link to the existing user.
+                        // In this case, we add the link
                         UpstreamOAuthProviderOnConflict::Add => {
                             tracing::info!(
                                 user.id = %existing_user.id,
@@ -561,8 +557,9 @@ pub(crate) async fn get(
                                 .await?;
                         }
 
-                        // We matched an existing user and the conflict resolution is to replace any
-                        // link on the existing user with this one
+                        // We matched an existing user and the conflict
+                        // resolution is to replace any link on the existing
+                        // user with this one
                         UpstreamOAuthProviderOnConflict::Replace => {
                             // Find existing links for this provider and user
                             let filter = UpstreamOAuthLinkFilter::new()
@@ -609,8 +606,9 @@ pub(crate) async fn get(
                                 .await?;
                         }
 
-                        // We matched an existing user and the conflict resolution is to link to the
-                        // existing user *only if* there is no existing link on that user
+                        // We matched an existing user and the conflict
+                        // resolution is to link to the existing user *only if*
+                        // there is no existing link on that user
                         UpstreamOAuthProviderOnConflict::Set => {
                             // Find existing links for this provider and user
                             let filter = UpstreamOAuthLinkFilter::new()
@@ -626,14 +624,8 @@ pub(crate) async fn get(
                                     "Upstream provider returned a localpart {localpart:?} matching an existing user who already has {count} link(s) to this provider, which isn't allowed by the conflict resolution"
                                 );
 
-                                // TODO: translate
                                 let ctx = ErrorContext::new()
-                                    .with_code("User exists")
-                                    .with_description(format!(
-                                        r"Upstream account provider returned {localpart:?} as username,
-                                        but this user already has an existing link to this provider.
-                                        Your homeserver does not allow replacing upstream account links automatically."
-                                    ))
+                                    .with_code("username_unavailable")
                                     .with_language(&locale);
 
                                 return Ok((
@@ -745,13 +737,14 @@ pub(crate) async fn get(
                     }
 
                     // If the username policy check fails, we display an error
-                    // message. TODO: translate
+                    // message.
+                    tracing::warn!(
+                        upstream_oauth_provider.id = %provider.id,
+                        upstream_oauth_link.id = %link.id,
+                        "Upstream provider returned a localpart {localpart:?} which was denied by the policy ({res})"
+                    );
                     let ctx = ErrorContext::new()
-                        .with_code("Policy error")
-                        .with_description(format!(
-                            r"Upstream account provider returned {localpart:?} as username,
-                            which does not pass the policy check: {res}"
-                        ))
+                        .with_code("username_not_allowed")
                         .with_language(&locale);
 
                     return Ok((
@@ -779,12 +772,13 @@ pub(crate) async fn get(
                         break 'localpart None;
                     }
 
-                    // TODO: translate
+                    tracing::warn!(
+                        upstream_oauth_provider.id = %provider.id,
+                        upstream_oauth_link.id = %link.id,
+                        "Upstream provider returned a localpart {localpart:?} which isn't available on the homeserver"
+                    );
                     let ctx = ErrorContext::new()
-                        .with_code("Localpart not available")
-                        .with_description(format!(
-                            r"Localpart {localpart:?} is not available on this homeserver"
-                        ))
+                        .with_code("username_unavailable")
                         .with_language(&locale);
 
                     return Ok((
@@ -1332,7 +1326,10 @@ async fn prepare_user_registration(
 
 #[cfg(test)]
 mod tests {
-    use hyper::{Request, StatusCode, header::CONTENT_TYPE};
+    use hyper::{
+        Request, StatusCode,
+        header::{ACCEPT_LANGUAGE, CONTENT_TYPE},
+    };
     use mas_data_model::{
         UpstreamOAuthAuthorizationSession, UpstreamOAuthLink, UpstreamOAuthProviderClaimsImports,
         UpstreamOAuthProviderImportPreference, UpstreamOAuthProviderLocalpartPreference,
@@ -2023,7 +2020,8 @@ mod tests {
             localpart: UpstreamOAuthProviderLocalpartPreference {
                 action: mas_data_model::UpstreamOAuthProviderImportAction::Require,
                 template: None,
-                // This will replace any existing links for this provider and user
+                // This will replace any existing links for this provider and
+                // user
                 on_conflict: mas_data_model::UpstreamOAuthProviderOnConflict::Replace,
             },
             email: UpstreamOAuthProviderImportPreference {
@@ -2173,7 +2171,8 @@ mod tests {
             localpart: UpstreamOAuthProviderLocalpartPreference {
                 action: mas_data_model::UpstreamOAuthProviderImportAction::Require,
                 template: None,
-                // This will only link if there are no existing links for this provider and user
+                // This will only link if there are no existing links for this
+                // provider and user
                 on_conflict: mas_data_model::UpstreamOAuthProviderOnConflict::Set,
             },
             email: UpstreamOAuthProviderImportPreference {
@@ -2293,7 +2292,8 @@ mod tests {
             localpart: UpstreamOAuthProviderLocalpartPreference {
                 action: mas_data_model::UpstreamOAuthProviderImportAction::Require,
                 template: None,
-                // This will only link if there are no existing links for this provider and user
+                // This will only link if there are no existing links for this
+                // provider and user
                 on_conflict: mas_data_model::UpstreamOAuthProviderOnConflict::Set,
             },
             email: UpstreamOAuthProviderImportPreference {
@@ -2409,8 +2409,21 @@ mod tests {
         response.assert_header_value(CONTENT_TYPE, "text/html; charset=utf-8");
 
         // Verify the error message is displayed
-        assert!(response.body().contains("User exists"));
-        assert!(response.body().contains("replacing upstream account links"));
+        assert!(response.body().contains("This username is not available"));
+        assert!(!response.body().contains("homeserver"));
+
+        for (language, message) in [
+            ("es", "Este nombre de usuario no está disponible."),
+            ("pt-BR", "Este nome de usuário não está disponível."),
+            ("fr", "Ce nom d'utilisateur n'est pas disponible."),
+        ] {
+            let request = Request::get(&*mas_router::UpstreamOAuth2Link::new(link.id).path())
+                .header(ACCEPT_LANGUAGE, language)
+                .empty();
+            let response = state.request(cookies.with_cookies(request)).await;
+            response.assert_status(StatusCode::OK);
+            assert!(response.body().contains(message), "missing {language} copy");
+        }
 
         // Check that the new link was NOT associated with the existing user
         let mut repo = state.repository().await.unwrap();
@@ -2991,7 +3004,7 @@ mod tests {
                     browser(&state, &upstream_session, &link, post_auth_action, None);
                 let response = get_link(&state, &cookies, &link).await;
                 response.assert_status(StatusCode::OK);
-                assert!(response.body().contains("User exists"));
+                assert!(response.body().contains("This username is not available"));
                 assert_eq!(link_owner(&state, &link).await, None);
                 assert_eq!(active_browser_sessions(&state, &john).await, 0);
             }

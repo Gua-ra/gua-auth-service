@@ -156,6 +156,7 @@ pub fn test_site_config() -> SiteConfig {
         session_limit: None,
         device_code_grant_enabled: true,
         device_code_user_code_auto_fill_enabled: true,
+        gua_forget_upstream_on_deactivation: true,
     }
 }
 
@@ -247,7 +248,7 @@ impl TestState {
 
         let activity_tracker = ActivityTracker::new(
             PgRepositoryFactory::new(pool.clone()).boxed(),
-            std::time::Duration::from_secs(60),
+            std::time::Duration::from_mins(1),
             &task_tracker,
             shutdown_token.child_token(),
         );
@@ -266,6 +267,11 @@ impl TestState {
             homeserver_connection.clone(),
             url_builder.clone(),
             &site_config,
+            mas_tasks::UpstreamProviderAccess {
+                http_client: http_client.clone(),
+                encrypter: encrypter.clone(),
+                keystore: key_store.clone(),
+            },
             shutdown_token.child_token(),
         )
         .await

@@ -80,9 +80,10 @@ impl IntoResponse for RouteError {
             )
                 .into_response(),
 
-            // This error happens if we managed to parse the incomiong JSON but it can't be
-            // deserialized to the expected type. In this case we return an
-            // `invalid_client_metadata` error with the details of the error.
+            // This error happens if we managed to parse the incomiong JSON but
+            // it can't be deserialized to the expected type. In this case we
+            // return an `invalid_client_metadata` error with the details of the
+            // error.
             Self::JsonExtract(axum::extract::rejection::JsonRejection::JsonDataError(e)) => (
                 StatusCode::BAD_REQUEST,
                 Json(
@@ -92,17 +93,18 @@ impl IntoResponse for RouteError {
             )
                 .into_response(),
 
-            // For all other JSON errors we return a `invalid_request` error, since this is
-            // probably due to a malformed request.
+            // For all other JSON errors we return a `invalid_request` error,
+            // since this is probably due to a malformed request.
             Self::JsonExtract(_) => (
                 StatusCode::BAD_REQUEST,
                 Json(ClientError::from(ClientErrorCode::InvalidRequest)),
             )
                 .into_response(),
 
-            // This error comes from the `ClientMetadata::validate` method. We return an
-            // `invalid_redirect_uri` error if the error is related to the redirect URIs, else we
-            // return an `invalid_client_metadata` error.
+            // This error comes from the `ClientMetadata::validate` method. We
+            // return an `invalid_redirect_uri` error if the error is related to
+            // the redirect URIs, else we return an `invalid_client_metadata`
+            // error.
             Self::InvalidClientMetadata(
                 ClientMetadataVerificationError::MissingRedirectUris
                 | ClientMetadataVerificationError::RedirectUriWithFragment(_),
@@ -121,9 +123,10 @@ impl IntoResponse for RouteError {
             )
                 .into_response(),
 
-            // This error happens if the any of the client's URIs are public suffixes. We return
-            // an `invalid_redirect_uri` error if it's a `redirect_uri`, else we return an
-            // `invalid_client_metadata` error.
+            // This error happens if the any of the client's URIs are public
+            // suffixes. We return an `invalid_redirect_uri` error if it's a
+            // `redirect_uri`, else we return an `invalid_client_metadata`
+            // error.
             Self::UrlIsPublicSuffix("redirect_uri") => (
                 StatusCode::BAD_REQUEST,
                 Json(
@@ -142,9 +145,10 @@ impl IntoResponse for RouteError {
             )
                 .into_response(),
 
-            // For policy violations, we return an `invalid_client_metadata` error with the details
-            // of the violations in most cases. If a violation includes `redirect_uri` in the
-            // message, we return an `invalid_redirect_uri` error instead.
+            // For policy violations, we return an `invalid_client_metadata`
+            // error with the details of the violations in most cases. If a
+            // violation includes `redirect_uri` in the message, we return an
+            // `invalid_redirect_uri` error instead.
             Self::PolicyDenied(evaluation) => {
                 // TODO: detect them better
                 let code = if evaluation

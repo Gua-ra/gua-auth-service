@@ -40,15 +40,9 @@
       "account_password": "Tilin salasana",
       "contact_info": "Yhteystiedot",
       "delete_account": {
-        "alert_description": "Tämä tili poistetaan pysyvästi, etkä enää pääse käsiksi viesteihisi.",
-        "alert_title": "Olet menettämässä kaikki tietosi",
         "button": "Poista tili",
-        "dialog_description": "<text>Vahvista, että haluat poistaa tilisi:</text>\n<profile />\n<list>\n<item>Et voi aktivoida tiliäsi uudelleen</item>\n<item>Et voi enää kirjautua sisään</item>\n<item>Kukaan ei voi käyttää käyttäjänimeäsi (MXID) uudelleen, et edes sinä</item>\n<item>Poistut kaikista huoneista ja keskusteluista, joissa olet</item>\n<item>Sinut poistetaan identiteettipalvelimelta, eikä kukaan voi löytää sinua sähköpostiosoitteellasi tai puhelinnumerollasi</item>\n</list>\n<text>Vanhat viestisi näkyvät edelleen niille, jotka ovat vastaanottaneet ne. Haluatko piilottaa lähetetyt viestit niiltä, jotka liittyvät huoneisiin tulevaisuudessa?</text>",
         "dialog_title": "Poistetaanko tämä tili?",
-        "erase_checkbox_label": "Kyllä, piilota kaikki viestini uusilta liittyjiltä",
         "incorrect_password": "Väärä salasana, yritä uudelleen",
-        "mxid_label": "Vahvista Matrix-tunnuksesi ({{ mxid }})",
-        "mxid_mismatch": "Tämä ei täsmää Matrix-tunnuksesi kanssa",
         "password_label": "Kirjoita salasanasi jatkaaksesi"
       },
       "edit_profile": {

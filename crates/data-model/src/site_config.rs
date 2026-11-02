@@ -127,4 +127,8 @@ pub struct SiteConfig {
     /// `verification_uri_complete` and whether `/link` accepts a `code`
     /// query parameter to auto-fill the user code.
     pub device_code_user_code_auto_fill_enabled: bool,
+
+    /// GUA FORK: whether deleting an account notifies its upstream providers
+    /// and removes the links they confirm.
+    pub gua_forget_upstream_on_deactivation: bool,
 }

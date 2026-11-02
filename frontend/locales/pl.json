@@ -40,15 +40,9 @@
       "account_password": "Hasło do konta",
       "contact_info": "Dane kontaktowe",
       "delete_account": {
-        "alert_description": "To konto zostanie trwale usunięte i nie będziesz już mieć dostępu do żadnych wiadomości.",
-        "alert_title": "Za chwilę stracisz wszystkie swoje dane",
         "button": "Usuń konto",
-        "dialog_description": "<text>Potwierdź, że chcesz usunąć swoje konto:</text>\n<profile />\n<list>\n<item>Nie będziesz mógł ponownie aktywować swojego konta</item>\n<item>Nie będziesz już mógł się zalogować</item>\n<item> Nikt nie będzie mógł ponownie wykorzystać Twojej nazwy użytkownika (MXID), łącznie z Tobą</item>\n<item>Opuścisz wszystkie pokoje i wiadomości bezpośrednie, w których uczestniczysz</item>\n<item>Zostaniesz usunięty z serwera tożsamości i nikt nie będzie mógł Cię znaleźć po Twoim adresie e-mail ani numerze telefonu</item>\n</list>\n<text>Twoje stare wiadomości nadal będą widoczne dla osób, które je otrzymały. Czy chcesz ukryć wysłane wiadomości przed osobami, które dołączą do pokoi w przyszłości?</text>",
         "dialog_title": "Usunąć to konto?",
-        "erase_checkbox_label": "Tak, ukryj wszystkie moje wiadomości przed nowymi użytkownikami",
         "incorrect_password": "Niepoprawne hasło. Spróbuj ponownie.",
-        "mxid_label": "Potwierdź swój identyfikator Matrix ({{ mxid }})",
-        "mxid_mismatch": "Ta wartość nie pasuje do Twojego identyfikatora Matrix",
         "password_label": "Wprowadź hasło, aby kontynuować"
       },
       "edit_profile": {

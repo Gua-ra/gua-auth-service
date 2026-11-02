@@ -643,7 +643,8 @@ mod tests {
         let manager = PasswordManager::new(
             0,
             [
-                // Start with one hashing scheme: the one used by synapse, bcrypt + pepper
+                // Start with one hashing scheme: the one used by synapse,
+                // bcrypt + pepper
                 (
                     1,
                     Hasher::bcrypt(Some(10), Some(b"a-secret-pepper".to_vec()), false),

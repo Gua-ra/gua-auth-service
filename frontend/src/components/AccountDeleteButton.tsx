@@ -12,7 +12,6 @@ import { type FragmentType, graphql, useFragment } from "../gql";
 import { graphqlRequest } from "../graphql";
 import * as Dialog from "./Dialog";
 import LoadingSpinner from "./LoadingSpinner";
-import Separator from "./Separator";
 
 export const USER_FRAGMENT = graphql(/* GraphQL */ `
   fragment AccountDeleteButton_user on User {
@@ -69,17 +68,13 @@ const AccountDeleteButton: React.FC<Props> = (props) => {
   const { t } = useTranslation();
 
   const localpart = user.matrix.mxid.replace(/^@/, "").split(":")[0];
+  // GUA FORK: deleting an account always erases it on the homeserver, so the
+  // dialog offers no choice.
   const mutation = useMutation({
-    mutationFn: ({
-      password,
-      hsErase,
-    }: {
-      password: string | null;
-      hsErase: boolean;
-    }) =>
+    mutationFn: ({ password }: { password: string | null }) =>
       graphqlRequest({
         query: MUTATION,
-        variables: { password, hsErase },
+        variables: { password, hsErase: true },
       }),
     onSuccess: (data) => {
       if (data.deactivateUser.status === "DEACTIVATED") {
@@ -136,9 +131,8 @@ const AccountDeleteButton: React.FC<Props> = (props) => {
       const data = new FormData(e.currentTarget);
       const password = data.get("password");
       if (password !== null && typeof password !== "string") throw new Error();
-      const hsErase = data.get("hs-erase") === "on";
 
-      mutation.mutate({ password, hsErase });
+      mutation.mutate({ password });
     },
     [mutation.mutate, allowSubmitting],
   );
@@ -195,14 +189,6 @@ const AccountDeleteButton: React.FC<Props> = (props) => {
       </Dialog.Description>
 
       <Form.Root onSubmit={onSubmit}>
-        <Form.InlineField control={<Form.CheckboxControl />} name="hs-erase">
-          <Form.Label>
-            {t("frontend.account.delete_account.erase_checkbox_label")}
-          </Form.Label>
-        </Form.InlineField>
-
-        <Separator className="my-1" />
-
         {shouldPromptPassword ? (
           <Form.Field name="password" serverInvalid={incorrectPassword}>
             <Form.Label>

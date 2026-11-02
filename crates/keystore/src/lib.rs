@@ -246,8 +246,8 @@ impl PrivateKey {
         if let Ok(pem) = std::str::from_utf8(bytes) {
             match Self::load_pem(pem) {
                 Ok(s) => return Ok(s),
-                // If there was an error loading the document as PEM, ignore it and continue by
-                // trying to load it as DER
+                // If there was an error loading the document as PEM, ignore it
+                // and continue by trying to load it as DER
                 Err(LoadError::Pem { .. }) => {}
                 Err(e) => return Err(e),
             }
@@ -267,8 +267,8 @@ impl PrivateKey {
         if let Ok(pem) = std::str::from_utf8(bytes) {
             match Self::load_encrypted_pem(pem, password.as_ref()) {
                 Ok(s) => return Ok(s),
-                // If there was an error loading the document as PEM, ignore it and continue by
-                // trying to load it as DER
+                // If there was an error loading the document as PEM, ignore it
+                // and continue by trying to load it as DER
                 Err(LoadError::Pem { .. }) => {}
                 Err(e) => return Err(e),
             }

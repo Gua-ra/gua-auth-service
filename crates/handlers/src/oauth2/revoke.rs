@@ -192,9 +192,10 @@ pub(crate) async fn post(
             refresh_token.session_id
         }
 
-        // This case can happen if there is a mismatch between the token type hint and the guessed
-        // token type or if the token was a compat access/refresh token. In those cases, we return
-        // an unknown token error.
+        // This case can happen if there is a mismatch between the token type
+        // hint and the guessed token type or if the token was a compat
+        // access/refresh token. In those cases, we return an unknown token
+        // error.
         (Some(OAuthTokenTypeHint::AccessToken | OAuthTokenTypeHint::RefreshToken) | None, _) => {
             return Err(RouteError::UnknownToken);
         }
