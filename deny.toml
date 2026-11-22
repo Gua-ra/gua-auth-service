@@ -23,6 +23,11 @@ ignore = [
     # crypto-bigint timing leaks: no patched 0.5.x exists and elliptic-curve 0.13
     # requires 0.5, so this clears only with the RustCrypto 0.14 move upstream made.
     "RUSTSEC-2026-0387",
+    # chrono is unmaintained. Upstream ignores this too: replacing it is a bigger refactor.
+    "RUSTSEC-2026-0543",
+    # ruma-identifiers-validation mxc_uri::validate panic, not yet numbered. MAS never parses
+    # content URIs; the fix needs ruma-common 0.20, which comes with the upstream merge.
+    "RUSTSEC-0000-0000",
 ]
 
 # smartstring (RUSTSEC-2026-0249) is transitive and has no safe upgrade.
@@ -58,6 +63,7 @@ deny = [
 multiple-versions = "deny"
 
 skip = [
+    { name = "base64", version = "0.22.1" },         # lettre moved to 0.23, the rest of the tree is on 0.22
     { name = "itertools", version = "0.13.0" },      # zxcvbn depends on this old version
     # a few crates depend on old versions of hashbrown
     { name = "hashbrown", version = "0.14.5" },

@@ -149,8 +149,7 @@ impl Options {
                 &clock,
                 // Don't prune — we don't want to be unnecessarily destructive
                 false,
-                // Not a dry run — we do want to create the providers in the
-                // database
+                // Not a dry run — we do want to create the providers in the database
                 false,
             )
             .await

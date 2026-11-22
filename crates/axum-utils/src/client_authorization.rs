@@ -424,8 +424,7 @@ where
             Err(FormRejection::FailedToDeserializeForm(err)) => {
                 return Err(ClientAuthorizationError::BadForm(err));
             }
-            // Other errors (body read twice, byte stream broke) return an
-            // internal error
+            // Other errors (body read twice, byte stream broke) return an internal error
             Err(e) => return Err(ClientAuthorizationError::Internal(Box::new(e))),
         };
 
