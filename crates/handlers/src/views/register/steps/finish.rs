@@ -194,9 +194,9 @@ pub(crate) async fn get(
             }
 
             // Check that the email address isn't already used
-            // It is important to do that here, as we we're not checking during
-            // the registration, because we don't want to disclose whether an
-            // email is already being used or not before we verified it
+            // It is important to do that here, as we we're not checking during the
+            // registration, because we don't want to disclose whether an email is
+            // already being used or not before we verified it
             if repo
                 .user_email()
                 .count(UserEmailFilter::new().for_email(&email_authentication.email))

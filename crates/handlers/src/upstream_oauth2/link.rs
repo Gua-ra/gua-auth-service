@@ -551,9 +551,8 @@ pub(crate) async fn get(
                     // which the deployment repository ships and `mas-cli config
                     // sync` writes into the database.
                     match provider.claims_imports.localpart.on_conflict {
-                        // We matched an existing user, but the server doesn't
-                        // allow us to link to existing users automatically. In
-                        // this case, we error out
+                        // We matched an existing user, but the server doesn't allow us to link to
+                        // existing users automatically. In this case, we error out
                         UpstreamOAuthProviderOnConflict::Fail => {
                             tracing::warn!(
                                 upstream_oauth_provider.id = %provider.id,
@@ -572,9 +571,8 @@ pub(crate) async fn get(
                             ));
                         }
 
-                        // We matched an existing user and the conflict
-                        // resolution is to add the link to the existing user.
-                        // In this case, we add the link
+                        // We matched an existing user and the conflict resolution is to add the
+                        // link to the existing user. In this case, we add the link
                         UpstreamOAuthProviderOnConflict::Add => {
                             tracing::info!(
                                 user.id = %existing_user.id,
@@ -590,9 +588,8 @@ pub(crate) async fn get(
                                 .await?;
                         }
 
-                        // We matched an existing user and the conflict
-                        // resolution is to replace any link on the existing
-                        // user with this one
+                        // We matched an existing user and the conflict resolution is to replace any
+                        // link on the existing user with this one
                         UpstreamOAuthProviderOnConflict::Replace => {
                             // Find existing links for this provider and user
                             let filter = UpstreamOAuthLinkFilter::new()
@@ -639,9 +636,8 @@ pub(crate) async fn get(
                                 .await?;
                         }
 
-                        // We matched an existing user and the conflict
-                        // resolution is to link to the existing user *only if*
-                        // there is no existing link on that user
+                        // We matched an existing user and the conflict resolution is to link to the
+                        // existing user *only if* there is no existing link on that user
                         UpstreamOAuthProviderOnConflict::Set => {
                             // Find existing links for this provider and user
                             let filter = UpstreamOAuthLinkFilter::new()
@@ -2058,8 +2054,7 @@ mod tests {
             localpart: UpstreamOAuthProviderLocalpartPreference {
                 action: mas_data_model::UpstreamOAuthProviderImportAction::Require,
                 template: None,
-                // This will replace any existing links for this provider and
-                // user
+                // This will replace any existing links for this provider and user
                 on_conflict: mas_data_model::UpstreamOAuthProviderOnConflict::Replace,
             },
             email: UpstreamOAuthProviderImportPreference {
@@ -2209,8 +2204,7 @@ mod tests {
             localpart: UpstreamOAuthProviderLocalpartPreference {
                 action: mas_data_model::UpstreamOAuthProviderImportAction::Require,
                 template: None,
-                // This will only link if there are no existing links for this
-                // provider and user
+                // This will only link if there are no existing links for this provider and user
                 on_conflict: mas_data_model::UpstreamOAuthProviderOnConflict::Set,
             },
             email: UpstreamOAuthProviderImportPreference {
@@ -2330,8 +2324,7 @@ mod tests {
             localpart: UpstreamOAuthProviderLocalpartPreference {
                 action: mas_data_model::UpstreamOAuthProviderImportAction::Require,
                 template: None,
-                // This will only link if there are no existing links for this
-                // provider and user
+                // This will only link if there are no existing links for this provider and user
                 on_conflict: mas_data_model::UpstreamOAuthProviderOnConflict::Set,
             },
             email: UpstreamOAuthProviderImportPreference {
