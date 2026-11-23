@@ -16,6 +16,8 @@ targets = [
 version = 2
 db-path = "~/.cargo/advisory-db"
 db-urls = ["https://github.com/rustsec/advisory-db"]
+# Fail once an ignored advisory stops applying, so its exception is removed with the fix.
+unused-ignored-advisory = "deny"
 ignore = [
     # RSA key extraction "Marvin Attack". This is only relevant when using
     # PKCS#1 v1.5 encryption, which we don't
@@ -25,9 +27,10 @@ ignore = [
     "RUSTSEC-2026-0387",
     # chrono is unmaintained. Upstream ignores this too: replacing it is a bigger refactor.
     "RUSTSEC-2026-0543",
-    # ruma-identifiers-validation mxc_uri::validate panic, not yet numbered. MAS never parses
-    # content URIs; the fix needs ruma-common 0.20, which comes with the upstream merge.
-    "RUSTSEC-0000-0000",
+    # ruma-identifiers-validation panics in mxc_uri and key_id validation. MAS only parses
+    # user IDs; the fix needs ruma-common 0.20, which comes with the upstream merge.
+    "RUSTSEC-2026-0588",
+    "RUSTSEC-2026-0589",
 ]
 
 # Only warn about unmaintained crates that are direct dependencies of the
