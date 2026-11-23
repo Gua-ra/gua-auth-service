@@ -142,6 +142,7 @@ pub(crate) async fn get(
     let user_agent = user_agent.map(|ua| ua.to_string());
 
     let Some(session) = maybe_session else {
+        // GUA FORK: keep the app's login hint through the login.
         let login = mas_router::Login::and_then(
             PostAuthAction::continue_device_code_grant_with_hint(grant_id, query.login_hint),
         );
@@ -166,6 +167,7 @@ pub(crate) async fn get(
         )));
     }
 
+    // GUA FORK: never let another account's browser session consent.
     if let Some(expected) = other_account_named(&query, &session, &*homeserver) {
         return end_session_and_login_as(
             repo,
@@ -305,6 +307,7 @@ pub(crate) async fn post(
     let user_agent = user_agent.map(|TypedHeader(ua)| ua.to_string());
 
     let Some(session) = maybe_session else {
+        // GUA FORK: keep the app's login hint through the login.
         let login = mas_router::Login::and_then(
             PostAuthAction::continue_device_code_grant_with_hint(grant_id, query.login_hint),
         );
@@ -329,6 +332,7 @@ pub(crate) async fn post(
         )));
     }
 
+    // GUA FORK: never let another account's browser session consent.
     if let Some(expected) = other_account_named(&query, &session, &*homeserver) {
         return end_session_and_login_as(
             repo,

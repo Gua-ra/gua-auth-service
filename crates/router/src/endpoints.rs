@@ -18,8 +18,9 @@ pub enum PostAuthAction {
     },
     ContinueDeviceCodeGrant {
         id: Ulid,
-        /// GUA FORK: the app's MSC4198 login hint, carried in the action so it
-        /// survives the login round trip.
+        /// GUA FORK: the app's MSC4198 login hint, carried in the action so the
+        /// account check runs again after the login, even when the upstream
+        /// provider silently signs the other account back in.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         gua_login_hint: Option<String>,
     },
@@ -33,6 +34,7 @@ pub enum PostAuthAction {
     ManageAccount {
         #[serde(flatten)]
         action: Option<AccountAction>,
+        /// GUA FORK: the app's login hint, kept like the device code grant's.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         gua_login_hint: Option<String>,
     },
@@ -52,6 +54,7 @@ impl PostAuthAction {
         }
     }
 
+    /// GUA FORK: continue a device code grant, keeping the app's login hint.
     #[must_use]
     pub const fn continue_device_code_grant_with_hint(
         id: Ulid,
@@ -81,6 +84,7 @@ impl PostAuthAction {
         }
     }
 
+    /// GUA FORK: manage the account, keeping the app's login hint.
     #[must_use]
     pub const fn manage_account_with_hint(
         action: Option<AccountAction>,
@@ -219,6 +223,8 @@ pub struct Login {
 
     login_hint: Option<String>,
 
+    /// GUA FORK: start a new authentication even when a browser session exists
+    /// (`prompt=login`, `prompt=create` and the account guards).
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     force_login: bool,
 }

@@ -239,6 +239,9 @@ pub(crate) async fn post(
             .await?;
     }
 
+    // GUA FORK: also end the browser session behind this one unless another
+    // session still uses it, or the next sign-in in that browser continues as
+    // this account.
     let user_session_id = session.user_session_id;
 
     // Now that we checked everything, we can end the session.

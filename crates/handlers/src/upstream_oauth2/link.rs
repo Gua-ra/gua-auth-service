@@ -119,6 +119,7 @@ pub(crate) enum RouteError {
     #[error("Invalid form action")]
     InvalidFormAction,
 
+    /// GUA FORK: linking this upstream account is not allowed.
     #[error("Linking upstream account refused")]
     LinkRefused,
 

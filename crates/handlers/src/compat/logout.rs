@@ -117,6 +117,9 @@ pub(crate) async fn post(
         // XXX: this is probably not the right error
         .ok_or(RouteError::InvalidAuthorization)?;
 
+    // GUA FORK: also end the browser session behind this one unless another
+    // session still uses it, or the next sign-in in this browser continues as
+    // this account.
     let user_session_id = session.user_session_id;
 
     // This will make the access token invalid

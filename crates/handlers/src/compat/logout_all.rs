@@ -183,6 +183,9 @@ pub(crate) async fn post(
 
     let filter = CompatSessionFilter::new().for_user(&user).active_only();
 
+    // GUA FORK: end the browser sessions behind the ended sessions too, unless
+    // one still backs another session, or the next sign-in in those browsers
+    // continues as this account.
     let mut user_session_ids = BTreeSet::new();
     let mut cursor = Pagination::first(1000);
     loop {

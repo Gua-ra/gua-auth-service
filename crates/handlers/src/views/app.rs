@@ -64,6 +64,7 @@ pub async fn get(
 
     // TODO: keep the full path, not just the action
     let Some(session) = maybe_session else {
+        // GUA FORK: keep the app's login hint through the login.
         let mut url = mas_router::Login::and_then(PostAuthAction::manage_account_with_hint(
             action,
             unstable_login_hint.clone(),

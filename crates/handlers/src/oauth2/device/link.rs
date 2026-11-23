@@ -141,6 +141,8 @@ async fn handle_code(
             // This is a valid code, redirect to the consent page
             // This will in turn redirect to the login page if the user is not
             // logged in
+            // GUA FORK: pass the app's login hint on, so the consent page can
+            // refuse another account's browser session.
             let destination = url_builder.redirect(
                 &mas_router::DeviceCodeConsent::new(grant.id).with_login_hint(login_hint),
             );
