@@ -76,6 +76,11 @@ pub async fn get(
         return Ok((cookie_jar, url_builder.redirect(&url)).into_response());
     };
 
+    // GUA FORK: the app opens this page in a browser that can share cookies with
+    // another account. Left alone, an identity reset would be approved for the
+    // browser's user instead of the app's. When the app names its user and the
+    // session disagrees, end the session and sign in afresh. The name only
+    // refuses: a matching session still goes through the normal owner check.
     let expected_user = expected_user(
         action.as_ref(),
         unstable_login_hint.as_deref(),
@@ -92,6 +97,7 @@ pub async fn get(
         activity_tracker
             .record_browser_session(&clock, &session)
             .await;
+        // Ended first, or the login callback for the right account would find it.
         repo.browser_session().finish(&clock, session).await?;
         repo.save().await?;
         let (session_info, cookie_jar) = cookie_jar.session_info();
@@ -133,6 +139,8 @@ pub async fn get_anonymous(
     Ok(Html(content).into_response())
 }
 
+/// GUA FORK: prefers the name inside the action, which survives a login round
+/// trip. A foreign or malformed hint is ignored, so it never locks a session out.
 fn expected_user(
     action: Option<&AccountAction>,
     login_hint: Option<&str>,

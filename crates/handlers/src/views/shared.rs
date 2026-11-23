@@ -117,6 +117,8 @@ pub enum LoginHint<'a> {
     None,
 }
 
+/// Set by `prompt=login`, `prompt=create` and the account guards: start a new
+/// authentication even when a browser session exists.
 #[derive(Debug, Default, Deserialize)]
 pub(crate) struct QueryForceLogin {
     #[serde(default)]

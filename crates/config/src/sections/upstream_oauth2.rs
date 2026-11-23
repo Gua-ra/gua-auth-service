@@ -693,7 +693,8 @@ pub struct Provider {
     /// authorization request.
     ///
     /// Sends `web` when the downstream client's `client_uri` host matches
-    /// [`Self::downstream_client_web_origin`], otherwise `native`.
+    /// [`Self::downstream_client_web_origin`], otherwise `native`. The
+    /// provider applies its web signup allowlist only to `web`.
     ///
     /// Defaults to `false`.
     #[serde(default)]

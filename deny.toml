@@ -30,7 +30,8 @@ ignore = [
     "RUSTSEC-0000-0000",
 ]
 
-# smartstring (RUSTSEC-2026-0249) is transitive and has no safe upgrade.
+# Only direct dependencies are checked for being unmaintained. smartstring
+# (RUSTSEC-2026-0249) is transitive and will never be patched.
 unmaintained = "workspace"
 
 [licenses]

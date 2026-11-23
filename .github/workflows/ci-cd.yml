@@ -1,5 +1,10 @@
 name: CI/CD
 
+# Builds ghcr.io/gua-ra/gua-auth-service and deploys it. PR checks stay in ci.yaml.
+#   PR labelled `deploy:dev`: builds the branch and rolls it onto dev. Re-add the label to redeploy.
+#   Merge to main: deploys dev and stages a prod deployment that waits for approval.
+#   Manual run: deploys the chosen branch to dev, or to prod after approval.
+
 on:
   push:
     branches: ["main"]
@@ -20,6 +25,7 @@ permissions:
 
 env:
   IMAGE: ghcr.io/gua-ra/gua-auth-service
+  # Only people with write access can add labels, so outsiders cannot deploy a PR.
   DEPLOY_LABEL: deploy:dev
 
 jobs:
@@ -103,6 +109,7 @@ jobs:
         id: meta
         with:
           images: ${{ env.IMAGE }}
+          # Deploys always use the immutable sha tag. `dev` follows main; `pr-N` only labels PR builds.
           tags: |
             type=sha,format=long
             type=raw,value=dev,enable=${{ github.ref == 'refs/heads/main' }}
@@ -155,6 +162,8 @@ jobs:
     if: >-
       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
       (github.event_name == 'workflow_dispatch' && inputs.environment == 'prod')
+    # Waits for the `production` environment's reviewer. While the in-cluster prod runner is
+    # offline, an approved run queues instead of deploying.
     runs-on: [self-hosted, gua-auth-incluster-prod]
     environment: production
     steps:

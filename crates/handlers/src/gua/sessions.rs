@@ -3,8 +3,10 @@
 // SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
 // Please see LICENSE files in the repository root for full details.
 
-//! A browser session left behind by one account never continues a later
-//! sign-in. A login hint only refuses a session, never grants one.
+//! GUA FORK: the apps open these pages in browsers that can share cookies with
+//! earlier sign-ins. A browser session left behind by one account never
+//! continues a later sign-in, device link or approval. A login hint only
+//! refuses a session, never grants one.
 
 use mas_data_model::{BrowserSession, Clock, User};
 use mas_storage::{
@@ -19,7 +21,7 @@ use serde_json::Value;
 use ulid::Ulid;
 
 /// ID token claim the identity service sets on the sign-in that completes an
-/// account recovery.
+/// account recovery, to end every other session of the account.
 pub(crate) const END_OTHER_SESSIONS_CLAIM: &str = "gua_end_other_sessions";
 
 /// `None` for a hint that cannot be checked, so it never refuses a session.
@@ -31,6 +33,7 @@ pub(crate) fn hinted_localpart(login_hint: Option<&str>, homeserver: &str) -> Op
     (!localpart.is_empty()).then(|| localpart.to_owned())
 }
 
+/// Only a JSON `true` in verified claims counts.
 pub(crate) fn claims_end_other_sessions(id_token_claims: Option<&Value>) -> bool {
     id_token_claims
         .and_then(|claims| claims.get(END_OTHER_SESSIONS_CLAIM))
@@ -38,6 +41,10 @@ pub(crate) fn claims_end_other_sessions(id_token_claims: Option<&Value>) -> bool
         .unwrap_or(false)
 }
 
+/// Ends the browser session an app session was started from, unless it still
+/// backs another active session. Left in place, the next sign-in in that
+/// browser would continue as this account.
+///
 /// Call after finishing the app's session, in the same transaction, so the
 /// counts no longer include it.
 pub(crate) async fn finish_browser_session_if_unused(
@@ -89,6 +96,9 @@ pub(crate) async fn finish_browser_session_if_unused(
     Ok(())
 }
 
+/// Ends every app, compatibility and browser session of the user and schedules
+/// a device sync so the homeserver drops the devices too. A recovery sign-in
+/// calls this so whoever held the account keeps nothing.
 pub(crate) async fn end_all_sessions_of_user(
     repo: &mut BoxRepository,
     rng: &mut (dyn RngCore + Send),

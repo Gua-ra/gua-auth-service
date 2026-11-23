@@ -16,9 +16,9 @@ const CROSS_SIGNING_REPLACEMENT_PERIOD_MS = 10 * 60 * 1000; // 10 minutes
 
 // GUA FORK: the return scheme is untrusted. Only these are used, and the URL is built here.
 const RETURNABLE_APP_SCHEMES = [
-  "global.gua",
-  "global.gua.dev",
-  "global.gua.debug",
+  "global.gua", // production
+  "global.gua.dev", // QA builds on TestFlight and the Play internal track
+  "global.gua.debug", // Android debug builds
 ];
 
 const returnUrlFor = (scheme: string): string =>
@@ -34,7 +34,8 @@ export const Route = createFileRoute("/reset-cross-signing/success")({
         ? returnUrlFor(guaReturn)
         : undefined;
 
-    // GUA FORK: navigating to the app's own scheme closes its web sheet.
+    // GUA FORK: navigating to the app's own scheme closes its web sheet. A plain
+    // browser tab names no known scheme, so it keeps the page and the button.
     useEffect(() => {
       if (!returnUrl) return;
       window.location.href = returnUrl;

@@ -49,6 +49,9 @@ pub(crate) struct ConsentForm {
     confirm_device: Option<String>,
 }
 
+/// GUA FORK: the app linking a device opens this page in a browser that can
+/// share cookies with another account. Without this check that account would
+/// consent and the new device would join it.
 fn other_account_named(
     query: &DeviceCodeConsentQuery,
     session: &BrowserSession,
@@ -59,7 +62,9 @@ fn other_account_named(
 }
 
 /// GUA FORK: call only for a grant known to exist and be unexpired, so a
-/// made-up link changes nothing.
+/// made-up link changes nothing. Anyone can start a real grant, so a crafted
+/// link can still sign this browser out, as on the account page. App sessions
+/// are untouched and nothing is granted.
 async fn end_session_and_login_as(
     mut repo: BoxRepository,
     clock: &dyn Clock,
@@ -78,6 +83,7 @@ async fn end_session_and_login_as(
         "Browser session belongs to another user than the one the app named, forcing a fresh login"
     );
 
+    // Ended first, or the login callback for the right account would find it.
     repo.browser_session().finish(clock, session).await?;
     repo.save().await?;
 

@@ -67,6 +67,7 @@ const AccountDeleteButton: React.FC<Props> = (props) => {
   const siteConfig = useFragment(CONFIG_FRAGMENT, props.siteConfig);
   const { t } = useTranslation();
 
+  // GUA FORK: show and confirm with the handle only, never the homeserver.
   const localpart = user.matrix.mxid.replace(/^@/, "").split(":")[0];
   // GUA FORK: deleting an account always erases it on the homeserver, so the
   // dialog offers no choice.

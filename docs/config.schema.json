@@ -2332,7 +2332,7 @@
           "default": false
         },
         "forward_downstream_client": {
-          "description": "Whether a `gua_downstream` marker identifying the downstream client\n (`web` or `native`) should be forwarded to the provider in the\n authorization request.\n\n Sends `web` when the downstream client's `client_uri` host matches\n [`Self::downstream_client_web_origin`], otherwise `native`.\n\n Defaults to `false`.",
+          "description": "Whether a `gua_downstream` marker identifying the downstream client\n (`web` or `native`) should be forwarded to the provider in the\n authorization request.\n\n Sends `web` when the downstream client's `client_uri` host matches\n [`Self::downstream_client_web_origin`], otherwise `native`. The\n provider applies its web signup allowlist only to `web`.\n\n Defaults to `false`.",
           "type": "boolean",
           "default": false
         },

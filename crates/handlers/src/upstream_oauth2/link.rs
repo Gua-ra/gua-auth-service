@@ -283,7 +283,7 @@ pub(crate) async fn get(
         crate::gua::sessions::claims_end_other_sessions(upstream_session.id_token_claims());
 
     // GUA FORK: a recovery sign-in never keeps the browser session it found,
-    // even one of the same account.
+    // even one of the same account: it may be the one the recovery shuts out.
     let maybe_user_session = maybe_user_session
         .filter(|session| !(end_other_sessions && link.user_id == Some(session.user.id)));
 
@@ -312,6 +312,11 @@ pub(crate) async fn get(
         }
 
         (Some(user_session), _) => {
+            // GUA FORK: the browser is signed in as another account, often one
+            // left behind by a different phone number. Upstream would offer to
+            // sign out or to link this subject to that account; both would let
+            // the sign-in finish as the wrong account. End the session and load
+            // this page again, so the arms below log in or register.
             tracing::info!(
                 browser_session.id = %user_session.id,
                 user.id = %user_session.user.id,
@@ -364,6 +369,8 @@ pub(crate) async fn get(
                 return Ok((cookie_jar, Html(fallback).into_response()));
             }
 
+            // GUA FORK: the apps' tokens are issued here, so only MAS can end
+            // the account's other sessions when a recovery completes.
             if end_other_sessions {
                 tracing::info!(
                     user.id = %user.id,
@@ -517,6 +524,8 @@ pub(crate) async fn get(
 
                     // GUA FORK: the Gua provider must keep `on_conflict` at
                     // `fail`, or a matching username attaches a new subject.
+                    // It is set in gua-deploy's MAS config, under
+                    // `claims_imports.localpart`.
                     match provider.claims_imports.localpart.on_conflict {
                         // We matched an existing user, but the server doesn't allow us to link to
                         // existing users automatically. In this case, we error out
@@ -918,6 +927,9 @@ pub(crate) async fn post(
     let form_state = form.to_form_state();
 
     // GUA FORK: the link form is no longer rendered but can still be posted.
+    // Refuse it during a sign-in, where the browser's user may not be the one
+    // signing in, and for a user already linked to this provider, so a second
+    // subject is never attached by hand.
     if matches!(form, FormData::Link) {
         if matches!(
             post_auth_action,

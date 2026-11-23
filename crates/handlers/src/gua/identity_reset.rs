@@ -3,8 +3,11 @@
 // SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
 // Please see LICENSE files in the repository root for full details.
 
-//! Lets a signed-in app approve its own cross-signing reset with its access
-//! token. The reset is only ever opened for that session's own user.
+//! GUA FORK: lets a signed-in app approve its own cross-signing reset with its
+//! access token. The token is checked as the userinfo endpoint checks it, the
+//! session must carry the Matrix client API scope, and the reset is opened only
+//! for that session's own user, for the homeserver's usual ten minutes. No
+//! cookie is read, so a cross-site request carries nothing this trusts.
 
 use std::sync::Arc;
 
