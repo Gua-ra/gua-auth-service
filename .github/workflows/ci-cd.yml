@@ -25,7 +25,6 @@ permissions:
 
 env:
   IMAGE: ghcr.io/gua-ra/gua-auth-service
-  # Only people with write access can add labels, so outsiders cannot deploy a PR.
   DEPLOY_LABEL: deploy:dev
 
 jobs:
@@ -78,7 +77,8 @@ jobs:
 
       - id: gate
         name: Decide whether this PR asked for a dev deploy
-        # Same-repo check: a PR from a fork has no access to the registry credentials.
+        # Triage access is enough to add the label, so the same-repo check is the boundary: fork
+        # PRs never deploy, and only accounts with write access can push a branch here.
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ] \
              && [ "${{ github.event.pull_request.head.repo.full_name }}" = "${{ github.repository }}" ] \
