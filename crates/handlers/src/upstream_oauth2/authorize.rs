@@ -94,8 +94,6 @@ pub(crate) async fn get(
         data = data.with_response_mode(response_mode.into());
     }
 
-    // Fetch the authorization grant once: it carries the login hint, the
-    // locale and the downstream client for the Gua marker.
     let grant =
         if let Some(PostAuthAction::ContinueAuthorizationGrant { id }) = &query.post_auth_action {
             repo.oauth2_authorization_grant().lookup(*id).await?
@@ -120,12 +118,7 @@ pub(crate) async fn get(
         data = data.with_login_hint(login_hint);
     }
 
-    // Resolve the Gua downstream-client marker (`web` / `native`) for the
-    // downstream client that initiated this flow, if the guard is enabled for
-    // this provider. We look the client up now so the value can be appended to
-    // the extra params below. This only touches the new-login flow (a grant is
-    // present); existing-user login, re-auth, change-phone and passkey flows
-    // carry no `ContinueAuthorizationGrant` grant here and are never marked.
+    // Only a new login carries a grant here, so no other flow is ever marked.
     let guard_enabled = downstream_guard
         .get(provider.id)
         .is_some_and(|entry| entry.forward_downstream_client);
@@ -160,8 +153,6 @@ pub(crate) async fn get(
             params.append_pair(key, value);
         }
 
-        // Append the Gua downstream-client marker so the upstream provider can
-        // apply the web signup allowlist only to web signups.
         if let Some(marker) = gua_downstream_marker {
             params.append_pair("gua_downstream", marker);
         }
