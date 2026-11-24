@@ -17,8 +17,8 @@ import PageHeading from "../components/PageHeading";
 
 const searchSchema = v.object({
   deepLink: v.optional(v.boolean()),
-  // GUA FORK: the URL scheme of the native app that sent the user here, so the success page can
-  // hand control back and the app's web sheet closes itself instead of being closed by hand.
+  // GUA FORK: the app's URL scheme, so the success page can hand control back
+  // and the app's web sheet closes itself.
   guaReturn: v.optional(v.string()),
 });
 

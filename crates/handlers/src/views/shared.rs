@@ -117,11 +117,8 @@ pub enum LoginHint<'a> {
     None,
 }
 
-/// Whether the OIDC client demanded a fresh authentication (`prompt=login` or
-/// `max_age=0`).
-///
-/// When set, the login page must start a brand-new authentication flow even if
-/// a browser session already exists, instead of silently reusing it.
+/// Set by `prompt=login`, `prompt=create` and the account guards: start a new
+/// authentication even when a browser session exists.
 #[derive(Debug, Default, Deserialize)]
 pub(crate) struct QueryForceLogin {
     #[serde(default)]

@@ -99,6 +99,25 @@ pub trait UpstreamOAuthSessionRepository: Send + Sync {
         id: Ulid,
     ) -> Result<Option<UpstreamOAuthAuthorizationSession>, Self::Error>;
 
+    /// GUA FORK: lookup a session by its ID and lock it until the end of the
+    /// transaction
+    ///
+    /// A concurrent caller waits for the lock, then gets the committed state.
+    ///
+    /// Returns `None` if the session does not exist
+    ///
+    /// # Parameters
+    ///
+    /// * `id`: the ID of the session to lookup
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Self::Error`] if the underlying repository fails
+    async fn lookup_for_update(
+        &mut self,
+        id: Ulid,
+    ) -> Result<Option<UpstreamOAuthAuthorizationSession>, Self::Error>;
+
     /// Add a session to the database
     ///
     /// Returns the newly created session
@@ -239,6 +258,11 @@ pub trait UpstreamOAuthSessionRepository: Send + Sync {
 
 repository_impl!(UpstreamOAuthSessionRepository:
     async fn lookup(
+        &mut self,
+        id: Ulid,
+    ) -> Result<Option<UpstreamOAuthAuthorizationSession>, Self::Error>;
+
+    async fn lookup_for_update(
         &mut self,
         id: Ulid,
     ) -> Result<Option<UpstreamOAuthAuthorizationSession>, Self::Error>;

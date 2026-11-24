@@ -231,7 +231,7 @@ where
             mas_router::OAuth2Introspection::route(),
             post(self::oauth2::introspection::post),
         )
-        // GUA FORK: the app approves its own cross-signing reset with its access token.
+        // GUA FORK: the app approves its own cross-signing reset.
         .route(
             "/api/gua/identity-reset/allow",
             post(self::gua::identity_reset::post),

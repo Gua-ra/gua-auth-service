@@ -544,4 +544,42 @@ mod tests {
             assert_eq!(render1, render2);
         }
     }
+
+    #[tokio::test]
+    async fn error_codes_are_translated() {
+        let templates = Templates::load(
+            Utf8Path::new(env!("CARGO_MANIFEST_DIR")).join("../../templates/"),
+            UrlBuilder::new("https://example.com/".parse().unwrap(), None, None),
+            None,
+            Utf8Path::new(env!("CARGO_MANIFEST_DIR")).join("../../translations"),
+            SiteBranding::new("example.com"),
+            SiteFeatures {
+                password_login: true,
+                password_registration: true,
+                password_registration_email_required: true,
+                account_recovery: true,
+                login_with_email_allowed: true,
+            },
+            true,
+        )
+        .await
+        .unwrap();
+
+        for (code, english) in [
+            ("username_unavailable", "This username is not available."),
+            ("username_not_allowed", "This username is not allowed."),
+        ] {
+            for language in ["en", "es", "pt-BR", "fr"] {
+                let locale: mas_i18n::DataLocale = language.parse().unwrap();
+                let rendered = templates
+                    .render_error(&ErrorContext::new().with_code(code).with_language(&locale))
+                    .unwrap();
+                assert_eq!(
+                    rendered.contains(english),
+                    language == "en",
+                    "{code} in {language}"
+                );
+            }
+        }
+    }
 }

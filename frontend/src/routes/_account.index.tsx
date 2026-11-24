@@ -94,8 +94,7 @@ const actionSchema = v.variant("action", [
   }),
   v.object({
     action: v.literal("org.matrix.cross_signing_reset"),
-    // GUA FORK: the native app tells us its URL scheme so the success page can hand control back
-    // to it. Only ever compared against a fixed allow-list, never redirected to as given.
+    // GUA FORK: the app's URL scheme. Only checked against a fixed list, never followed as given.
     gua_return: v.optional(v.string()),
   }),
   v.object({

@@ -98,6 +98,16 @@
     "@unexpected": {
       "context": "pages/error.html:22:29-50",
       "description": "Error message displayed when an unexpected error occurs"
+    },
+    "username_not_allowed": "This username is not allowed. Contact support to finish signing in.",
+    "@username_not_allowed": {
+      "context": "pages/error.html:30:15-46",
+      "description": "Error page message when the username from the sign-in provider is refused by policy"
+    },
+    "username_unavailable": "This username is not available. Contact support to finish signing in.",
+    "@username_unavailable": {
+      "context": "pages/error.html:26:15-46",
+      "description": "Error page message when the username from the sign-in provider belongs to another account or is reserved"
     }
   },
   "mas": {

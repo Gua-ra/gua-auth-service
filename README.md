@@ -12,7 +12,7 @@ The Gua changes are marked `GUA FORK` in the source. New modules sit under `crat
 - **Account deletion notifies the provider.** Deleting an account erases the user on the homeserver and tells each upstream provider, retrying until the provider confirms.
 - **First-party endpoints** for the Gua apps, such as approving the app's own cross-signing reset with its access token.
 
-The target design moves login authority to each homeserver's own instance of this service, including login methods verified locally. That is not implemented yet. [Planned federation work](https://github.com/Gua-ra/gua-resolver/blob/main/docs/architecture/planned-federation-work.md#sign-in-decided-by-each-homeserver-and-passkeys) describes that design and the rules it must keep; [Gua identity and federation](https://github.com/Gua-ra/gua-resolver/blob/main/docs/architecture/gua-identity-and-federation.md) describes sign-in as it runs today, in plain language.
+Each instance holds no login credentials of its own and delegates every sign-in to the Gua identity service. The target design moves login authority to each homeserver's own instance of this service, including login methods verified locally. That is not implemented yet. [Planned federation work](https://github.com/Gua-ra/gua-resolver/blob/main/docs/architecture/planned-federation-work.md#sign-in-decided-by-each-homeserver-and-passkeys) describes that design and the rules it must keep; [Gua identity and federation](https://github.com/Gua-ra/gua-resolver/blob/main/docs/architecture/gua-identity-and-federation.md) describes sign-in as it runs today, in plain language.
 
 ## Running it
 

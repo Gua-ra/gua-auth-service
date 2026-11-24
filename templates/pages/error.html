@@ -20,15 +20,26 @@ Please see LICENSE files in the repository root for full details.
 
       <div class="header">
         <h1 class="title">{{ _("error.unexpected") }}</h1>
-        {% if code %}
-          <p class="text font-semibold font-mono">
-            {{ code }}
-          </p>
-        {% endif %}
-        {% if description %}
+        {# GUA FORK: codes people can reach get translated copy. #}
+        {% if code == "username_unavailable" %}
           <p class="text">
-            {{ description }}
+            {{ _("error.username_unavailable") }}
           </p>
+        {% elif code == "username_not_allowed" %}
+          <p class="text">
+            {{ _("error.username_not_allowed") }}
+          </p>
+        {% else %}
+          {% if code %}
+            <p class="text font-semibold font-mono">
+              {{ code }}
+            </p>
+          {% endif %}
+          {% if description %}
+            <p class="text">
+              {{ description }}
+            </p>
+          {% endif %}
         {% endif %}
       </div>
     </header>

@@ -16,20 +16,25 @@ targets = [
 version = 2
 db-path = "~/.cargo/advisory-db"
 db-urls = ["https://github.com/rustsec/advisory-db"]
+# Fail once an ignored advisory stops applying, so its exception is removed with the fix.
+unused-ignored-advisory = "deny"
 ignore = [
     # RSA key extraction "Marvin Attack". This is only relevant when using
     # PKCS#1 v1.5 encryption, which we don't
     "RUSTSEC-2023-0071",
-    # Rand 0.8.5 unsoundness with custom logger + thread_rng reseeding.
-    # Only triggers when the `log` feature is enabled, which we don't use.
-    "RUSTSEC-2026-0097",
+    # crypto-bigint timing leaks: no patched 0.5.x exists and elliptic-curve 0.13
+    # requires 0.5, so this clears only with the RustCrypto 0.14 move upstream made.
+    "RUSTSEC-2026-0387",
+    # chrono is unmaintained. Upstream ignores this too: replacing it is a bigger refactor.
+    "RUSTSEC-2026-0543",
+    # ruma-identifiers-validation panics in mxc_uri and key_id validation. MAS only parses
+    # user IDs; the fix needs ruma-common 0.20, which comes with the upstream merge.
+    "RUSTSEC-2026-0588",
+    "RUSTSEC-2026-0589",
 ]
 
-# Only warn about unmaintained crates that are direct dependencies of the
-# workspace, not transitive ones. RUSTSEC-2026-0249 (smartstring, archived by
-# its author with no safe upgrade available) only reaches us through
-# opentelemetry-prometheus-text-exporter, and pinning an ignore for a crate
-# that will never be patched would just get renewed forever.
+# Only direct dependencies are checked for being unmaintained. smartstring
+# (RUSTSEC-2026-0249) is transitive and will never be patched.
 unmaintained = "workspace"
 
 [licenses]
@@ -62,6 +67,7 @@ deny = [
 multiple-versions = "deny"
 
 skip = [
+    { name = "base64", version = "0.22.1" },         # lettre moved to 0.23, the rest of the tree is on 0.22
     { name = "itertools", version = "0.13.0" },      # zxcvbn depends on this old version
     # a few crates depend on old versions of hashbrown
     { name = "hashbrown", version = "0.14.5" },
@@ -85,7 +91,7 @@ skip = [
     { name = "object", version = "0.37.3" },
 
     # We are still mainly using rand 0.8
-    { name = "rand", version = "0.8.5" },
+    { name = "rand", version = "0.8.6" },
     { name = "rand_chacha", version = "0.3.1" },
     { name = "rand_core", version = "0.6.4" },
     { name = "getrandom", version = "0.2.16" },
